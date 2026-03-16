@@ -467,6 +467,9 @@ document.getElementById("fileInput").addEventListener("change",function(e){
   reader.readAsDataURL(file);
 });
 
+// ── API 키 설정 (여기에 발급받은 키 입력) ──
+const ANTHROPIC_API_KEY = ""; // ← 나중에 여기 넣으면 돼요!
+
 async function analyzePhoto(){
   if(!_photoBase64||!_currentMission) return;
   const btn=document.getElementById("btnAnalyze");
@@ -478,49 +481,70 @@ async function analyzePhoto(){
   document.getElementById("aiScoreRow").style.display="none";
   document.getElementById("scanOverlay").classList.add("active");
 
+  // API 키 없으면 데모 모드로 작동
+  if(!ANTHROPIC_API_KEY){
+    await new Promise(r=>setTimeout(r,2000)); // 2초 기다리는 척
+    document.getElementById("scanOverlay").classList.remove("active");
+
+    const demoResults = {
+      "m1": {passed:true,  score:92, title:"텀블러 인증 완료!", reason:"텀블러를 가지고 카페를 이용하셨네요! 정말 멋진 환경 실천이에요. 오늘 하루 플라스틱 컵 하나를 줄이셨어요.", tip:"이렇게 매일 실천하면 한 달에 30개의 일회용 컵을 줄일 수 있어요 🌱"},
+      "m2": {passed:true,  score:88, title:"대중교통 인증!", reason:"버스나 지하철을 이용하셨군요! 자가용 대신 대중교통을 선택해 탄소를 크게 줄이셨어요.", tip:"오늘 절감한 CO₂가 나무 한 그루가 하루에 흡수하는 양과 같아요 🌳"},
+      "m3": {passed:true,  score:85, title:"채식 메뉴 완료!", reason:"오늘 채식 메뉴를 선택하셨네요! 육류 대신 식물성 식단은 탄소 발자국을 크게 줄여요.", tip:"채식 한 끼가 자동차로 3km를 덜 달리는 것과 같은 효과예요 🥗"},
+      "m4": {passed:true,  score:78, title:"절전 인증 완료!", reason:"불필요한 전등을 끄셨네요! 작은 습관이 에너지 절약으로 이어져요.", tip:"이런 습관이 모이면 한 달 전기세도 줄어들어요 💡"},
+      "m5": {passed:true,  score:90, title:"분리수거 완벽!", reason:"분리수거를 꼼꼼하게 하셨네요! 재활용을 통해 자원 순환에 기여하셨어요.", tip:"올바른 분리수거 한 번이 새 제품 생산에 필요한 에너지를 30% 줄여요 ♻️"},
+      "m6": {passed:true,  score:87, title:"장바구니 사용!", reason:"장바구니나 에코백을 사용하셨네요! 비닐봉지 없는 쇼핑이 바다를 지켜요.", tip:"에코백 하나로 평생 1,000개 이상의 비닐봉지를 줄일 수 있어요 🛍️"},
+      "m7": {passed:true,  score:82, title:"샤워 절수 완료!", reason:"짧은 샤워로 물을 아끼셨네요! 수자원 절약은 미래 세대를 위한 선물이에요.", tip:"5분 샤워로 욕조 목욕보다 물을 75% 절약할 수 있어요 🚿"},
+    };
+
+    const result = demoResults[_currentMission.id] || {passed:true,score:85,title:"미션 인증 완료!",reason:"환경 미션을 잘 수행하셨어요! 지구가 조금 더 건강해졌어요.",tip:"오늘도 지구를 위한 선택을 해주셔서 감사해요 🌍"};
+
+    resultBox.className="ai-result success";
+    document.getElementById("aiResultTitle").textContent="✅ "+result.title;
+    document.getElementById("aiResultText").textContent=result.reason+" "+result.tip;
+    _aiPassed=true;
+    btn.style.display="none";
+    document.getElementById("btnComplete").style.display="block";
+    document.getElementById("aiScoreRow").style.display="flex";
+    const fill=document.getElementById("aiScoreFill");
+    fill.style.width=result.score+"%";
+    fill.style.background="var(--primary)";
+    document.getElementById("aiScoreLabel").textContent=result.score+"점";
+    return;
+  }
+
+  // API 키 있으면 진짜 AI 분석
   try{
     const resp=await fetch("https://api.anthropic.com/v1/messages",{
       method:"POST",
-      headers:{"Content-Type":"application/json"},
+      headers:{"Content-Type":"application/json","x-api-key":ANTHROPIC_API_KEY,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
       body:JSON.stringify({
         model:"claude-sonnet-4-20250514",
         max_tokens:500,
         messages:[{role:"user",content:[
           {type:"image",source:{type:"base64",media_type:"image/jpeg",data:_photoBase64}},
           {type:"text",text:`EcoQuest AI 미션 인증 시스템입니다.
-
 미션: "${_currentMission.name}"
 확인 키워드: ${_currentMission.keyword}
-
 이 사진이 미션 수행 증거인지 판단하세요.
-JSON만 응답 (다른 텍스트 없이):
-{"passed":true/false,"score":0-100,"title":"결과제목(8자이내)","reason":"판단이유(친근하게 2문장)","tip":"칭찬또는개선팁(1문장)"}`}
+JSON만 응답: {"passed":true/false,"score":0-100,"title":"결과제목(8자이내)","reason":"판단이유(친근하게 2문장)","tip":"칭찬또는개선팁(1문장)"}`}
         ]}]
       })
     });
     const data=await resp.json();
     const text=data.content?.[0]?.text||"";
     let result;
-    try{
-      const m=text.match(/\{[\s\S]*\}/);
-      result=JSON.parse(m?m[0]:text);
-    }catch{
-      result={passed:false,score:0,title:"분석 오류",reason:"사진을 다시 찍어봐요!",tip:""};
-    }
-
+    try{ const m=text.match(/\{[\s\S]*\}/); result=JSON.parse(m?m[0]:text); }
+    catch{ result={passed:false,score:0,title:"분석 오류",reason:"사진을 다시 찍어봐요!",tip:""}; }
     document.getElementById("scanOverlay").classList.remove("active");
-
     if(result.passed){
       resultBox.className="ai-result success";
       document.getElementById("aiResultTitle").textContent="✅ "+result.title;
-      _aiPassed=true;
-      btn.style.display="none";
+      _aiPassed=true; btn.style.display="none";
       document.getElementById("btnComplete").style.display="block";
     } else {
       resultBox.className="ai-result fail";
       document.getElementById("aiResultTitle").textContent="❌ "+result.title;
-      _aiPassed=false;
-      btn.disabled=false; btn.textContent="📸 다시 찍기";
+      _aiPassed=false; btn.disabled=false; btn.textContent="📸 다시 찍기";
     }
     document.getElementById("aiResultText").textContent=(result.reason||"")+" "+(result.tip||"");
     const score=Math.max(0,Math.min(100,result.score||0));

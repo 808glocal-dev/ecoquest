@@ -1466,7 +1466,7 @@ function requestPayment(title, amount, chalEntry, user){
   IMP.init("imp44342528");
 
   IMP.request_pay({
-    pg: "kakaopay.TC0ONETIME", // 카카오페이 테스트
+    pg: "html5_inicis.INIpayTest", // KG이니시스 테스트
     pay_method: "card",
     merchant_uid: "ecoquest_" + Date.now(),
     name: "EcoQuest - " + title + " 예치금",
@@ -1580,7 +1580,7 @@ async function doBuy(id){
     if(!IMP){toast("결제 모듈 로딩 중이에요!");return;}
     IMP.init("imp44342528");
     IMP.request_pay({
-      pg:"kakaopay.TC0ONETIME",
+      pg:"html5_inicis.INIpayTest",
       pay_method:"card",
       merchant_uid:"ecoquest_book_"+Date.now(),
       name:"EcoQuest - "+b.title,

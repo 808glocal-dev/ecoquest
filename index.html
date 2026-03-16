@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
 <title>EcoQuest 🌍</title>
 
+<!-- 포트원 결제 SDK -->
+<script src="https://cdn.iamport.kr/v1/iamport.js"></script>
+
 <!-- PWA -->
 <link rel="manifest" href="/manifest.json"/>
 <meta name="theme-color" content="#2ECC71"/>
@@ -1453,19 +1456,58 @@ async function joinChal(title,cid){
     deposit:_dep,
     startDate,endDate
   };
-  try{
-    const newActive=[...active, newEntry];
-    await window.FB.updateDoc(window.FB.doc(window.FB.db,"users",user.uid),{
-      activeChallenges:newActive
-    });
-    window.UDATA.activeChallenges=newActive;
-    renderTodayQuests(user.uid);
-    renderHomeChalls();
-    const freq=_freq==="daily"?"매일":_freq==="w5"?"주 5일":"주 3일";
-    toast(`🎉 "${title}" ${freq} ${_weeks}주 참여 완료!`);
-  }catch(e){
-    toast("참여 실패: "+e.message);
-  }
+  // 포트원 결제
+  requestPayment(title, _dep, newEntry, user);
+}
+
+function requestPayment(title, amount, chalEntry, user){
+  const IMP = window.IMP;
+  if(!IMP){toast("결제 모듈 로딩 중이에요. 잠시 후 다시 시도해주세요!");return;}
+  IMP.init("imp44342528");
+
+  IMP.request_pay({
+    pg: "html5_inicis.INIpayTest", // 테스트 모드
+    pay_method: "card",
+    merchant_uid: "ecoquest_" + Date.now(),
+    name: "EcoQuest - " + title + " 예치금",
+    amount: amount,
+    buyer_email: user.email || "",
+    buyer_name: user.displayName || "참여자",
+    buyer_tel: "010-0000-0000",
+    m_redirect_url: window.location.href,
+  }, async function(rsp){
+    if(rsp.success){
+      // 결제 성공 → Firebase 저장
+      try{
+        const active = window.UDATA?.activeChallenges||[];
+        const newActive = [...active, chalEntry];
+        await window.FB.updateDoc(window.FB.doc(window.FB.db,"users",user.uid),{
+          activeChallenges: newActive
+        });
+        window.UDATA.activeChallenges = newActive;
+        // 결제 기록 저장
+        await window.FB.addDoc(window.FB.collection(window.FB.db,"payments"),{
+          uid: user.uid,
+          userName: user.displayName||"",
+          userEmail: user.email||"",
+          impUid: rsp.imp_uid,
+          merchantUid: rsp.merchant_uid,
+          amount: rsp.paid_amount,
+          challengeTitle: title,
+          status: "paid",
+          createdAt: window.FB.serverTimestamp()
+        });
+        renderTodayQuests(user.uid);
+        renderHomeChalls();
+        const freq=chalEntry.freq==="daily"?"매일":chalEntry.freq==="w5"?"주 5일":"주 3일";
+        toast(`🎉 결제 완료! "${title}" ${freq} ${chalEntry.weeks}주 시작!`);
+      }catch(e){
+        toast("저장 실패: "+e.message);
+      }
+    } else {
+      toast("결제 실패: " + rsp.error_msg);
+    }
+  });
 }
 
 // 방 만들기 변수
@@ -1525,8 +1567,36 @@ function openBuy(id){
 }
 async function doBuy(id){
   const b=BOOKS.find(x=>x.id===id);if(!b)return;
-  const ok=await window.saveOrder(window.ME.uid,b);
-  if(ok){closeOv("ovBuy");toast("🎉 구매 완료! 곧 연락드릴게요 📚");renderBooks();loadMyOrders(window.ME.uid);}
+  const point=window.UDATA?.point||0;
+
+  if(point>=b.price){
+    // 포인트로 구매
+    const ok=await window.saveOrder(window.ME.uid,b);
+    if(ok){closeOv("ovBuy");toast("🎉 포인트로 구매 완료! 📚");renderBooks();window.loadMyOrders&&window.loadMyOrders(window.ME.uid);}
+  } else {
+    // 포인트 부족 → 실결제
+    closeOv("ovBuy");
+    const IMP=window.IMP;
+    if(!IMP){toast("결제 모듈 로딩 중이에요!");return;}
+    IMP.init("imp44342528");
+    IMP.request_pay({
+      pg:"html5_inicis.INIpayTest",
+      pay_method:"card",
+      merchant_uid:"ecoquest_book_"+Date.now(),
+      name:"EcoQuest - "+b.title,
+      amount:b.price,
+      buyer_email:window.ME?.email||"",
+      buyer_name:window.ME?.displayName||"구매자",
+      buyer_tel:"010-0000-0000",
+    },async function(rsp){
+      if(rsp.success){
+        const ok=await window.saveOrder(window.ME.uid,b);
+        if(ok){toast("🎉 결제 완료! 📚 곧 배송 안내드릴게요");renderBooks();window.loadMyOrders&&window.loadMyOrders(window.ME.uid);}
+      } else {
+        toast("결제 실패: "+rsp.error_msg);
+      }
+    });
+  }
 }
 
 // ══ 세계 지도 ══
@@ -1853,7 +1923,7 @@ window.toggleMSel=toggleMSel;window.confirmMissions=confirmMissions;
 window.openAI=openAI;window.doAnalyze=doAnalyze;window.doComplete=doComplete;window.renderTodayQuests=renderTodayQuests;window.renderHomeChalls=renderHomeChalls;window.joinChal=joinChal;
 window.openChal=openChal;window.selDep=selDep;window.joinChal=joinChal;
 window.setDep=setDep;window.setRPub=setRPub;window.openCreateRoom=openCreateRoom;
-window.openBuy=openBuy;window.doBuy=doBuy;window.closeOv=closeOv;window.toast=toast;window.openAdmin=openAdmin;window.closeAdmin=closeAdmin;window.setAdminTab=setAdminTab;window.filterAdminOrders=filterAdminOrders;window.completeOrder=completeOrder;window.searchAdminUsers=searchAdminUsers;window.givePoint=givePoint;window.takePoint=takePoint;
+window.openBuy=openBuy;window.doBuy=doBuy;window.closeOv=closeOv;window.toast=toast;window.requestPayment=requestPayment;window.openAdmin=openAdmin;window.closeAdmin=closeAdmin;window.setAdminTab=setAdminTab;window.filterAdminOrders=filterAdminOrders;window.completeOrder=completeOrder;window.searchAdminUsers=searchAdminUsers;window.givePoint=givePoint;window.takePoint=takePoint;
 </script>
 <script>
 if('serviceWorker' in navigator){

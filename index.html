@@ -298,7 +298,7 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
 
     <div class="sec">
       <div class="sec-t">📸 인증 피드</div>
-      <div class="sec-m" onclick="loadFeed()">새로고침</div>
+      <div class="sec-m" onclick="window.loadFeed&&window.loadFeed()">새로고침</div>
     </div>
     <div id="feedList" style="padding:0 12px 12px"></div>
   </div>
@@ -595,8 +595,8 @@ async function loadUser(uid){
   const ref=window.FB.doc(window.FB.db,"users",uid);
   const snap=await window.FB.getDoc(ref);
   if(!snap.exists()){
-    await window.FB.setDoc(ref,{point:0,missionCount:0,streak:0,doneMissions:[],co2:0,todayMissions:[],joinedChallenges:[],createdAt:window.FB.serverTimestamp()});
-    window.UDATA={point:0,missionCount:0,streak:0,doneMissions:[],co2:0,todayMissions:[],joinedChallenges:[]};
+    await window.FB.setDoc(ref,{point:0,missionCount:0,streak:0,doneMissions:[],co2:0,todayMissions:[],activeChallenges:[],createdAt:window.FB.serverTimestamp()});
+    window.UDATA={point:0,missionCount:0,streak:0,doneMissions:[],co2:0,todayMissions:[],activeChallenges:[]};
     try{await window.FB.setDoc(window.FB.doc(window.FB.db,"stats","global"),{totalUsers:window.FB.increment(1),todayUsers:window.FB.increment(1),totalCo2:0},{merge:true});loadGlobalStats();}catch(e){}
     toast("🎉 EcoQuest에 오신 걸 환영해요! 미션을 완료해서 포인트를 모아봐요 🌱");
   }else{
@@ -607,7 +607,7 @@ async function loadUser(uid){
   window.renderHomeChalls&&window.renderHomeChalls();
   loadMyOrders(uid);
   loadMyVerifs(uid);
-  loadFeed();
+  setTimeout(()=>{if(window.loadFeed)window.loadFeed();},300);
 }
 window.loadUser=loadUser;
 
@@ -1179,7 +1179,7 @@ async function doComplete(){
     closeOv("ovAI");
     window.renderTodayQuests&&window.renderTodayQuests(_curUid);
     window.renderHomeChalls&&window.renderHomeChalls();
-    loadFeed();
+    if(window.loadFeed)window.loadFeed();
     if(window.ME) loadMyVerifs(_curUid);
     toast("🎉 +"+_curM.point+"P 적립! CO₂ -"+_curM.co2+"kg"+(+_verifPub?" 📸 공개됨":""));
   }
@@ -1320,25 +1320,36 @@ async function joinChal(title,cid){
   closeOv("ovChal");
   const user=window.ME;
   if(!user){toast("로그인이 필요해요!");return;}
-  const freq=_freq==="daily"?"매일":_freq==="w5"?"주 5일":"주 3일";
-  const joined=window.UDATA?.joinedChallenges||[];
-  // 이미 참여중인지 확인
-  if(joined.some(j=>j.chalId===cid)){
+  const ch=CHALLENGES.find(x=>x.id===cid);
+  if(!ch){toast("챌린지를 찾을 수 없어요!");return;}
+  const active=window.UDATA?.activeChallenges||[];
+  if(active.some(a=>a.challengeId===cid)){
     toast("이미 참여 중인 챌린지예요!");
     return;
   }
+  const startDate=new Date().toISOString().split("T")[0];
+  const totalDays=_weeks*7;
+  const endDate=new Date(Date.now()+totalDays*86400000).toISOString().split("T")[0];
+  const newEntry={
+    challengeId:cid,
+    challengeTitle:title,
+    emoji:ch.emoji,
+    missionId:ch.missionId,
+    freq:_freq,
+    weeks:_weeks,
+    deposit:_dep,
+    startDate,endDate
+  };
   try{
-    const newJoined=[...joined,{
-      chalId:cid,title,freq:_freq,weeks:_weeks,deposit:_dep,
-      joinedAt:new Date().toISOString()
-    }];
+    const newActive=[...active, newEntry];
     await window.FB.updateDoc(window.FB.doc(window.FB.db,"users",user.uid),{
-      joinedChallenges:newJoined
+      activeChallenges:newActive
     });
-    window.UDATA.joinedChallenges=newJoined;
-    renderMissions(user.uid);
+    window.UDATA.activeChallenges=newActive;
+    renderTodayQuests(user.uid);
     renderHomeChalls();
-    toast(`🎉 "${title}" ${freq} ${_weeks}주 참여 완료! (결제 연동 예정)`);
+    const freq=_freq==="daily"?"매일":_freq==="w5"?"주 5일":"주 3일";
+    toast(`🎉 "${title}" ${freq} ${_weeks}주 참여 완료!`);
   }catch(e){
     toast("참여 실패: "+e.message);
   }
@@ -1483,7 +1494,7 @@ document.querySelectorAll(".overlay").forEach(ov=>{
 });
 
 // 전역 노출
-window.selFreq=selFreq;window.selWeeks=selWeeks;window.selDep=selDep;window.setVerifPub=setVerifPub;window.loadFeed=loadFeed;
+window.selFreq=selFreq;window.selWeeks=selWeeks;window.selDep=selDep;window.setVerifPub=setVerifPub;
 window.goPage=goPage;window.setCTab=setCTab;window.openMissionSel=openMissionSel;
 window.toggleMSel=toggleMSel;window.confirmMissions=confirmMissions;
 window.openAI=openAI;window.doAnalyze=doAnalyze;window.doComplete=doComplete;window.renderTodayQuests=renderTodayQuests;window.renderHomeChalls=renderHomeChalls;window.joinChal=joinChal;

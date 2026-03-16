@@ -224,6 +224,11 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);max-width:480px;
 
 label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
 .form-group{margin-bottom:14px}
+.admin-tab{padding:8px 14px;border-radius:20px;border:1.5px solid #ddd;background:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;color:#666;white-space:nowrap;transition:all .2s}
+.admin-tab.on{background:#1a1a2e;color:#fff;border-color:#1a1a2e}
+.admin-card-box{background:#fff;border-radius:14px;padding:14px;border:1px solid #eee;margin-bottom:10px}
+.admin-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f0f0f0}
+.admin-row:last-child{border:none}
 </style>
 </head>
 <body>
@@ -397,6 +402,69 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
     <div id="adminArea" style="display:none;padding:0 12px">
       <button class="btn btn-red" onclick="loadAdminOrders()">🔐 관리자 — 전체 주문 보기</button>
       <div id="adminOrders" style="margin-top:10px"></div>
+    </div>
+  </div>
+
+  <!-- 관리자 페이지 (숨겨진 전체화면) -->
+  <div id="adminPage" style="display:none;position:fixed;inset:0;background:#f5f5f5;z-index:500;overflow-y:auto;padding-bottom:60px">
+    <!-- 관리자 헤더 -->
+    <div style="background:linear-gradient(135deg,#1a1a2e,#16213e);padding:16px;position:sticky;top:0;z-index:10;box-shadow:0 2px 10px rgba(0,0,0,.3)">
+      <div style="display:flex;align-items:center;justify-content:space-between;max-width:480px;margin:0 auto">
+        <div>
+          <div style="color:#fff;font-size:16px;font-weight:900">🔐 EcoQuest 관리자</div>
+          <div style="color:rgba(255,255,255,.6);font-size:11px" id="adminEmail">-</div>
+        </div>
+        <button onclick="closeAdmin()" style="background:rgba(255,255,255,.15);border:none;border-radius:10px;padding:6px 14px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">← 앱으로</button>
+      </div>
+    </div>
+
+    <div style="max-width:480px;margin:0 auto;padding:12px">
+      <!-- 탭 -->
+      <div style="display:flex;gap:6px;margin-bottom:14px;overflow-x:auto">
+        <button class="admin-tab on" onclick="setAdminTab('orders',this)">📦 주문</button>
+        <button class="admin-tab" onclick="setAdminTab('users',this)">👥 회원</button>
+        <button class="admin-tab" onclick="setAdminTab('challenges',this)">🏆 챌린지</button>
+        <button class="admin-tab" onclick="setAdminTab('stats',this)">📊 통계</button>
+      </div>
+
+      <!-- 주문 관리 -->
+      <div id="admin-orders">
+        <div style="display:flex;gap:8px;margin-bottom:10px">
+          <select id="orderFilter" onchange="filterAdminOrders()" style="flex:1;border:1px solid #ddd;border-radius:10px;padding:8px 10px;font-size:13px;font-family:inherit;background:#fff">
+            <option value="all">전체 주문</option>
+            <option value="pending">처리중</option>
+            <option value="done">완료</option>
+          </select>
+          <button onclick="loadAdminOrders()" style="background:var(--g1);color:#fff;border:none;border-radius:10px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">새로고침</button>
+        </div>
+        <div id="adminOrderList"><div style="text-align:center;padding:20px;color:#aaa">로딩 중...</div></div>
+      </div>
+
+      <!-- 회원 관리 -->
+      <div id="admin-users" style="display:none">
+        <div style="display:flex;gap:8px;margin-bottom:10px">
+          <input id="userSearchInp" placeholder="이메일 또는 이름 검색" style="flex:1;border:1px solid #ddd;border-radius:10px;padding:8px 10px;font-size:13px;font-family:inherit"/>
+          <button onclick="searchAdminUsers()" style="background:var(--blue);color:#fff;border:none;border-radius:10px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">검색</button>
+        </div>
+        <div id="adminUserList"><div style="text-align:center;padding:20px;color:#aaa">검색해보세요</div></div>
+      </div>
+
+      <!-- 챌린지 관리 -->
+      <div id="admin-challenges" style="display:none">
+        <div style="background:#fff;border-radius:14px;padding:14px;margin-bottom:10px;border:1px solid #eee">
+          <div style="font-size:14px;font-weight:900;color:var(--txt);margin-bottom:10px">📊 챌린지 현황</div>
+          <div id="chalStats"><div style="color:#aaa;font-size:13px">로딩 중...</div></div>
+        </div>
+      </div>
+
+      <!-- 통계 -->
+      <div id="admin-stats" style="display:none">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px" id="adminStatCards"></div>
+        <div style="background:#fff;border-radius:14px;padding:14px;border:1px solid #eee">
+          <div style="font-size:14px;font-weight:900;margin-bottom:10px">📈 최근 7일 현황</div>
+          <div id="adminChart"></div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1578,12 +1646,184 @@ document.querySelectorAll(".overlay").forEach(ov=>{
 
 // 전역 노출
 window.selFreq=selFreq;window.selWeeks=selWeeks;window.selDep=selDep;window.setVerifPub=setVerifPub;
+// ══ 관리자 ══
+function openAdmin(){
+  if(!window.ME||window.ME.email!==window.ADMIN){
+    toast("관리자만 접근할 수 있어요!");return;
+  }
+  document.getElementById("adminPage").style.display="block";
+  document.getElementById("adminEmail").textContent=window.ME.email;
+  document.body.style.overflow="hidden";
+  loadAdminOrders();
+  loadAdminStats();
+}
+function closeAdmin(){
+  document.getElementById("adminPage").style.display="none";
+  document.body.style.overflow="";
+}
+function setAdminTab(name,btn){
+  ["orders","users","challenges","stats"].forEach(t=>{
+    document.getElementById("admin-"+t).style.display=t===name?"block":"none";
+  });
+  document.querySelectorAll(".admin-tab").forEach(b=>b.classList.remove("on"));
+  btn.classList.add("on");
+  if(name==="challenges")loadChalStats();
+  if(name==="stats")loadAdminStats();
+}
+
+// 주문 목록
+let _allOrders=[];
+window.loadAdminOrders=async()=>{
+  const w=document.getElementById("adminOrderList");
+  if(!w)return;
+  try{
+    const snap=await window.FB.getDocs(window.FB.collection(window.FB.db,"orders"));
+    _allOrders=snap.docs.map(d=>({id:d.id,...d.data()}))
+      .sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+    renderAdminOrders(_allOrders);
+  }catch(e){w.innerHTML='<div style="color:red;padding:12px">로딩 실패: '+e.message+'</div>';}
+};
+function filterAdminOrders(){
+  const f=document.getElementById("orderFilter").value;
+  const filtered=f==="all"?_allOrders:_allOrders.filter(o=>o.status===f);
+  renderAdminOrders(filtered);
+}
+function renderAdminOrders(orders){
+  const w=document.getElementById("adminOrderList");
+  if(!orders.length){w.innerHTML='<div style="text-align:center;padding:20px;color:#aaa;font-size:13px">주문이 없어요</div>';return;}
+  w.innerHTML=orders.map(o=>`
+    <div class="admin-card-box">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+        <div>
+          <div style="font-size:10px;color:#aaa">#${o.id.slice(-8)} · ${o.createdAt?.toDate?.()?.toLocaleDateString("ko-KR")||"-"}</div>
+          <div style="font-size:14px;font-weight:900;color:var(--txt);margin:2px 0">📚 ${o.bookTitle}</div>
+          <div style="font-size:12px;color:#666">👤 ${o.userName}</div>
+          <div style="font-size:12px;color:#666">📧 ${o.userEmail}</div>
+          <div style="font-size:12px;color:var(--g2);font-weight:700">${o.price?.toLocaleString()}P</div>
+        </div>
+        <span style="background:${o.status==="done"?"#e8f5e9":"#fff3e0"};color:${o.status==="done"?"var(--g2)":"#e67e22"};font-size:11px;font-weight:700;padding:3px 8px;border-radius:10px;flex-shrink:0">${o.status==="done"?"배송완료":"처리중"}</span>
+      </div>
+      ${o.status!=="done"?`<button onclick="completeOrder('${o.id}')" style="width:100%;background:var(--g1);color:#fff;border:none;border-radius:10px;padding:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:4px">✅ 배송 완료 처리</button>`:""}
+    </div>`).join("");
+}
+window.completeOrder=async(id)=>{
+  try{
+    await window.FB.updateDoc(window.FB.doc(window.FB.db,"orders",id),{status:"done"});
+    toast("배송 완료 처리됐어요!");
+    loadAdminOrders();
+  }catch(e){toast("처리 실패");}
+};
+
+// 회원 검색
+async function searchAdminUsers(){
+  const q=document.getElementById("userSearchInp").value.trim().toLowerCase();
+  const w=document.getElementById("adminUserList");
+  if(!q){w.innerHTML='<div style="text-align:center;padding:16px;color:#aaa;font-size:13px">검색어를 입력해주세요</div>';return;}
+  try{
+    const snap=await window.FB.getDocs(window.FB.collection(window.FB.db,"users"));
+    const users=snap.docs.map(d=>({id:d.id,...d.data()}))
+      .filter(u=>(u.email||"").toLowerCase().includes(q)||(u.displayName||"").toLowerCase().includes(q));
+    if(!users.length){w.innerHTML='<div style="text-align:center;padding:16px;color:#aaa;font-size:13px">검색 결과가 없어요</div>';return;}
+    w.innerHTML=users.map(u=>`
+      <div class="admin-card-box">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div>
+            <div style="font-size:14px;font-weight:700;color:var(--txt)">${u.displayName||"이름없음"}</div>
+            <div style="font-size:12px;color:#666">${u.email||u.id}</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:15px;font-weight:900;color:var(--g2)">${(u.point||0).toLocaleString()}P</div>
+            <div style="font-size:11px;color:#aaa">미션 ${u.missionCount||0}개</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:6px">
+          <input id="pt_${u.id}" type="number" placeholder="포인트 입력" style="flex:1;border:1px solid #ddd;border-radius:8px;padding:6px 10px;font-size:13px;font-family:inherit"/>
+          <button onclick="givePoint('${u.id}')" style="background:var(--g1);color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">지급</button>
+          <button onclick="takePoint('${u.id}')" style="background:#e74c3c;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">차감</button>
+        </div>
+      </div>`).join("");
+  }catch(e){w.innerHTML='<div style="color:red;padding:12px">오류: '+e.message+'</div>';}
+}
+window.searchAdminUsers=searchAdminUsers;
+
+window.givePoint=async(uid)=>{
+  const amt=parseInt(document.getElementById("pt_"+uid).value);
+  if(!amt||amt<=0){toast("포인트를 입력해주세요!");return;}
+  try{
+    await window.FB.updateDoc(window.FB.doc(window.FB.db,"users",uid),{point:window.FB.increment(amt)});
+    toast("✅ "+amt.toLocaleString()+"P 지급 완료!");
+    searchAdminUsers();
+  }catch(e){toast("실패: "+e.message);}
+};
+window.takePoint=async(uid)=>{
+  const amt=parseInt(document.getElementById("pt_"+uid).value);
+  if(!amt||amt<=0){toast("포인트를 입력해주세요!");return;}
+  try{
+    await window.FB.updateDoc(window.FB.doc(window.FB.db,"users",uid),{point:window.FB.increment(-amt)});
+    toast("✅ "+amt.toLocaleString()+"P 차감 완료!");
+    searchAdminUsers();
+  }catch(e){toast("실패: "+e.message);}
+};
+
+// 챌린지 통계
+async function loadChalStats(){
+  const w=document.getElementById("chalStats");
+  try{
+    const snap=await window.FB.getDocs(window.FB.collection(window.FB.db,"users"));
+    const users=snap.docs.map(d=>d.data());
+    const chalCount={};
+    users.forEach(u=>{
+      (u.activeChallenges||[]).forEach(ac=>{
+        chalCount[ac.challengeTitle]=(chalCount[ac.challengeTitle]||0)+1;
+      });
+    });
+    if(!Object.keys(chalCount).length){w.innerHTML='<div style="color:#aaa;font-size:13px">데이터 없음</div>';return;}
+    w.innerHTML=Object.entries(chalCount).sort((a,b)=>b[1]-a[1]).map(([title,cnt])=>`
+      <div class="admin-row">
+        <span style="font-size:13px;color:var(--txt)">${title}</span>
+        <span style="font-size:13px;font-weight:700;color:var(--g2)">${cnt}명</span>
+      </div>`).join("");
+  }catch(e){}
+}
+
+// 전체 통계
+async function loadAdminStats(){
+  try{
+    const usersSnap=await window.FB.getDocs(window.FB.collection(window.FB.db,"users"));
+    const ordersSnap=await window.FB.getDocs(window.FB.collection(window.FB.db,"orders"));
+    const users=usersSnap.docs.map(d=>d.data());
+    const orders=ordersSnap.docs.map(d=>d.data());
+    const totalRevenue=orders.filter(o=>o.status==="done").reduce((s,o)=>s+(o.price||0),0);
+    const pendingRevenue=orders.filter(o=>o.status==="pending").reduce((s,o)=>s+(o.price||0),0);
+    const totalMissions=users.reduce((s,u)=>s+(u.missionCount||0),0);
+    const w=document.getElementById("adminStatCards");
+    w.innerHTML=[
+      {label:"전체 회원",val:users.length+"명",color:"#3498DB"},
+      {label:"전체 주문",val:orders.length+"건",color:"#e67e22"},
+      {label:"완료 주문",val:orders.filter(o=>o.status==="done").length+"건",color:"#2ECC71"},
+      {label:"매출 (완료)",val:(totalRevenue/1000).toFixed(0)+"천P",color:"#9b59b6"},
+      {label:"대기 매출",val:(pendingRevenue/1000).toFixed(0)+"천P",color:"#e74c3c"},
+      {label:"총 미션 수",val:totalMissions+"회",color:"#1abc9c"},
+    ].map(s=>`
+      <div style="background:#fff;border-radius:12px;padding:14px;border:1px solid #eee;text-align:center">
+        <div style="font-size:20px;font-weight:900;color:${s.color}">${s.val}</div>
+        <div style="font-size:11px;color:#aaa;margin-top:2px">${s.label}</div>
+      </div>`).join("");
+  }catch(e){}
+}
+
+// URL 해시로 관리자 접근
+window.addEventListener("hashchange",()=>{
+  if(location.hash==="#admin")openAdmin();
+});
+if(location.hash==="#admin")setTimeout(openAdmin,1000);
+
 window.goPage=goPage;window.setCTab=setCTab;window.openMissionSel=openMissionSel;
 window.toggleMSel=toggleMSel;window.confirmMissions=confirmMissions;
 window.openAI=openAI;window.doAnalyze=doAnalyze;window.doComplete=doComplete;window.renderTodayQuests=renderTodayQuests;window.renderHomeChalls=renderHomeChalls;window.joinChal=joinChal;
 window.openChal=openChal;window.selDep=selDep;window.joinChal=joinChal;
 window.setDep=setDep;window.setRPub=setRPub;window.openCreateRoom=openCreateRoom;
-window.openBuy=openBuy;window.doBuy=doBuy;window.closeOv=closeOv;window.toast=toast;
+window.openBuy=openBuy;window.doBuy=doBuy;window.closeOv=closeOv;window.toast=toast;window.openAdmin=openAdmin;window.closeAdmin=closeAdmin;window.setAdminTab=setAdminTab;window.filterAdminOrders=filterAdminOrders;window.completeOrder=completeOrder;window.searchAdminUsers=searchAdminUsers;window.givePoint=givePoint;window.takePoint=takePoint;
 </script>
 </body>
 </html>

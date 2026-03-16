@@ -634,6 +634,8 @@ onAuthStateChanged(auth,async user=>{
     renderBooks();
     renderOfficialChallenges();
     drawMap();
+    // 관리자 해시 체크
+    if(location.hash==="#admin") setTimeout(openAdmin, 300);
   }else{
     window.ME=null;
     document.getElementById("loginScreen").style.display="flex";
@@ -670,6 +672,15 @@ async function loadUser(uid){
     toast("🎉 EcoQuest에 오신 걸 환영해요! 미션을 완료해서 포인트를 모아봐요 🌱");
   }else{
     window.UDATA=snap.data();
+    // 중복 챌린지 제거 (같은 challengeId)
+    if(window.UDATA.activeChallenges){
+      const seen=new Set();
+      window.UDATA.activeChallenges=window.UDATA.activeChallenges.filter(ac=>{
+        if(seen.has(ac.challengeId)) return false;
+        seen.add(ac.challengeId);
+        return true;
+      });
+    }
   }
   updateUI();
   window.renderTodayQuests&&window.renderTodayQuests(uid);
@@ -1814,9 +1825,12 @@ async function loadAdminStats(){
 
 // URL 해시로 관리자 접근
 window.addEventListener("hashchange",()=>{
-  if(location.hash==="#admin")openAdmin();
+  if(location.hash==="#admin"){
+    if(window.ME) openAdmin();
+    else toast("먼저 로그인해주세요!");
+  }
 });
-if(location.hash==="#admin")setTimeout(openAdmin,1000);
+// 로그인 후 hash 체크는 onAuthStateChanged에서 처리
 
 window.goPage=goPage;window.setCTab=setCTab;window.openMissionSel=openMissionSel;
 window.toggleMSel=toggleMSel;window.confirmMissions=confirmMissions;

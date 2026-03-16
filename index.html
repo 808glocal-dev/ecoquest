@@ -361,11 +361,10 @@
           `<img src="${user.photoURL}" class="user-avatar" style="width:34px;height:34px;border-radius:50%;"/>`;
       }
 
-      // Firestore에서 유저 데이터 불러오기
-      await loadUserData(user.uid);
-      renderMissions(user.uid);
+      // Firestore에서 유저 데이터 불러오기 (loadUserData 안에서 renderMissions 호출됨)
       renderMyChallenges();
       renderAllChallenges();
+      await loadUserData(user.uid);
 
     } else {
       // 로그아웃 됨
@@ -379,7 +378,6 @@
     const ref = doc(db, "users", uid);
     const snap = await getDoc(ref);
     if (!snap.exists()) {
-      // 첫 로그인 → 새 유저 데이터 생성
       await setDoc(ref, {
         point: 0,
         missionCount: 0,
@@ -387,12 +385,15 @@
         doneMissions: [],
         createdAt: serverTimestamp()
       });
+      window._doneMissions = [];
       updateStats(0, 0, 0);
     } else {
       const d = snap.data();
-      updateStats(d.missionCount||0, d.streak||0, d.point||0);
       window._doneMissions = d.doneMissions || [];
+      updateStats(d.missionCount||0, d.streak||0, d.point||0);
     }
+    // 데이터 로드 완료 후 미션 다시 렌더링
+    renderMissions(uid);
   }
 
   function updateStats(mission, streak, point) {

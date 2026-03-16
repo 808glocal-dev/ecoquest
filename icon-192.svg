@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0f3d20"/>
+      <stop offset="100%" stop-color="#2ECC71"/>
+    </linearGradient>
+    <clipPath id="r">
+      <rect width="192" height="192" rx="38" ry="38"/>
+    </clipPath>
+  </defs>
+  <rect width="192" height="192" rx="38" fill="url(#g)"/>
+  <text clip-path="url(#r)" x="96" y="125" font-size="105" text-anchor="middle" font-family="Noto Color Emoji,Apple Color Emoji,Segoe UI Emoji">🌍</text>
+</svg>

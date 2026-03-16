@@ -4,6 +4,20 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
 <title>EcoQuest 🌍</title>
+
+<!-- PWA -->
+<link rel="manifest" href="/manifest.json"/>
+<meta name="theme-color" content="#2ECC71"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="EcoQuest"/>
+<link rel="apple-touch-icon" href="/icon-192.png"/>
+
+<!-- OG 태그 (카카오톡 공유 시 미리보기) -->
+<meta property="og:title" content="EcoQuest 🌍"/>
+<meta property="og:description" content="작은 행동이 지구를 바꿔요! 환경 미션 챌린지 앱"/>
+<meta property="og:image" content="/icon-512.png"/>
+<meta property="og:url" content="https://merry-dolphin-3e9385.netlify.app"/>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -628,7 +642,11 @@ onAuthStateChanged(auth,async user=>{
     document.getElementById("sName").textContent="🌱 "+n;
     document.getElementById("myName").textContent="🌱 "+n;
     if(user.photoURL)document.getElementById("uAvatar").innerHTML=`<img src="${user.photoURL}"/>`;
-    if(user.email===window.ADMIN)document.getElementById("adminArea").style.display="block";
+    if(user.email===window.ADMIN){
+      document.getElementById("adminArea").style.display="block";
+      const info = document.getElementById("adminAccessInfo");
+      if(info) info.textContent = "🔒 "+window.ADMIN+" 전용";
+    }
     await loadGlobalStats();
     await loadUser(user.uid);
     renderBooks();
@@ -1659,18 +1677,24 @@ document.querySelectorAll(".overlay").forEach(ov=>{
 window.selFreq=selFreq;window.selWeeks=selWeeks;window.selDep=selDep;window.setVerifPub=setVerifPub;
 // ══ 관리자 ══
 function openAdmin(){
-  if(!window.ME||window.ME.email!==window.ADMIN){
-    toast("관리자만 접근할 수 있어요!");return;
+  if(!window.ME){toast("먼저 로그인해주세요!");return;}
+  if(window.ME.email!==window.ADMIN){
+    toast("관리자 계정("+window.ADMIN+")으로만 접근 가능해요!");
+    return;
   }
   document.getElementById("adminPage").style.display="block";
-  document.getElementById("adminEmail").textContent=window.ME.email;
+  document.getElementById("adminEmail").textContent="👤 "+window.ME.email+" (관리자)";
   document.body.style.overflow="hidden";
+  // 첫 탭 활성화
+  setAdminTab("orders", document.querySelector(".admin-tab"));
   loadAdminOrders();
   loadAdminStats();
 }
 function closeAdmin(){
   document.getElementById("adminPage").style.display="none";
   document.body.style.overflow="";
+  // 해시 제거해서 다음에 다시 열 수 있게
+  history.pushState("", document.title, window.location.pathname);
 }
 function setAdminTab(name,btn){
   ["orders","users","challenges","stats"].forEach(t=>{
@@ -1838,6 +1862,15 @@ window.openAI=openAI;window.doAnalyze=doAnalyze;window.doComplete=doComplete;win
 window.openChal=openChal;window.selDep=selDep;window.joinChal=joinChal;
 window.setDep=setDep;window.setRPub=setRPub;window.openCreateRoom=openCreateRoom;
 window.openBuy=openBuy;window.doBuy=doBuy;window.closeOv=closeOv;window.toast=toast;window.openAdmin=openAdmin;window.closeAdmin=closeAdmin;window.setAdminTab=setAdminTab;window.filterAdminOrders=filterAdminOrders;window.completeOrder=completeOrder;window.searchAdminUsers=searchAdminUsers;window.givePoint=givePoint;window.takePoint=takePoint;
+</script>
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('/sw.js')
+      .then(()=>console.log('EcoQuest SW 등록 완료!'))
+      .catch(e=>console.log('SW 등록 실패:',e));
+  });
+}
 </script>
 </body>
 </html>

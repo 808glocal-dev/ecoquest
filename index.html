@@ -27,9 +27,10 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);max-width:480px;
 #app{display:none;min-height:100vh;padding-bottom:70px}
 
 /* 헤더 */
-.hdr{background:linear-gradient(135deg,#1a6b3a,#2ECC71);padding:16px;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(46,204,113,.3)}
+.hdr{background:linear-gradient(135deg,#1a6b3a,#2ECC71);padding:16px;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(46,204,113,.3);transition:box-shadow .3s}
 .hdr-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-.logo{font-size:20px;font-weight:900;color:#fff}
+.logo{font-size:20px;font-weight:900;color:#fff;transition:opacity .2s}
+.logo:hover{opacity:.85}
 .hdr-right{display:flex;align-items:center;gap:8px}
 .avatar{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.25);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:14px}
 .avatar img{width:100%;height:100%;object-fit:cover}
@@ -40,11 +41,15 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);max-width:480px;
 .tab-bar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:#fff;border-top:1px solid var(--bdr);display:flex;z-index:100;padding-bottom:env(safe-area-inset-bottom)}
 .tb{flex:1;padding:8px 4px 6px;border:none;background:none;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--sub);font-size:10px;font-weight:600}
 .tb.on{color:var(--g1)}
+.tb.on .ic{transform:scale(1.1)}
+.tb .ic{transition:transform .2s}
+.tb{transition:color .2s}
 .tb .ic{font-size:22px;line-height:1}
 
 /* 탭 콘텐츠 */
-.page{display:none;padding-bottom:20px}
+.page{display:none;padding-bottom:20px;animation:fadeIn .2s ease}
 .page.on{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 
 /* 상태 카드 */
 .stat-card{background:#fff;margin:12px;border-radius:16px;padding:14px 16px;box-shadow:0 2px 10px rgba(0,0,0,.06);border:1px solid var(--bdr)}
@@ -73,12 +78,14 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);max-width:480px;
 /* 섹션 헤더 */
 .sec{display:flex;align-items:center;justify-content:space-between;padding:14px 12px 8px}
 .sec-t{font-size:15px;font-weight:900;color:var(--txt)}
-.sec-m{font-size:12px;color:var(--sub);cursor:pointer}
+.sec-m{font-size:12px;color:var(--sub);cursor:pointer;transition:color .2s}
+.sec-m:hover{color:var(--g1)}
 
 /* 미션 스크롤 */
 .mscroll{display:flex;gap:10px;padding:0 12px 8px;overflow-x:auto;-webkit-overflow-scrolling:touch}
 .mscroll::-webkit-scrollbar{display:none}
-.mc{flex-shrink:0;width:150px;background:#fff;border-radius:14px;padding:12px;border:1.5px solid var(--bdr);cursor:pointer;position:relative;transition:transform .1s}
+.mc{flex-shrink:0;width:150px;background:#fff;border-radius:14px;padding:12px;border:1.5px solid var(--bdr);cursor:pointer;position:relative;transition:transform .15s,box-shadow .15s}
+.mc:hover{box-shadow:0 4px 16px rgba(46,204,113,.2);border-color:var(--g1)}
 .mc:active{transform:scale(.97)}
 .mc.done{border-color:var(--g1);background:#f0fbf4}
 .mc.done::after{content:"✓";position:absolute;top:8px;right:10px;color:var(--g1);font-weight:900}
@@ -95,7 +102,9 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);max-width:480px;
 
 /* 공식 챌린지 그리드 */
 .chal-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 12px}
-.cg-card{background:#fff;border-radius:14px;overflow:hidden;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.06);border:1px solid var(--bdr);position:relative}
+.cg-card{background:#fff;border-radius:14px;overflow:hidden;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.06);border:1px solid var(--bdr);position:relative;transition:transform .15s,box-shadow .15s}
+.cg-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.1)}
+.cg-card:active{transform:scale(.98)}
 .cg-img{height:110px;background:linear-gradient(135deg,#1a6b3a,#2ECC71);display:flex;align-items:center;justify-content:center;font-size:40px;position:relative}
 .official-tag{position:absolute;top:6px;left:6px;background:var(--g1);color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:6px}
 .cg-cnt{position:absolute;bottom:6px;left:6px;background:rgba(0,0,0,.5);color:#fff;font-size:10px;padding:2px 6px;border-radius:8px}
@@ -119,7 +128,8 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);max-width:480px;
 .room-code{font-size:13px;font-weight:900;color:var(--txt);letter-spacing:2px}
 
 /* 버튼들 */
-.btn{display:block;width:100%;border:none;border-radius:14px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;text-align:center}
+.btn{display:block;width:100%;border:none;border-radius:14px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;text-align:center;transition:transform .1s,opacity .1s}
+.btn:active{transform:scale(.97);opacity:.9}
 .btn-g{background:linear-gradient(135deg,var(--g1),var(--g2));color:#fff}
 .btn-b{background:linear-gradient(135deg,var(--blue),#2980b9);color:#fff}
 .btn-gray{background:#f0f0f0;color:var(--sub)}
@@ -128,14 +138,17 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);max-width:480px;
 
 /* 인풋 */
 .inp{width:100%;border:1.5px solid var(--bdr);border-radius:12px;padding:12px 14px;font-size:14px;font-family:inherit;outline:none;background:#fff;color:var(--txt)}
-.inp:focus{border-color:var(--g1)}
+.inp:focus{border-color:var(--g1);box-shadow:0 0 0 3px rgba(46,204,113,.15);outline:none}
 .sel{width:100%;border:1.5px solid var(--bdr);border-radius:12px;padding:12px 14px;font-size:14px;font-family:inherit;outline:none;background:#fff;color:var(--txt);appearance:none}
 
 /* 모달 */
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;display:none;align-items:flex-end;justify-content:center}
 .overlay.on{display:flex}
 .modal{background:#fff;width:100%;max-width:480px;border-radius:24px 24px 0 0;padding:20px 20px 40px;max-height:92vh;overflow-y:auto}
-.handle{width:40px;height:4px;background:#ddd;border-radius:4px;margin:0 auto 20px}
+.handle{width:40px;height:4px;background:#ddd;border-radius:4px;margin:0 auto 20px;cursor:pointer;transition:background .2s}
+.handle:hover{background:#bbb}
+.modal-close{position:absolute;top:16px;right:16px;background:#f0f0f0;border:none;border-radius:50%;width:32px;height:32px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--sub)}
+.modal{position:relative}
 .modal-title{font-size:17px;font-weight:900;color:var(--txt);margin-bottom:6px}
 .modal-desc{font-size:13px;color:var(--sub);margin-bottom:16px;line-height:1.6}
 
@@ -235,7 +248,7 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
   <!-- 헤더 -->
   <div class="hdr">
     <div class="hdr-row">
-      <div class="logo">🌍 EcoQuest</div>
+      <div class="logo" onclick="goPage('home')" style="cursor:pointer">🌍 EcoQuest</div>
       <div class="hdr-right">
         <div class="avatar" id="uAvatar">👤</div>
         <span class="uname" id="uName">-</span>
@@ -391,7 +404,8 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
 <!-- 미션 선택 모달 -->
 <div class="overlay" id="ovMission">
   <div class="modal">
-    <div class="handle"></div>
+    <div class="handle" onclick="closeOv('ovMission')"></div>
+    <button class="modal-close" onclick="closeOv('ovMission')">✕</button>
     <div class="modal-title">오늘 미션 선택</div>
     <div class="modal-desc">최대 3개까지 선택할 수 있어요!</div>
     <div id="missionSelectList"></div>
@@ -402,7 +416,8 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
 <!-- AI 인증 모달 -->
 <div class="overlay" id="ovAI">
   <div class="modal">
-    <div class="handle"></div>
+    <div class="handle" onclick="closeOv('ovAI')"></div>
+    <button class="modal-close" onclick="closeOv('ovAI')">✕</button>
     <div id="aiEmoji" style="font-size:30px;margin-bottom:6px"></div>
     <div class="modal-title" id="aiTitle">미션 인증</div>
     <div class="modal-desc" id="aiDesc">사진을 찍어 AI가 인증해요!</div>
@@ -443,7 +458,8 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
 <!-- 방 만들기 모달 -->
 <div class="overlay" id="ovRoom">
   <div class="modal">
-    <div class="handle"></div>
+    <div class="handle" onclick="closeOv('ovRoom')"></div>
+    <button class="modal-close" onclick="closeOv('ovRoom')">✕</button>
     <div class="modal-title">👥 방 만들기</div>
     <div class="form-group">
       <label>방 이름</label>
@@ -483,7 +499,11 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
 
 <!-- 책 구매 모달 -->
 <div class="overlay" id="ovBuy">
-  <div class="modal"><div class="handle"></div><div id="buyDetail"></div></div>
+  <div class="modal">
+    <div class="handle" onclick="closeOv('ovBuy')"></div>
+    <button class="modal-close" onclick="closeOv('ovBuy')">✕</button>
+    <div id="buyDetail"></div>
+  </div>
 </div>
 
 <div id="toast"></div>
@@ -823,6 +843,7 @@ function goPage(name){
   if(pg)pg.classList.add("on");
   const tb=document.querySelector(`.tb[data-page="${name}"]`);
   if(tb)tb.classList.add("on");
+  window.scrollTo({top:0,behavior:"smooth"});
   if(name==="map")setTimeout(drawMap,100);
   if(name==="chal"){const s=document.getElementById("sec-room");if(s&&s.style.display!=="none"){loadMyRooms();loadPubRooms();}}
 }

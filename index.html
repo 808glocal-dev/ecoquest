@@ -295,6 +295,12 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
       <div class="sec-m" id="goChal">전체보기 ›</div>
     </div>
     <div id="homeChallList" style="padding:0 12px"></div>
+
+    <div class="sec">
+      <div class="sec-t">📸 인증 피드</div>
+      <div class="sec-m" onclick="loadFeed()">새로고침</div>
+    </div>
+    <div id="feedList" style="padding:0 12px 12px"></div>
   </div>
 
   <!-- 챌린지 -->
@@ -383,6 +389,8 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
       <button class="btn btn-g" style="flex:1;padding:12px" onclick="goPage('shop')">📚 책 구매</button>
       <button class="btn btn-gray" style="flex:1;padding:12px" onclick="toast('출금 기능 준비 중이에요! 💰')">💸 포인트 출금</button>
     </div>
+    <div class="sec"><div class="sec-t">📸 내 인증 기록</div></div>
+    <div id="myVerifs" style="padding:0 12px"></div>
     <div class="sec"><div class="sec-t">📦 내 주문</div></div>
     <div id="myOrders"></div>
     <div id="adminArea" style="display:none;padding:0 12px">
@@ -437,6 +445,14 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
       <div class="score-row" id="scoreRow" style="display:none">
         <div class="score-bar"><div class="score-fill" id="scoreFill"></div></div>
         <div class="score-lbl" id="scoreLbl"></div>
+      </div>
+    </div>
+    <!-- 공개/비공개 토글 (분석 후 표시) -->
+    <div id="pubToggle" style="display:none;margin-bottom:10px">
+      <div style="font-size:12px;color:var(--sub);margin-bottom:6px">📸 인증샷 공개 설정</div>
+      <div style="display:flex;gap:6px">
+        <button id="pubBtn" class="dep-btn on" onclick="setVerifPub(true)" style="flex:1">🌍 공개</button>
+        <button id="priBtn" class="dep-btn" onclick="setVerifPub(false)" style="flex:1">🔒 나만 보기</button>
       </div>
     </div>
     <div class="ai-btns">
@@ -578,17 +594,19 @@ async function loadUser(uid){
   const ref=window.FB.doc(window.FB.db,"users",uid);
   const snap=await window.FB.getDoc(ref);
   if(!snap.exists()){
-    await window.FB.setDoc(ref,{point:0,missionCount:0,streak:0,doneMissions:[],co2:0,todayMissions:[],createdAt:window.FB.serverTimestamp()});
-    window.UDATA={point:0,missionCount:0,streak:0,doneMissions:[],co2:0,todayMissions:[]};
+    await window.FB.setDoc(ref,{point:0,missionCount:0,streak:0,doneMissions:[],co2:0,todayMissions:[],joinedChallenges:[],createdAt:window.FB.serverTimestamp()});
+    window.UDATA={point:0,missionCount:0,streak:0,doneMissions:[],co2:0,todayMissions:[],joinedChallenges:[]};
     try{await window.FB.setDoc(window.FB.doc(window.FB.db,"stats","global"),{totalUsers:window.FB.increment(1),todayUsers:window.FB.increment(1),totalCo2:0},{merge:true});loadGlobalStats();}catch(e){}
     toast("🎉 EcoQuest에 오신 걸 환영해요! 미션을 완료해서 포인트를 모아봐요 🌱");
   }else{
     window.UDATA=snap.data();
   }
   updateUI();
-  renderMissions(uid);
-  renderHomeChalls();
+  window.renderTodayQuests&&window.renderTodayQuests(uid);
+  window.renderHomeChalls&&window.renderHomeChalls();
   loadMyOrders(uid);
+  loadMyVerifs(uid);
+  loadFeed();
 }
 window.loadUser=loadUser;
 
@@ -641,6 +659,86 @@ window.saveTodayMissions=async(uid,ids)=>{
 };
 
 // 주문 저장
+// 인증 기록 저장 (이미지 압축 후 Firestore)
+window.saveVerification=async(uid,m,b64,isPublic)=>{
+  try{
+    // 이미지 압축 (canvas로 200px 썸네일)
+    const thumb = await compressImage(b64, 200);
+    await window.FB.addDoc(window.FB.collection(window.FB.db,"verifications"),{
+      uid,
+      userName: window.ME?.displayName||"익명",
+      userPhoto: window.ME?.photoURL||"",
+      missionId: m.id,
+      missionName: m.name,
+      missionEmoji: m.emoji,
+      isPublic,
+      thumb,
+      createdAt: window.FB.serverTimestamp()
+    });
+    return true;
+  }catch(e){console.log("인증 저장 오류",e);return false;}
+};
+
+// 피드 로드 (공개 인증샷)
+window.loadFeed=async()=>{
+  const w=document.getElementById("feedList");if(!w)return;
+  w.innerHTML='<div style="text-align:center;padding:16px;color:var(--sub);font-size:12px">로딩 중...</div>';
+  try{
+    const snap=await window.FB.getDocs(window.FB.collection(window.FB.db,"verifications"));
+    const items=snap.docs
+      .map(d=>({id:d.id,...d.data()}))
+      .filter(d=>d.isPublic)
+      .sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0))
+      .slice(0,20);
+    if(!items.length){
+      w.innerHTML='<div style="text-align:center;padding:20px;color:var(--sub);font-size:13px">아직 공개 인증샷이 없어요!<br/>첫 번째 인증샷을 올려봐요 🌱</div>';
+      return;
+    }
+    w.innerHTML=items.map(v=>`
+      <div style="background:#fff;border-radius:14px;padding:12px;margin-bottom:10px;border:1px solid var(--bdr);box-shadow:0 2px 6px rgba(0,0,0,.04)">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--g1),var(--g2));display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">
+            ${v.userPhoto?`<img src="${v.userPhoto}" style="width:32px;height:32px;border-radius:50%;object-fit:cover"/>`:'👤'}
+          </div>
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:700;color:var(--txt)">${v.userName}</div>
+            <div style="font-size:11px;color:var(--sub)">${v.missionEmoji} ${v.missionName}</div>
+          </div>
+          <div style="font-size:11px;color:var(--sub)">${timeAgo(v.createdAt?.seconds)}</div>
+        </div>
+        ${v.thumb?`<img src="${v.thumb}" style="width:100%;border-radius:10px;max-height:200px;object-fit:cover" alt="인증샷"/>`:''}
+        <div style="margin-top:6px;font-size:12px;color:var(--g2);font-weight:700">✅ AI 인증 완료!</div>
+      </div>`).join("");
+  }catch(e){w.innerHTML='<div style="text-align:center;padding:16px;color:var(--sub);font-size:12px">불러오기 실패</div>';}
+};
+
+// 내 인증 기록 로드
+window.loadMyVerifs=async(uid)=>{
+  const w=document.getElementById("myVerifs");if(!w)return;
+  try{
+    const snap=await window.FB.getDocs(window.FB.collection(window.FB.db,"verifications"));
+    const items=snap.docs
+      .map(d=>({id:d.id,...d.data()}))
+      .filter(d=>d.uid===uid)
+      .sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0))
+      .slice(0,10);
+    if(!items.length){
+      w.innerHTML='<div style="text-align:center;padding:16px;color:var(--sub);font-size:12px">아직 인증 기록이 없어요!</div>';
+      return;
+    }
+    w.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
+      ${items.map(v=>`
+        <div style="position:relative;border-radius:10px;overflow:hidden;aspect-ratio:1;background:#f0f0f0">
+          ${v.thumb?`<img src="${v.thumb}" style="width:100%;height:100%;object-fit:cover"/>`:`<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:28px">${v.missionEmoji}</div>`}
+          <div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.6));padding:4px 6px">
+            <div style="font-size:10px;color:#fff;font-weight:700">${v.missionEmoji} ${v.missionName.slice(0,6)}</div>
+          </div>
+          <div style="position:absolute;top:4px;right:4px;font-size:10px">${v.isPublic?'🌍':'🔒'}</div>
+        </div>`).join("")}
+    </div>`;
+  }catch(e){}
+};
+
 window.saveOrder=async(uid,book)=>{
   const d=window.UDATA||{};
   if((d.point||0)<book.price){toast("포인트가 부족해요!");return false;}
@@ -875,31 +973,52 @@ function setCTab(t){
 // ══ 미션 렌더링 ══
 function renderMissions(uid){
   const wrap=document.getElementById("missionScroll");
-  const todayIds=window.UDATA?.todayMissions||[];
-  const today=todayIds.map(id=>MISSIONS.find(m=>m.id===id)).filter(Boolean);
   wrap.innerHTML="";
+
+  // 참여 중인 챌린지의 미션 자동 추출
+  const joinedChalIds=window.UDATA?.joinedChallenges||[];
+  const chalMissionIds=joinedChalIds
+    .map(jc=>CHALLENGES.find(c=>c.id===jc.chalId))
+    .filter(Boolean)
+    .map(c=>c.missionId);
+
+  // 수동 선택 미션과 합치기 (중복 제거)
+  const manualIds=window.UDATA?.todayMissions||[];
+  const allIds=[...new Set([...chalMissionIds,...manualIds])];
+  const today=allIds.map(id=>MISSIONS.find(m=>m.id===id)).filter(Boolean);
+
   if(!today.length){
     const empty=document.createElement("div");
     empty.style.cssText="display:flex;align-items:center;gap:12px;padding:4px 0;width:100%";
-    empty.innerHTML=`<button class="mc-add" onclick="openMissionSel('${uid}')"><span>➕</span><p>미션 선택</p></button><div style="font-size:13px;color:var(--sub);line-height:1.7">오늘 실천할<br/>미션을 골라봐요!</div>`;
+    empty.innerHTML=`<button class="mc-add" onclick="openMissionSel('${uid}')"><span>➕</span><p>미션 선택</p></button><div style="font-size:13px;color:var(--sub);line-height:1.7">챌린지에 참여하거나<br/>미션을 선택해봐요!</div>`;
     wrap.appendChild(empty);
     return;
   }
+
   today.forEach(m=>{
     const done=(window.UDATA?.doneMissions||[]).includes(m.id);
+    const fromChal=chalMissionIds.includes(m.id);
     const el=document.createElement("div");
     el.className="mc"+(done?" done":"");
-    el.innerHTML=`<div class="mc-emoji">${m.emoji}</div><div class="mc-name">${m.name}</div><div class="mc-badges"><span class="badge badge-p">+${m.point}P</span><span class="badge badge-c">-${m.co2}kg</span><span class="badge badge-ai">🤖AI</span></div>`;
+    el.innerHTML=`
+      <div class="mc-emoji">${m.emoji}</div>
+      <div class="mc-name">${m.name}</div>
+      ${fromChal?`<div style="font-size:9px;color:var(--g2);font-weight:700;margin-bottom:4px">챌린지 미션</div>`:""}
+      <div class="mc-badges">
+        <span class="badge badge-p">+${m.point}P</span>
+        <span class="badge badge-c">-${m.co2}kg</span>
+        <span class="badge badge-ai">🤖AI</span>
+      </div>`;
     el.onclick=()=>openAI(m,uid);
     wrap.appendChild(el);
   });
-  if(today.length<3){
-    const add=document.createElement("button");
-    add.className="mc-add";
-    add.innerHTML=`<span>➕</span><p>추가</p>`;
-    add.onclick=()=>openMissionSel(uid);
-    wrap.appendChild(add);
-  }
+
+  // 추가 버튼 (챌린지 미션 외 추가 가능)
+  const add=document.createElement("button");
+  add.className="mc-add";
+  add.innerHTML=`<span>➕</span><p>추가</p>`;
+  add.onclick=()=>openMissionSel(uid);
+  wrap.appendChild(add);
 }
 
 // ══ 미션 선택 ══
@@ -937,8 +1056,15 @@ async function confirmMissions(){
 const API_KEY="";
 let _curM=null,_curUid=null,_b64=null,_passed=false;
 
-function openAI(m,uid){
-  if((window.UDATA?.doneMissions||[]).includes(m.id)){toast("이미 완료한 미션이에요 ✅");return;}
+let _curChalId=null;
+function openAI(m,uid,chalId){
+  _curChalId=chalId||null;
+  if((window.UDATA?.doneMissions||[]).includes(m.id)&&!chalId){toast("이미 완료한 미션이에요 ✅");return;}
+  // 챌린지 기반이면 오늘 이미 했는지 확인
+  if(chalId){
+    const today=new Date().toISOString().split("T")[0];
+    if((window.UDATA?.verifiedDates||{})[chalId]===today){toast("오늘 이미 인증했어요! 내일 또 도전해요 ✅");return;}
+  }
   _curM=m;_curUid=uid;_passed=false;_b64=null;
   document.getElementById("aiEmoji").textContent=m.emoji;
   document.getElementById("aiTitle").textContent=m.name;
@@ -951,6 +1077,8 @@ function openAI(m,uid){
   document.getElementById("btnAnalyze").disabled=true;
   document.getElementById("btnAnalyze").style.display="";
   document.getElementById("btnDone").style.display="none";
+  document.getElementById("pubToggle").style.display="none";
+  _verifPub=true;
   document.getElementById("fileIn").value="";
   openOv("ovAI");
 }
@@ -994,6 +1122,7 @@ async function doAnalyze(){
     document.getElementById("aiResTxt").textContent=d.txt;
     _passed=true;btn.style.display="none";
     document.getElementById("btnDone").style.display="";
+    document.getElementById("pubToggle").style.display="block";
     document.getElementById("scoreRow").style.display="flex";
     const fill=document.getElementById("scoreFill");
     fill.style.width=d.s+"%";fill.style.background="var(--g1)";
@@ -1006,7 +1135,7 @@ async function doAnalyze(){
     const txt=data.content?.[0]?.text||"";
     let r;try{r=JSON.parse(txt.match(/\{[\s\S]*\}/)?.[0]);}catch{r={passed:false,score:0,title:"오류",reason:"다시 시도해주세요",tip:""};}
     document.getElementById("scanOv").classList.remove("on");
-    if(r.passed){res.className="ai-res ok";document.getElementById("aiResT").textContent="✅ "+r.title;_passed=true;btn.style.display="none";document.getElementById("btnDone").style.display="";}
+    if(r.passed){res.className="ai-res ok";document.getElementById("aiResT").textContent="✅ "+r.title;_passed=true;btn.style.display="none";document.getElementById("btnDone").style.display="";document.getElementById("pubToggle").style.display="block";}
     else{res.className="ai-res fail";document.getElementById("aiResT").textContent="❌ "+r.title;_passed=false;btn.disabled=false;btn.textContent="📸 다시 찍기";}
     document.getElementById("aiResTxt").textContent=(r.reason||"")+" "+(r.tip||"");
     const sc=Math.max(0,Math.min(100,r.score||0));
@@ -1015,12 +1144,41 @@ async function doAnalyze(){
     document.getElementById("scoreLbl").textContent=sc+"점";
   }catch(e){document.getElementById("scanOv").classList.remove("on");res.className="ai-res fail";document.getElementById("aiResT").textContent="⚠️ 분석 실패";document.getElementById("aiResTxt").textContent="다시 시도해주세요.";btn.disabled=false;btn.textContent="🤖 다시 분석";}
 }
+let _verifPub=true;
+function setVerifPub(val){
+  _verifPub=val;
+  document.getElementById("pubBtn").className="dep-btn"+(val?" on":"");
+  document.getElementById("priBtn").className="dep-btn"+(val?"":" on");
+}
+
 async function doComplete(){
   if(!_passed||!_curM||!_curUid)return;
   const btn=document.getElementById("btnDone");
   btn.disabled=true;btn.textContent="저장 중...";
   const ok=await window.saveMission(_curUid,_curM);
-  if(ok){closeOv("ovAI");renderMissions(_curUid);toast("🎉 +"+_curM.point+"P 적립! CO₂ -"+_curM.co2+"kg");}
+  if(ok){
+    // 챌린지 진행률 업데이트
+    if(_curChalId){
+      const today=new Date().toISOString().split("T")[0];
+      const vd=window.UDATA.verifiedDates||{};
+      vd[_curChalId]=today;
+      const cd=window.UDATA.completedDates||{};
+      cd[_curChalId]=(cd[_curChalId]||0)+1;
+      window.UDATA.verifiedDates=vd;
+      window.UDATA.completedDates=cd;
+      await window.FB.updateDoc(window.FB.doc(window.FB.db,"users",_curUid),{
+        verifiedDates:vd,completedDates:cd
+      });
+    }
+    // 인증 기록 저장
+    if(_b64) await window.saveVerification(_curUid,_curM,_b64,_verifPub);
+    closeOv("ovAI");
+    window.renderTodayQuests&&window.renderTodayQuests(_curUid);
+    window.renderHomeChalls&&window.renderHomeChalls();
+    loadFeed();
+    if(window.ME) loadMyVerifs(_curUid);
+    toast("🎉 +"+_curM.point+"P 적립! CO₂ -"+_curM.co2+"kg"+(+_verifPub?" 📸 공개됨":""));
+  }
   btn.disabled=false;btn.textContent="✅ 완료!";
 }
 
@@ -1045,17 +1203,29 @@ function renderOfficialChallenges(){
 // 홈 챌린지 목록
 function renderHomeChalls(){
   const w=document.getElementById("homeChallList");
-  w.innerHTML=CHALLENGES.slice(0,2).map(c=>`
-    <div style="background:#fff;border-radius:12px;padding:12px 14px;margin-bottom:8px;border:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="openChal(${c.id})">
+  const joined=window.UDATA?.joinedChallenges||[];
+  if(!joined.length){
+    w.innerHTML=`<div style="text-align:center;padding:20px;color:var(--sub);font-size:13px">
+      참여 중인 챌린지가 없어요!<br/>
+      <button onclick="goPage('chal')" style="margin-top:10px;background:var(--g1);color:#fff;border:none;border-radius:10px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">챌린지 참여하기 🌱</button>
+    </div>`;
+    return;
+  }
+  w.innerHTML=joined.map(j=>{
+    const chal=CHALLENGES.find(c=>c.id===j.chalId);
+    if(!chal)return"";
+    const freqLabel=j.freq==="daily"?"매일":j.freq==="w5"?"주 5일":"주 3일";
+    return`<div style="background:#fff;border-radius:12px;padding:12px 14px;margin-bottom:8px;border:1.5px solid var(--g1);display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="openChal(${chal.id})">
       <div style="display:flex;align-items:center;gap:10px">
-        <span style="font-size:24px">${c.emoji}</span>
+        <span style="font-size:24px">${chal.emoji}</span>
         <div>
-          <div style="font-size:13px;font-weight:700;color:var(--txt)">${c.title}</div>
-          <div style="font-size:11px;color:var(--sub);margin-top:2px">주 3일~ · 👥${c.baseParticipants.toLocaleString()}명</div>
+          <div style="font-size:13px;font-weight:700;color:var(--txt)">${chal.title}</div>
+          <div style="font-size:11px;color:var(--sub);margin-top:2px">${freqLabel} · ${j.weeks}주 · ${j.deposit.toLocaleString()}P 예치</div>
         </div>
       </div>
-      <div style="font-size:20px;color:var(--sub)">›</div>
-    </div>`).join("");
+      <span style="background:#e8f5e9;color:var(--g2);font-size:11px;font-weight:700;padding:3px 8px;border-radius:10px">참여중</span>
+    </div>`;
+  }).join("");
 }
 
 // ══ 챌린지 상세 모달 ══
@@ -1142,10 +1312,32 @@ function selFreq(f,cid){_freq=f;const c=CHALLENGES.find(x=>x.id===cid);if(c)rend
 function selWeeks(w,cid){_weeks=w;const c=CHALLENGES.find(x=>x.id===cid);if(c)renderChalDetail(c);}
 function selDep(d,cid){_dep=d;const c=CHALLENGES.find(x=>x.id===cid);if(c)renderChalDetail(c);}
 
-function joinChal(title,cid){
+async function joinChal(title,cid){
   closeOv("ovChal");
+  const user=window.ME;
+  if(!user){toast("로그인이 필요해요!");return;}
   const freq=_freq==="daily"?"매일":_freq==="w5"?"주 5일":"주 3일";
-  toast(`🎉 "${title}" ${freq} ${_weeks}주 참여! (결제 연동 예정)`);
+  const joined=window.UDATA?.joinedChallenges||[];
+  // 이미 참여중인지 확인
+  if(joined.some(j=>j.chalId===cid)){
+    toast("이미 참여 중인 챌린지예요!");
+    return;
+  }
+  try{
+    const newJoined=[...joined,{
+      chalId:cid,title,freq:_freq,weeks:_weeks,deposit:_dep,
+      joinedAt:new Date().toISOString()
+    }];
+    await window.FB.updateDoc(window.FB.doc(window.FB.db,"users",user.uid),{
+      joinedChallenges:newJoined
+    });
+    window.UDATA.joinedChallenges=newJoined;
+    renderMissions(user.uid);
+    renderHomeChalls();
+    toast(`🎉 "${title}" ${freq} ${_weeks}주 참여 완료! (결제 연동 예정)`);
+  }catch(e){
+    toast("참여 실패: "+e.message);
+  }
 }
 
 // 방 만들기 변수
@@ -1250,6 +1442,32 @@ function drawMap(){
     </div>`).join("");
 }
 
+// ══ 이미지 압축 ══
+function compressImage(b64,maxSize){
+  return new Promise(res=>{
+    const img=new Image();
+    img.onload=()=>{
+      const canvas=document.createElement("canvas");
+      let w=img.width,h=img.height;
+      if(w>h){if(w>maxSize){h=h*maxSize/w;w=maxSize;}}
+      else{if(h>maxSize){w=w*maxSize/h;h=maxSize;}}
+      canvas.width=w;canvas.height=h;
+      canvas.getContext("2d").drawImage(img,0,0,w,h);
+      res(canvas.toDataURL("image/jpeg",0.7));
+    };
+    img.src="data:image/jpeg;base64,"+b64;
+  });
+}
+
+function timeAgo(seconds){
+  if(!seconds)return"방금";
+  const diff=Math.floor(Date.now()/1000)-seconds;
+  if(diff<60)return"방금";
+  if(diff<3600)return Math.floor(diff/60)+"분 전";
+  if(diff<86400)return Math.floor(diff/3600)+"시간 전";
+  return Math.floor(diff/86400)+"일 전";
+}
+
 // ══ 유틸 ══
 function openOv(id){document.getElementById(id).classList.add("on");}
 function closeOv(id){document.getElementById(id).classList.remove("on");}
@@ -1261,10 +1479,10 @@ document.querySelectorAll(".overlay").forEach(ov=>{
 });
 
 // 전역 노출
-window.selFreq=selFreq;window.selWeeks=selWeeks;window.selDep=selDep;
+window.selFreq=selFreq;window.selWeeks=selWeeks;window.selDep=selDep;window.setVerifPub=setVerifPub;window.loadFeed=loadFeed;
 window.goPage=goPage;window.setCTab=setCTab;window.openMissionSel=openMissionSel;
 window.toggleMSel=toggleMSel;window.confirmMissions=confirmMissions;
-window.openAI=openAI;window.doAnalyze=doAnalyze;window.doComplete=doComplete;
+window.openAI=openAI;window.doAnalyze=doAnalyze;window.doComplete=doComplete;window.renderTodayQuests=renderTodayQuests;window.renderHomeChalls=renderHomeChalls;window.joinChal=joinChal;
 window.openChal=openChal;window.selDep=selDep;window.joinChal=joinChal;
 window.setDep=setDep;window.setRPub=setRPub;window.openCreateRoom=openCreateRoom;
 window.openBuy=openBuy;window.doBuy=doBuy;window.closeOv=closeOv;window.toast=toast;

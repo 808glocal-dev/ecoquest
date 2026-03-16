@@ -368,7 +368,7 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
       <strong style="font-size:15px;color:var(--g2)" id="shopPoint">0 P</strong>
       <span style="font-size:11px;color:var(--sub);margin-left:4px">= 0원</span>
     </div>
-    <div class="sec"><div class="sec-t">📚 라니 시리즈</div><div style="font-size:11px;color:var(--sub)">1P = 1원</div></div>
+    <div class="sec"><div class="sec-t">📦 스토어</div><div style="font-size:11px;color:var(--sub)">1P = 1원</div></div>
     <div id="bookList"></div>
   </div>
 
@@ -386,7 +386,7 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
       </div>
     </div>
     <div style="display:flex;gap:8px;padding:0 12px;margin-bottom:4px">
-      <button class="btn btn-g" style="flex:1;padding:12px" onclick="goPage('shop')">📚 책 구매</button>
+      <button class="btn btn-g" style="flex:1;padding:12px" onclick="goPage('shop')">🛒 스토어</button>
       <button class="btn btn-gray" style="flex:1;padding:12px" onclick="toast('출금 기능 준비 중이에요! 💰')">💸 포인트 출금</button>
     </div>
     <div class="sec"><div class="sec-t">📸 내 인증 기록</div></div>
@@ -404,7 +404,7 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
     <button class="tb on" data-page="home" onclick="goPage('home')"><span class="ic">🏠</span>홈</button>
     <button class="tb" data-page="chal" onclick="goPage('chal')"><span class="ic">🏆</span>챌린지</button>
     <button class="tb" data-page="map" onclick="goPage('map')"><span class="ic">🌍</span>지도</button>
-    <button class="tb" data-page="shop" onclick="goPage('shop')"><span class="ic">📚</span>샵</button>
+    <button class="tb" data-page="shop" onclick="goPage('shop')"><span class="ic">🛒</span>스토어</button>
     <button class="tb" data-page="my" onclick="goPage('my')"><span class="ic">👤</span>마이</button>
   </div>
 </div>
@@ -1341,7 +1341,7 @@ async function joinChal(title,cid){
 }
 
 // 방 만들기 변수
-window._rDep=5000;window._rPub=true;
+window._rDep=3000;window._rPub=true;
 function setDep(v,el){window._rDep=v;document.querySelectorAll("#rDepSel .dep-btn").forEach(b=>b.classList.remove("on"));el.classList.add("on");}
 function setRPub(v){
   window._rPub=v;

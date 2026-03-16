@@ -10,9 +10,6 @@
       --primary:#2ECC71;
       --secondary:#27AE60;
       --accent:#F39C12;
-      --earth:#8B6914;
-      --sky:#3498DB;
-      --danger:#E74C3C;
       --bg:#F0FBF4;
       --card:#fff;
       --text:#1a2e1a;
@@ -22,6 +19,34 @@
     *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
     body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);min-height:100vh;max-width:480px;margin:0 auto;}
 
+    /* ── 로그인 화면 ── */
+    .login-screen{
+      min-height:100vh;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      padding:40px 24px;
+      background:linear-gradient(160deg,#0f3d20 0%,#1a6b3a 50%,#2ECC71 100%);
+    }
+    .login-logo{font-family:'Syne',sans-serif;font-size:48px;font-weight:800;color:white;margin-bottom:8px;text-align:center;}
+    .login-sub{color:rgba(255,255,255,0.8);font-size:15px;margin-bottom:48px;text-align:center;line-height:1.6;}
+    .login-earth{font-size:80px;margin-bottom:32px;animation:float 3s ease-in-out infinite;}
+    @keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-12px);}}
+    .btn-google{
+      display:flex;align-items:center;gap:12px;
+      background:white;color:#333;
+      border:none;border-radius:16px;
+      padding:16px 28px;font-size:15px;font-weight:700;
+      cursor:pointer;font-family:inherit;
+      box-shadow:0 8px 24px rgba(0,0,0,0.2);
+      transition:transform 0.15s;width:100%;justify-content:center;
+      max-width:320px;
+    }
+    .btn-google:active{transform:scale(0.97);}
+    .btn-google img{width:22px;height:22px;}
+    .login-desc{color:rgba(255,255,255,0.6);font-size:12px;margin-top:24px;text-align:center;line-height:1.7;}
+
+    /* ── 앱 화면 ── */
+    .app-screen{display:none;}
+
     /* ── 헤더 ── */
     .header{
       background:linear-gradient(135deg,#1a6b3a 0%,#2ECC71 100%);
@@ -30,24 +55,25 @@
       box-shadow:0 4px 20px rgba(46,204,113,0.3);
     }
     .header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
-    .logo{display:flex;align-items:center;gap:8px;}
-    .logo-text{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:white;letter-spacing:-0.5px;}
-    .logo-sub{font-size:10px;color:rgba(255,255,255,0.75);font-weight:500;margin-top:-2px;}
-    .header-right{display:flex;gap:8px;}
-    .btn-icon{background:rgba(255,255,255,0.2);border:none;border-radius:12px;padding:7px 12px;color:white;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:4px;}
-    .notif-dot{width:8px;height:8px;background:#F39C12;border-radius:50%;border:2px solid white;position:absolute;top:-2px;right:-2px;}
+    .logo-text{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:white;}
+    .logo-sub{font-size:10px;color:rgba(255,255,255,0.75);margin-top:-2px;}
+    .user-info{display:flex;align-items:center;gap:8px;cursor:pointer;}
+    .user-avatar{width:34px;height:34px;border-radius:50%;border:2px solid rgba(255,255,255,0.5);object-fit:cover;background:#fff;}
+    .user-avatar-placeholder{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.25);display:flex;align-items:center;justify-content:center;font-size:16px;}
+    .user-name{color:white;font-size:12px;font-weight:700;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .btn-logout{background:rgba(255,255,255,0.2);border:none;border-radius:10px;padding:5px 10px;color:white;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;}
 
     /* ── 탭 ── */
     .main-tabs{display:flex;background:rgba(0,0,0,0.15);border-radius:12px;padding:3px;}
     .mtab{flex:1;padding:7px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;border:none;background:transparent;color:rgba(255,255,255,0.7);font-family:inherit;transition:all 0.2s;text-align:center;}
     .mtab.active{background:white;color:var(--secondary);}
 
-    /* ── 내 상태 바 ── */
+    /* ── 내 상태 ── */
     .my-status{background:white;margin:12px 12px 0;border-radius:16px;padding:14px 16px;box-shadow:0 2px 12px rgba(0,0,0,0.06);border:1px solid var(--border);}
     .status-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
     .status-name{font-size:14px;font-weight:700;color:var(--text);}
     .status-level{background:linear-gradient(135deg,var(--primary),var(--secondary));color:white;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;}
-    .status-stats{display:flex;gap:0;}
+    .status-stats{display:flex;}
     .stat-item{flex:1;text-align:center;padding:8px 0;border-right:1px solid var(--border);}
     .stat-item:last-child{border-right:none;}
     .stat-num{font-size:18px;font-weight:900;color:var(--secondary);}
@@ -55,14 +81,14 @@
     .xp-bar-wrap{margin-top:10px;}
     .xp-label{display:flex;justify-content:space-between;font-size:11px;color:var(--sub);margin-bottom:4px;}
     .xp-bar{background:#e8f5e9;border-radius:10px;height:8px;overflow:hidden;}
-    .xp-fill{background:linear-gradient(90deg,var(--primary),var(--accent));height:100%;border-radius:10px;width:62%;transition:width 0.5s ease;}
+    .xp-fill{background:linear-gradient(90deg,var(--primary),var(--accent));height:100%;border-radius:10px;width:62%;transition:width 0.5s;}
 
     /* ── 섹션 헤더 ── */
     .section-header{display:flex;align-items:center;justify-content:space-between;padding:16px 12px 8px;}
     .section-title{font-size:15px;font-weight:900;color:var(--text);}
     .section-more{font-size:12px;color:var(--sub);cursor:pointer;}
 
-    /* ── 오늘의 미션 (가로 스크롤) ── */
+    /* ── 미션 카드 ── */
     .mission-scroll{display:flex;gap:10px;padding:0 12px 4px;overflow-x:auto;-webkit-overflow-scrolling:touch;}
     .mission-scroll::-webkit-scrollbar{height:0;}
     .mission-card{flex-shrink:0;width:150px;background:white;border-radius:16px;padding:14px;border:1.5px solid var(--border);cursor:pointer;transition:transform 0.15s;position:relative;box-shadow:0 2px 8px rgba(0,0,0,0.05);}
@@ -71,21 +97,19 @@
     .mission-card.done::after{content:'✓';position:absolute;top:8px;right:10px;color:var(--primary);font-size:16px;font-weight:900;}
     .mission-emoji{font-size:28px;margin-bottom:8px;}
     .mission-name{font-size:12px;font-weight:700;color:var(--text);line-height:1.4;margin-bottom:6px;}
-    .mission-point{display:flex;align-items:center;gap:4px;}
     .point-badge{background:#fff8e1;color:#e67e22;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;}
     .co2-badge{background:#e8f5e9;color:var(--secondary);font-size:10px;font-weight:600;padding:2px 6px;border-radius:8px;}
 
-    /* ── 챌린지 방 ── */
+    /* ── 챌린지 카드 ── */
     .challenge-list{padding:0 12px;}
     .challenge-card{background:white;border-radius:16px;padding:14px;margin-bottom:10px;border:1.5px solid var(--border);cursor:pointer;transition:transform 0.15s;box-shadow:0 2px 8px rgba(0,0,0,0.05);}
     .challenge-card:active{transform:scale(0.98);}
     .challenge-card.hot{border-color:rgba(46,204,113,0.4);box-shadow:0 4px 16px rgba(46,204,113,0.15);}
     .challenge-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;}
-    .challenge-info{flex:1;}
     .challenge-tag{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;margin-bottom:6px;}
     .tag-env{background:#e8f5e9;color:var(--secondary);}
     .tag-food{background:#fff3e0;color:#e67e22;}
-    .tag-transport{background:#e3f2fd;color:var(--sky);}
+    .tag-transport{background:#e3f2fd;color:#3498DB;}
     .tag-zero{background:#fce4ec;color:#e91e63;}
     .challenge-title{font-size:14px;font-weight:900;color:var(--text);margin-bottom:4px;}
     .challenge-desc{font-size:12px;color:var(--sub);line-height:1.5;}
@@ -94,36 +118,29 @@
     .prize-amount{font-size:16px;font-weight:900;color:var(--secondary);}
     .prize-sub{font-size:10px;color:var(--sub);}
     .challenge-bottom{display:flex;align-items:center;justify-content:space-between;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);}
-    .participants{display:flex;align-items:center;gap:4px;}
     .avatar-stack{display:flex;}
     .avatar{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--accent));border:2px solid white;margin-right:-6px;display:flex;align-items:center;justify-content:center;font-size:10px;color:white;font-weight:700;}
-    .avatar:nth-child(2){background:linear-gradient(135deg,var(--sky),#9b59b6);}
-    .avatar:nth-child(3){background:linear-gradient(135deg,var(--accent),var(--danger));}
+    .avatar:nth-child(2){background:linear-gradient(135deg,#3498DB,#9b59b6);}
+    .avatar:nth-child(3){background:linear-gradient(135deg,var(--accent),#E74C3C);}
     .participant-count{font-size:11px;color:var(--sub);margin-left:10px;}
-    .challenge-days{font-size:11px;color:var(--sub);}
     .days-left{color:var(--accent);font-weight:700;}
-    .progress-wrap{margin-top:8px;}
-    .progress-bar{background:#e8f5e9;border-radius:10px;height:5px;overflow:hidden;}
+    .progress-bar{background:#e8f5e9;border-radius:10px;height:5px;overflow:hidden;margin-top:8px;}
     .progress-fill{background:linear-gradient(90deg,var(--primary),var(--accent));height:100%;border-radius:10px;}
 
-    /* ── 지구 회복 지도 배너 ── */
+    /* ── 지구 배너 ── */
     .earth-banner{margin:12px;background:linear-gradient(135deg,#0f3460,#16213e);border-radius:16px;padding:16px;color:white;position:relative;overflow:hidden;cursor:pointer;}
     .earth-banner::before{content:'🌍';position:absolute;right:-10px;bottom:-10px;font-size:80px;opacity:0.2;}
     .earth-banner-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;margin-bottom:4px;}
     .earth-banner-sub{font-size:12px;color:rgba(255,255,255,0.75);}
     .earth-stats{display:flex;gap:16px;margin-top:12px;}
-    .earth-stat{text-align:center;}
     .earth-stat-num{font-size:18px;font-weight:900;color:var(--primary);}
     .earth-stat-label{font-size:10px;color:rgba(255,255,255,0.6);}
 
-    /* ── 방 만들기 버튼 ── */
+    /* ── FAB ── */
     .fab{position:fixed;bottom:24px;right:calc(50% - 228px);background:linear-gradient(135deg,var(--primary),var(--secondary));color:white;border:none;border-radius:20px;padding:14px 24px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 6px 20px rgba(46,204,113,0.4);display:flex;align-items:center;gap:8px;z-index:50;transition:transform 0.15s;}
     .fab:active{transform:scale(0.97);}
 
-    /* ── 바텀 패딩 ── */
-    .content{padding-bottom:80px;}
-
-    /* ── 모달 (챌린지 상세) ── */
+    /* ── 모달 ── */
     .modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:200;display:none;align-items:flex-end;justify-content:center;}
     .modal-overlay.open{display:flex;}
     .modal{background:white;width:100%;max-width:480px;border-radius:24px 24px 0 0;padding:24px 20px 40px;max-height:80vh;overflow-y:auto;}
@@ -131,11 +148,11 @@
     .modal-title{font-size:18px;font-weight:900;color:var(--text);margin-bottom:8px;}
     .modal-desc{font-size:13px;color:var(--sub);line-height:1.7;margin-bottom:16px;}
     .modal-detail{background:var(--bg);border-radius:12px;padding:14px;margin-bottom:16px;}
-    .detail-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);}
+    .detail-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);}
     .detail-row:last-child{border-bottom:none;}
     .detail-label{font-size:12px;color:var(--sub);}
     .detail-value{font-size:13px;font-weight:700;color:var(--text);}
-    .modal-btns{display:flex;gap:8px;}
+    .modal-btns{display:flex;gap:8px;margin-top:16px;}
     .btn-join{flex:1;background:linear-gradient(135deg,var(--primary),var(--secondary));color:white;border:none;border-radius:14px;padding:14px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;}
     .btn-cancel{background:#f5f5f5;color:var(--sub);border:none;border-radius:14px;padding:14px 20px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;}
 
@@ -143,351 +160,422 @@
     .toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:#1a2e1a;color:white;padding:10px 20px;border-radius:20px;font-size:13px;font-weight:500;opacity:0;transition:all 0.3s;z-index:300;white-space:nowrap;}
     .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
-    /* ── 빈 화면 ── */
+    .content{padding-bottom:80px;}
     .empty{text-align:center;padding:40px 20px;color:var(--sub);}
     .empty-icon{font-size:48px;margin-bottom:12px;}
 
-    @keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.05);}}
-    .pulse{animation:pulse 2s ease-in-out infinite;}
+    /* 로딩 */
+    .loading-screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--bg);}
+    .loading-screen .spin{font-size:48px;animation:spin 1s linear infinite;display:inline-block;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+    @keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-12px);}}
   </style>
 </head>
 <body>
 
-<!-- 헤더 -->
-<div class="header">
-  <div class="header-top">
-    <div class="logo">
+<!-- 로딩 화면 -->
+<div class="loading-screen" id="loadingScreen">
+  <div class="spin">🌍</div>
+  <p style="margin-top:16px;color:var(--sub);font-size:14px;">잠시만요...</p>
+</div>
+
+<!-- 로그인 화면 -->
+<div class="login-screen" id="loginScreen" style="display:none">
+  <div class="login-earth">🌍</div>
+  <div class="login-logo">EcoQuest</div>
+  <div class="login-sub">작은 행동이 지구를 바꿔요<br/>오늘의 환경 미션에 도전하세요!</div>
+  <button class="btn-google" id="btnGoogleLogin">
+    <img src="https://www.google.com/favicon.ico" alt="Google"/>
+    Google로 시작하기
+  </button>
+  <div class="login-desc">로그인하면 미션 기록이 저장되고<br/>전 세계 참여자와 함께할 수 있어요 🌱</div>
+</div>
+
+<!-- 앱 화면 -->
+<div class="app-screen" id="appScreen">
+
+  <!-- 헤더 -->
+  <div class="header">
+    <div class="header-top">
       <div>
         <div class="logo-text">🌍 EcoQuest</div>
         <div class="logo-sub">작은 행동이 지구를 바꿔요</div>
       </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div class="user-info" id="userInfo">
+          <div class="user-avatar-placeholder" id="userAvatarPlaceholder">👤</div>
+          <span class="user-name" id="userName">-</span>
+        </div>
+        <button class="btn-logout" id="btnLogout">로그아웃</button>
+      </div>
     </div>
-    <div class="header-right">
-      <button class="btn-icon" onclick="showToast('알림 기능 준비 중이에요 🌱')">🔔</button>
-      <button class="btn-icon" onclick="showToast('내 프로필 준비 중이에요 😊')">👤</button>
+    <div class="main-tabs">
+      <button class="mtab active" onclick="switchTab('home',this)">🏠 홈</button>
+      <button class="mtab" onclick="switchTab('challenge',this)">🏆 챌린지</button>
+      <button class="mtab" onclick="switchTab('map',this)">🗺️ 지구지도</button>
+      <button class="mtab" onclick="switchTab('reward',this)">🎁 리워드</button>
     </div>
   </div>
-  <!-- 탭 -->
-  <div class="main-tabs">
-    <button class="mtab active" onclick="switchTab('home',this)">🏠 홈</button>
-    <button class="mtab" onclick="switchTab('challenge',this)">🏆 챌린지</button>
-    <button class="mtab" onclick="switchTab('map',this)">🗺️ 지구지도</button>
-    <button class="mtab" onclick="switchTab('reward',this)">🎁 리워드</button>
+
+  <!-- 콘텐츠 -->
+  <div class="content">
+
+    <!-- 홈 탭 -->
+    <div id="tab-home">
+      <div class="my-status">
+        <div class="status-row">
+          <div class="status-name" id="statusName">🌱 지구지킴이</div>
+          <div class="status-level">Lv.4 새싹</div>
+        </div>
+        <div class="status-stats">
+          <div class="stat-item"><div class="stat-num" id="statMission">0</div><div class="stat-label">완료 미션</div></div>
+          <div class="stat-item"><div class="stat-num" id="statStreak">0</div><div class="stat-label">연속 일수</div></div>
+          <div class="stat-item"><div class="stat-num" id="statPoint">0</div><div class="stat-label">포인트</div></div>
+          <div class="stat-item"><div class="stat-num">4.2kg</div><div class="stat-label">CO₂ 절감</div></div>
+        </div>
+        <div class="xp-bar-wrap">
+          <div class="xp-label"><span>다음 레벨까지</span><span>620 / 1000 XP</span></div>
+          <div class="xp-bar"><div class="xp-fill"></div></div>
+        </div>
+      </div>
+
+      <div class="earth-banner">
+        <div class="earth-banner-title">🌍 전 세계 EcoQuest 현황</div>
+        <div class="earth-banner-sub">오늘 전 세계에서 함께하고 있어요</div>
+        <div class="earth-stats">
+          <div class="earth-stat"><div class="earth-stat-num">24,810</div><div class="earth-stat-label">오늘 참여자</div></div>
+          <div class="earth-stat"><div class="earth-stat-num">847t</div><div class="earth-stat-label">CO₂ 절감</div></div>
+          <div class="earth-stat"><div class="earth-stat-num">132국</div><div class="earth-stat-label">참여 국가</div></div>
+        </div>
+      </div>
+
+      <div class="section-header">
+        <div class="section-title">⚡ 오늘의 미션</div>
+        <div class="section-more">전체보기 ›</div>
+      </div>
+      <div class="mission-scroll" id="missionScroll"></div>
+
+      <div class="section-header">
+        <div class="section-title">🏆 내 챌린지</div>
+        <div class="section-more" onclick="switchTab('challenge', document.querySelectorAll('.mtab')[1])">전체보기 ›</div>
+      </div>
+      <div class="challenge-list" id="myChallengeList"></div>
+    </div>
+
+    <!-- 챌린지 탭 -->
+    <div id="tab-challenge" style="display:none">
+      <div class="section-header"><div class="section-title">🔥 인기 챌린지</div></div>
+      <div class="challenge-list" id="allChallengeList"></div>
+    </div>
+
+    <!-- 지구지도 탭 -->
+    <div id="tab-map" style="display:none">
+      <div class="empty">
+        <div class="empty-icon">🗺️</div>
+        <p style="font-weight:700;font-size:15px;color:var(--text);margin-bottom:8px;">전 세계 참여 지도</p>
+        <p style="font-size:13px;line-height:1.7;color:var(--sub)">미션을 완료하면 내 위치가<br/>지구 지도에 불이 켜져요!<br/><br/><strong style="color:var(--secondary)">🌱 준비 중이에요</strong></p>
+      </div>
+    </div>
+
+    <!-- 리워드 탭 -->
+    <div id="tab-reward" style="display:none">
+      <div class="my-status" style="margin:12px">
+        <div class="status-row">
+          <div class="status-name">💰 내 포인트</div>
+          <div class="status-level" id="rewardPoint">0 P</div>
+        </div>
+        <div class="status-stats">
+          <div class="stat-item"><div class="stat-num">5,000</div><div class="stat-label">현금 전환 기준</div></div>
+          <div class="stat-item"><div class="stat-num">500원</div><div class="stat-label">전환 금액</div></div>
+          <div class="stat-item"><div class="stat-num">10</div><div class="stat-label">협력 브랜드</div></div>
+        </div>
+      </div>
+      <div class="empty">
+        <div class="empty-icon">🎁</div>
+        <p style="font-size:13px;color:var(--sub);line-height:1.7;">친환경 브랜드 쿠폰,<br/>현금 전환 기능<br/><strong style="color:var(--secondary)">🌱 준비 중이에요</strong></p>
+      </div>
+    </div>
+
   </div>
+
+  <button class="fab" onclick="showToast('챌린지 방 만들기 — 곧 오픈해요! 🌱')">+ 챌린지 방 만들기</button>
 </div>
 
-<!-- 콘텐츠 -->
-<div class="content" id="mainContent">
-
-  <!-- 홈 탭 -->
-  <div id="tab-home">
-
-    <!-- 내 상태 -->
-    <div class="my-status">
-      <div class="status-row">
-        <div class="status-name">🌱 지구지킴이 루치아</div>
-        <div class="status-level">Lv.4 새싹</div>
-      </div>
-      <div class="status-stats">
-        <div class="stat-item">
-          <div class="stat-num">12</div>
-          <div class="stat-label">완료 미션</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-num">3</div>
-          <div class="stat-label">연속 일수</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-num">2,450</div>
-          <div class="stat-label">포인트</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-num">4.2kg</div>
-          <div class="stat-label">CO₂ 절감</div>
-        </div>
-      </div>
-      <div class="xp-bar-wrap">
-        <div class="xp-label"><span>다음 레벨까지</span><span>620 / 1000 XP</span></div>
-        <div class="xp-bar"><div class="xp-fill"></div></div>
-      </div>
-    </div>
-
-    <!-- 지구 회복 배너 -->
-    <div class="earth-banner pulse" onclick="switchTab('map', document.querySelectorAll('.mtab')[2])">
-      <div class="earth-banner-title">🌍 전 세계 EcoQuest 현황</div>
-      <div class="earth-banner-sub">오늘 전 세계에서 함께하고 있어요</div>
-      <div class="earth-stats">
-        <div class="earth-stat">
-          <div class="earth-stat-num">24,810</div>
-          <div class="earth-stat-label">오늘 참여자</div>
-        </div>
-        <div class="earth-stat">
-          <div class="earth-stat-num">847t</div>
-          <div class="earth-stat-label">CO₂ 절감</div>
-        </div>
-        <div class="earth-stat">
-          <div class="earth-stat-num">132국</div>
-          <div class="earth-stat-label">참여 국가</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 오늘의 미션 -->
-    <div class="section-header">
-      <div class="section-title">⚡ 오늘의 미션</div>
-      <div class="section-more" onclick="showToast('전체 미션 보기 준비 중!')">전체보기 ›</div>
-    </div>
-    <div class="mission-scroll" id="missionScroll"></div>
-
-    <!-- 진행 중인 챌린지 -->
-    <div class="section-header">
-      <div class="section-title">🏆 내 챌린지</div>
-      <div class="section-more" onclick="switchTab('challenge', document.querySelectorAll('.mtab')[1])">전체보기 ›</div>
-    </div>
-    <div class="challenge-list" id="myChallengeList"></div>
-
-  </div><!-- /tab-home -->
-
-  <!-- 챌린지 탭 -->
-  <div id="tab-challenge" style="display:none">
-    <div class="section-header">
-      <div class="section-title">🔥 인기 챌린지</div>
-    </div>
-    <div class="challenge-list" id="allChallengeList"></div>
-  </div>
-
-  <!-- 지구지도 탭 -->
-  <div id="tab-map" style="display:none">
-    <div class="empty">
-      <div class="empty-icon">🗺️</div>
-      <p style="font-weight:700;font-size:15px;color:var(--text);margin-bottom:8px;">전 세계 참여 지도</p>
-      <p style="font-size:13px;line-height:1.7;">미션을 완료하면 내 위치가<br/>지구 지도에 불이 켜져요!<br/><br/><strong style="color:var(--secondary)">🌱 준비 중이에요</strong></p>
-    </div>
-  </div>
-
-  <!-- 리워드 탭 -->
-  <div id="tab-reward" style="display:none">
-    <div class="my-status" style="margin:12px">
-      <div class="status-row">
-        <div class="status-name">💰 내 포인트</div>
-        <div class="status-level">2,450 P</div>
-      </div>
-      <div class="status-stats">
-        <div class="stat-item">
-          <div class="stat-num">5,000</div>
-          <div class="stat-label">현금 전환 기준</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-num">500원</div>
-          <div class="stat-label">전환 금액</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-num">10</div>
-          <div class="stat-label">협력 브랜드</div>
-        </div>
-      </div>
-    </div>
-    <div class="empty">
-      <div class="empty-icon">🎁</div>
-      <p style="font-size:13px;color:var(--sub);line-height:1.7;">친환경 브랜드 쿠폰,<br/>현금 전환 기능<br/><strong style="color:var(--secondary)">🌱 준비 중이에요</strong></p>
-    </div>
-  </div>
-
-</div><!-- /content -->
-
-<!-- 방 만들기 FAB -->
-<button class="fab" onclick="openCreateRoom()">+ 챌린지 방 만들기</button>
-
-<!-- 챌린지 상세 모달 -->
+<!-- 챌린지 모달 -->
 <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
-  <div class="modal" id="modal">
-    <div class="modal-handle"></div>
-    <div id="modalContent"></div>
-  </div>
+  <div class="modal"><div class="modal-handle"></div><div id="modalContent"></div></div>
 </div>
-
 <div class="toast" id="toast"></div>
 
-<script>
-// ── 데이터 ──
-const MISSIONS = [
-  { emoji:"🧴", name:"텀블러로 카페 이용하기", point:50, co2:"0.3kg", done:true },
-  { emoji:"🚌", name:"대중교통 이용하기", point:80, co2:"1.2kg", done:false },
-  { emoji:"🥗", name:"채식 메뉴 선택하기", point:60, co2:"0.8kg", done:false },
-  { emoji:"💡", name:"불필요한 전등 끄기", point:30, co2:"0.1kg", done:true },
-  { emoji:"♻️", name:"분리수거 완벽하게", point:40, co2:"0.2kg", done:false },
-  { emoji:"🛍️", name:"장바구니 사용하기", point:35, co2:"0.15kg", done:false },
-  { emoji:"🚿", name:"샤워 5분 이내로", point:45, co2:"0.4kg", done:false },
-];
+<!-- Firebase -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+    from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
+  import { getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp }
+    from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
-const CHALLENGES = [
-  {
-    id:1, hot:true,
-    tag:"tag-env", tagName:"🌿 환경",
-    title:"30일 텀블러 챌린지",
-    desc:"매일 텀블러를 사용하고 인증샷을 올려요. 일회용 컵 없는 한 달!",
-    prize:5000, prizeUnit:"포인트 환급",
-    participants:1284, days:15, daysLeft:15,
-    progress:50, deposit:3000,
-    missions:["매일 텀블러 사용 인증샷", "카페 방문 시 개인컵 사용", "월말 총 30회 달성"]
-  },
-  {
-    id:2, hot:true,
-    tag:"tag-transport", tagName:"🚌 교통",
-    title:"대중교통 vs 자가용 챌린지",
-    desc:"2주간 자가용 대신 대중교통·자전거를 이용해요. CO₂를 얼마나 줄일 수 있을까요?",
-    prize:8000, prizeUnit:"포인트 환급",
-    participants:892, days:14, daysLeft:9,
-    progress:36, deposit:5000,
-    missions:["주 5일 대중교통 이용 인증", "이동 거리 기록", "14일 완주"]
-  },
-  {
-    id:3, hot:false,
-    tag:"tag-food", tagName:"🥗 식품",
-    title:"채식 메뉴 챌린지",
-    desc:"일주일간 하루 한 끼 채식 메뉴를 선택해요. 식단으로 지구를 지켜요!",
-    prize:3000, prizeUnit:"포인트 환급",
-    participants:547, days:7, daysLeft:4,
-    progress:43, deposit:2000,
-    missions:["매일 채식 메뉴 인증샷", "7일 연속 달성"]
-  },
-  {
-    id:4, hot:false,
-    tag:"tag-zero", tagName:"🗑️ 제로웨이스트",
-    title:"1주일 쓰레기 줄이기",
-    desc:"일주일간 발생시킨 쓰레기를 사진으로 기록하고 줄여나가요.",
-    prize:4000, prizeUnit:"포인트 환급",
-    participants:328, days:7, daysLeft:6,
-    progress:14, deposit:2000,
-    missions:["매일 쓰레기 봉투 사진 기록", "전날보다 쓰레기 줄이기", "7일 달성"]
-  },
-];
+  const firebaseConfig = {
+    apiKey: "AIzaSyAMpLdwkyXS1usudjbkI7BcyjvbY8VZzxY",
+    authDomain: "ecoquest-c6380.firebaseapp.com",
+    projectId: "ecoquest-c6380",
+    storageBucket: "ecoquest-c6380.firebasestorage.app",
+    messagingSenderId: "403119608388",
+    appId: "1:403119608388:web:6ab39c611d0df9a81ea211"
+  };
 
-// ── 렌더링 ──
-function renderMissions() {
-  const wrap = document.getElementById("missionScroll");
-  wrap.innerHTML = MISSIONS.map(m => `
-    <div class="mission-card${m.done?" done":""}" onclick="completeMission(this,'${m.name}',${m.done})">
-      <div class="mission-emoji">${m.emoji}</div>
-      <div class="mission-name">${m.name}</div>
-      <div class="mission-point">
-        <span class="point-badge">+${m.point}P</span>
-        <span class="co2-badge">-${m.co2}</span>
-      </div>
-    </div>
-  `).join("");
-}
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const provider = new GoogleAuthProvider();
 
-function renderChallengeCard(c, showProgress) {
-  return `
-    <div class="challenge-card${c.hot?" hot":""}" onclick="openChallenge(${c.id})">
-      <div class="challenge-top">
-        <div class="challenge-info">
-          <span class="challenge-tag ${c.tag}">${c.tagName}</span>
-          <div class="challenge-title">${c.title}</div>
-          <div class="challenge-desc">${c.desc}</div>
-        </div>
-        <div class="challenge-prize">
-          <div class="prize-label">예치금 환급</div>
-          <div class="prize-amount">${c.prize.toLocaleString()}P</div>
-          <div class="prize-sub">예치 ${c.deposit.toLocaleString()}원</div>
-        </div>
-      </div>
-      ${showProgress ? `
-        <div class="progress-wrap">
-          <div class="progress-bar"><div class="progress-fill" style="width:${c.progress}%"></div></div>
-        </div>
-      ` : ""}
-      <div class="challenge-bottom">
-        <div class="participants">
-          <div class="avatar-stack">
-            <div class="avatar">A</div>
-            <div class="avatar">B</div>
-            <div class="avatar">C</div>
-          </div>
-          <span class="participant-count">${c.participants.toLocaleString()}명 참여 중</span>
-        </div>
-        <div class="challenge-days"><span class="days-left">${c.daysLeft}일</span> 남음</div>
-      </div>
-    </div>`;
-}
-
-function renderMyChallenges() {
-  const wrap = document.getElementById("myChallengeList");
-  // 첫 2개만 내 챌린지로
-  wrap.innerHTML = CHALLENGES.slice(0,2).map(c => renderChallengeCard(c, true)).join("");
-}
-
-function renderAllChallenges() {
-  const wrap = document.getElementById("allChallengeList");
-  wrap.innerHTML = CHALLENGES.map(c => renderChallengeCard(c, false)).join("");
-}
-
-// ── 탭 전환 ──
-function switchTab(name, btn) {
-  ["home","challenge","map","reward"].forEach(t => {
-    document.getElementById("tab-"+t).style.display = t===name ? "block" : "none";
+  // ── 로그인 버튼 ──
+  document.getElementById("btnGoogleLogin").addEventListener("click", async () => {
+    try {
+      await signInWithPopup(auth, provider);
+    } catch(e) {
+      showToast("로그인 실패: " + e.message);
+    }
   });
-  document.querySelectorAll(".mtab").forEach(b => b.classList.remove("active"));
-  if (btn) btn.classList.add("active");
-  else document.querySelectorAll(".mtab")[["home","challenge","map","reward"].indexOf(name)].classList.add("active");
-}
 
-// ── 미션 완료 ──
-function completeMission(card, name, done) {
-  if (done) { showToast("이미 완료한 미션이에요 ✅"); return; }
-  card.classList.add("done");
-  showToast(`🎉 미션 완료! "${name}"`);
-}
+  // ── 로그아웃 ──
+  document.getElementById("btnLogout").addEventListener("click", async () => {
+    await signOut(auth);
+    showToast("로그아웃 됐어요 👋");
+  });
 
-// ── 챌린지 모달 ──
-function openChallenge(id) {
-  const c = CHALLENGES.find(x=>x.id===id);
-  if (!c) return;
-  document.getElementById("modalContent").innerHTML = `
-    <div class="modal-title">${c.title}</div>
-    <div class="modal-desc">${c.desc}<br/><br/>실패해도 예치금이 환경단체에 기부돼요. 성공하면 전액 + 보너스 포인트! 🌍</div>
-    <div class="modal-detail">
-      <div class="detail-row"><span class="detail-label">챌린지 기간</span><span class="detail-value">${c.days}일</span></div>
-      <div class="detail-row"><span class="detail-label">예치금</span><span class="detail-value">${c.deposit.toLocaleString()}원</span></div>
-      <div class="detail-row"><span class="detail-label">성공 시 환급</span><span class="detail-value" style="color:var(--secondary)">${c.prize.toLocaleString()}P + 예치금 전액</span></div>
-      <div class="detail-row"><span class="detail-label">실패 시</span><span class="detail-value" style="color:var(--sub)">예치금 → 환경단체 기부</span></div>
-      <div class="detail-row"><span class="detail-label">현재 참여자</span><span class="detail-value">${c.participants.toLocaleString()}명</span></div>
-    </div>
-    <div style="font-size:12px;font-weight:700;color:var(--sub);margin-bottom:8px;">📋 미션 목록</div>
-    ${c.missions.map(m=>`<div style="font-size:13px;color:var(--text);padding:6px 0;border-bottom:1px solid var(--border);">✅ ${m}</div>`).join("")}
-    <div style="margin-top:16px;" class="modal-btns">
-      <button class="btn-cancel" onclick="closeModal()">닫기</button>
-      <button class="btn-join" onclick="joinChallenge('${c.title}')">참여하기 🌱</button>
-    </div>`;
-  document.getElementById("modalOverlay").classList.add("open");
-}
+  // ── 로그인 상태 감지 ──
+  onAuthStateChanged(auth, async (user) => {
+    document.getElementById("loadingScreen").style.display = "none";
+    if (user) {
+      // 로그인 됨
+      document.getElementById("loginScreen").style.display = "none";
+      document.getElementById("appScreen").style.display = "block";
 
-function closeModal(e) {
-  if (!e || e.target === document.getElementById("modalOverlay"))
+      // 유저 이름·아바타 표시
+      document.getElementById("userName").textContent = user.displayName?.split(" ")[0] || "지구지킴이";
+      document.getElementById("statusName").textContent = "🌱 " + (user.displayName?.split(" ")[0] || "지구지킴이");
+
+      if (user.photoURL) {
+        document.getElementById("userAvatarPlaceholder").innerHTML =
+          `<img src="${user.photoURL}" class="user-avatar" style="width:34px;height:34px;border-radius:50%;"/>`;
+      }
+
+      // Firestore에서 유저 데이터 불러오기
+      await loadUserData(user.uid);
+      renderMissions(user.uid);
+      renderMyChallenges();
+      renderAllChallenges();
+
+    } else {
+      // 로그아웃 됨
+      document.getElementById("loginScreen").style.display = "flex";
+      document.getElementById("appScreen").style.display = "none";
+    }
+  });
+
+  // ── 유저 데이터 로드/생성 ──
+  async function loadUserData(uid) {
+    const ref = doc(db, "users", uid);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) {
+      // 첫 로그인 → 새 유저 데이터 생성
+      await setDoc(ref, {
+        point: 0,
+        missionCount: 0,
+        streak: 0,
+        doneMissions: [],
+        createdAt: serverTimestamp()
+      });
+      updateStats(0, 0, 0);
+    } else {
+      const d = snap.data();
+      updateStats(d.missionCount||0, d.streak||0, d.point||0);
+      window._doneMissions = d.doneMissions || [];
+    }
+  }
+
+  function updateStats(mission, streak, point) {
+    document.getElementById("statMission").textContent = mission;
+    document.getElementById("statStreak").textContent = streak;
+    document.getElementById("statPoint").textContent = point.toLocaleString();
+    document.getElementById("rewardPoint").textContent = point.toLocaleString() + " P";
+  }
+
+  // ── 미션 완료 저장 ──
+  window.completeMissionFB = async (uid, missionId, missionName, point) => {
+    const ref = doc(db, "users", uid);
+    const snap = await getDoc(ref);
+    const d = snap.data();
+    const done = d.doneMissions || [];
+
+    if (done.includes(missionId)) {
+      showToast("이미 완료한 미션이에요 ✅");
+      return false;
+    }
+
+    const newDone = [...done, missionId];
+    const newPoint = (d.point||0) + point;
+    const newCount = (d.missionCount||0) + 1;
+
+    await updateDoc(ref, {
+      doneMissions: newDone,
+      point: newPoint,
+      missionCount: newCount,
+      lastMissionAt: serverTimestamp()
+    });
+
+    window._doneMissions = newDone;
+    updateStats(newCount, d.streak||0, newPoint);
+    showToast(`🎉 +${point}P 적립! "${missionName}"`);
+    return true;
+  };
+
+  window._auth = auth;
+</script>
+
+<script>
+  // ── 미션 데이터 ──
+  const MISSIONS = [
+    { id:"m1", emoji:"🧴", name:"텀블러로 카페 이용하기", point:50, co2:"0.3kg" },
+    { id:"m2", emoji:"🚌", name:"대중교통 이용하기", point:80, co2:"1.2kg" },
+    { id:"m3", emoji:"🥗", name:"채식 메뉴 선택하기", point:60, co2:"0.8kg" },
+    { id:"m4", emoji:"💡", name:"불필요한 전등 끄기", point:30, co2:"0.1kg" },
+    { id:"m5", emoji:"♻️", name:"분리수거 완벽하게", point:40, co2:"0.2kg" },
+    { id:"m6", emoji:"🛍️", name:"장바구니 사용하기", point:35, co2:"0.15kg" },
+    { id:"m7", emoji:"🚿", name:"샤워 5분 이내로", point:45, co2:"0.4kg" },
+  ];
+
+  const CHALLENGES = [
+    { id:1, hot:true, tag:"tag-env", tagName:"🌿 환경", title:"30일 텀블러 챌린지",
+      desc:"매일 텀블러를 사용하고 인증샷을 올려요!", prize:5000, deposit:3000,
+      participants:1284, daysLeft:15, progress:50,
+      missions:["매일 텀블러 사용 인증샷","카페 방문 시 개인컵 사용","월말 총 30회 달성"] },
+    { id:2, hot:true, tag:"tag-transport", tagName:"🚌 교통", title:"대중교통 챌린지",
+      desc:"2주간 자가용 대신 대중교통·자전거를 이용해요!", prize:8000, deposit:5000,
+      participants:892, daysLeft:9, progress:36,
+      missions:["주 5일 대중교통 이용 인증","이동 거리 기록","14일 완주"] },
+    { id:3, hot:false, tag:"tag-food", tagName:"🥗 식품", title:"채식 메뉴 챌린지",
+      desc:"일주일간 하루 한 끼 채식 메뉴를 선택해요!", prize:3000, deposit:2000,
+      participants:547, daysLeft:4, progress:43,
+      missions:["매일 채식 메뉴 인증샷","7일 연속 달성"] },
+    { id:4, hot:false, tag:"tag-zero", tagName:"🗑️ 제로웨이스트", title:"1주일 쓰레기 줄이기",
+      desc:"일주일간 쓰레기를 사진으로 기록하고 줄여나가요!", prize:4000, deposit:2000,
+      participants:328, daysLeft:6, progress:14,
+      missions:["매일 쓰레기 봉투 사진 기록","7일 달성"] },
+  ];
+
+  window._doneMissions = [];
+
+  function renderMissions(uid) {
+    const wrap = document.getElementById("missionScroll");
+    wrap.innerHTML = MISSIONS.map(m => {
+      const done = (window._doneMissions||[]).includes(m.id);
+      return `
+        <div class="mission-card${done?" done":""}" onclick="handleMission('${m.id}','${m.name}',${m.point},'${uid}',this)">
+          <div class="mission-emoji">${m.emoji}</div>
+          <div class="mission-name">${m.name}</div>
+          <div style="display:flex;gap:4px;flex-wrap:wrap;">
+            <span class="point-badge">+${m.point}P</span>
+            <span class="co2-badge">-${m.co2}</span>
+          </div>
+        </div>`;
+    }).join("");
+  }
+
+  async function handleMission(id, name, point, uid, card) {
+    if (!uid || uid === 'undefined') { showToast("로그인이 필요해요!"); return; }
+    const success = await window.completeMissionFB(uid, id, name, point);
+    if (success) card.classList.add("done");
+  }
+
+  function renderChallengeCard(c, showProgress) {
+    return `
+      <div class="challenge-card${c.hot?" hot":""}" onclick="openChallenge(${c.id})">
+        <div class="challenge-top">
+          <div style="flex:1">
+            <span class="challenge-tag ${c.tag}">${c.tagName}</span>
+            <div class="challenge-title">${c.title}</div>
+            <div class="challenge-desc">${c.desc}</div>
+          </div>
+          <div class="challenge-prize">
+            <div class="prize-label">예치금 환급</div>
+            <div class="prize-amount">${c.prize.toLocaleString()}P</div>
+            <div class="prize-sub">예치 ${c.deposit.toLocaleString()}원</div>
+          </div>
+        </div>
+        ${showProgress?`<div class="progress-bar"><div class="progress-fill" style="width:${c.progress}%"></div></div>`:""}
+        <div class="challenge-bottom">
+          <div style="display:flex;align-items:center;">
+            <div class="avatar-stack">
+              <div class="avatar">A</div><div class="avatar">B</div><div class="avatar">C</div>
+            </div>
+            <span class="participant-count">${c.participants.toLocaleString()}명 참여 중</span>
+          </div>
+          <div style="font-size:11px;color:var(--sub)"><span class="days-left">${c.daysLeft}일</span> 남음</div>
+        </div>
+      </div>`;
+  }
+
+  function renderMyChallenges() {
+    document.getElementById("myChallengeList").innerHTML = CHALLENGES.slice(0,2).map(c=>renderChallengeCard(c,true)).join("");
+  }
+
+  function renderAllChallenges() {
+    document.getElementById("allChallengeList").innerHTML = CHALLENGES.map(c=>renderChallengeCard(c,false)).join("");
+  }
+
+  function switchTab(name, btn) {
+    ["home","challenge","map","reward"].forEach(t=>{
+      document.getElementById("tab-"+t).style.display = t===name?"block":"none";
+    });
+    document.querySelectorAll(".mtab").forEach(b=>b.classList.remove("active"));
+    if(btn) btn.classList.add("active");
+    else document.querySelectorAll(".mtab")[["home","challenge","map","reward"].indexOf(name)].classList.add("active");
+  }
+
+  function openChallenge(id) {
+    const c = CHALLENGES.find(x=>x.id===id);
+    if(!c) return;
+    document.getElementById("modalContent").innerHTML = `
+      <div class="modal-title">${c.title}</div>
+      <div class="modal-desc">${c.desc}<br/><br/>실패해도 예치금이 환경단체에 기부돼요. 성공하면 전액 + 보너스 포인트! 🌍</div>
+      <div class="modal-detail">
+        <div class="detail-row"><span class="detail-label">예치금</span><span class="detail-value">${c.deposit.toLocaleString()}원</span></div>
+        <div class="detail-row"><span class="detail-label">성공 시</span><span class="detail-value" style="color:var(--secondary)">${c.prize.toLocaleString()}P + 전액 환급</span></div>
+        <div class="detail-row"><span class="detail-label">실패 시</span><span class="detail-value" style="color:var(--sub)">환경단체 기부</span></div>
+        <div class="detail-row"><span class="detail-label">참여자</span><span class="detail-value">${c.participants.toLocaleString()}명</span></div>
+      </div>
+      ${c.missions.map(m=>`<div style="font-size:13px;padding:6px 0;border-bottom:1px solid var(--border)">✅ ${m}</div>`).join("")}
+      <div class="modal-btns">
+        <button class="btn-cancel" onclick="closeModal()">닫기</button>
+        <button class="btn-join" onclick="joinChallenge('${c.title}')">참여하기 🌱</button>
+      </div>`;
+    document.getElementById("modalOverlay").classList.add("open");
+  }
+
+  function closeModal(e) {
+    if(!e || e.target===document.getElementById("modalOverlay"))
+      document.getElementById("modalOverlay").classList.remove("open");
+  }
+
+  function joinChallenge(title) {
     document.getElementById("modalOverlay").classList.remove("open");
-}
+    showToast(`🎉 "${title}" 참여 완료!`);
+  }
 
-function joinChallenge(title) {
-  document.getElementById("modalOverlay").classList.remove("open");
-  showToast(`🎉 "${title}" 참여 완료!`);
-}
+  function showToast(msg) {
+    const t=document.getElementById("toast");
+    t.textContent=msg; t.classList.add("show");
+    setTimeout(()=>t.classList.remove("show"),2500);
+  }
 
-function openCreateRoom() {
-  showToast("🌱 챌린지 방 만들기 — 곧 오픈해요!");
-}
-
-// ── 토스트 ──
-function showToast(msg) {
-  const t = document.getElementById("toast");
-  t.textContent = msg; t.classList.add("show");
-  setTimeout(() => t.classList.remove("show"), 2500);
-}
-
-// ── 초기화 ──
-renderMissions();
-renderMyChallenges();
-renderAllChallenges();
+  window.showToast = showToast;
+  window.switchTab = switchTab;
+  window.openChallenge = openChallenge;
+  window.closeModal = closeModal;
+  window.joinChallenge = joinChallenge;
+  window.handleMission = handleMission;
 </script>
 </body>
 </html>

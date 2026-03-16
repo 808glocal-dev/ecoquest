@@ -578,10 +578,10 @@ async function loadUser(uid){
   const ref=window.FB.doc(window.FB.db,"users",uid);
   const snap=await window.FB.getDoc(ref);
   if(!snap.exists()){
-    await window.FB.setDoc(ref,{point:3000,missionCount:0,streak:0,doneMissions:[],co2:0,todayMissions:[],createdAt:window.FB.serverTimestamp()});
-    window.UDATA={point:3000,missionCount:0,streak:0,doneMissions:[],co2:0,todayMissions:[]};
+    await window.FB.setDoc(ref,{point:0,missionCount:0,streak:0,doneMissions:[],co2:0,todayMissions:[],createdAt:window.FB.serverTimestamp()});
+    window.UDATA={point:0,missionCount:0,streak:0,doneMissions:[],co2:0,todayMissions:[]};
     try{await window.FB.setDoc(window.FB.doc(window.FB.db,"stats","global"),{totalUsers:window.FB.increment(1),todayUsers:window.FB.increment(1),totalCo2:0},{merge:true});loadGlobalStats();}catch(e){}
-    toast("🎉 가입 완료! 3,000P 지급됐어요!");
+    toast("🎉 EcoQuest에 오신 걸 환영해요! 미션을 완료해서 포인트를 모아봐요 🌱");
   }else{
     window.UDATA=snap.data();
   }
@@ -780,24 +780,38 @@ window.joinPub=async(rid)=>{
 <script>
 // ══ 데이터 ══
 const MISSIONS=[
-  {id:"m1",emoji:"🧴",name:"텀블러로 카페 이용하기",point:500,co2:0.3,kw:"텀블러, 개인 컵, 머그컵"},
-  {id:"m2",emoji:"🚌",name:"대중교통 이용하기",point:800,co2:1.2,kw:"버스, 지하철, 기차"},
-  {id:"m3",emoji:"🥗",name:"채식 메뉴 선택하기",point:600,co2:0.8,kw:"채식, 샐러드, 야채 요리"},
-  {id:"m4",emoji:"💡",name:"불필요한 전등 끄기",point:300,co2:0.1,kw:"꺼진 전등, 절전"},
-  {id:"m5",emoji:"♻️",name:"분리수거 완벽하게",point:400,co2:0.2,kw:"분리수거통, 재활용"},
-  {id:"m6",emoji:"🛍️",name:"장바구니 사용하기",point:350,co2:0.15,kw:"장바구니, 에코백"},
-  {id:"m7",emoji:"🚿",name:"샤워 5분 이내로",point:450,co2:0.4,kw:"샤워, 타이머, 욕실"},
-  {id:"m8",emoji:"🚲",name:"자전거/도보 이동",point:700,co2:1.0,kw:"자전거, 도보, 헬멧"},
-  {id:"m9",emoji:"🌱",name:"식물 물 주기",point:250,co2:0.05,kw:"화분, 식물"},
-  {id:"m10",emoji:"📱",name:"전자기기 절전 모드",point:300,co2:0.1,kw:"절전 모드, 배터리"},
+  {id:"m1",emoji:"🧴",name:"텀블러로 카페 이용하기",point:50,co2:0.3,kw:"텀블러, 개인 컵, 머그컵"},
+  {id:"m2",emoji:"🚌",name:"대중교통 이용하기",point:80,co2:1.2,kw:"버스, 지하철, 기차"},
+  {id:"m3",emoji:"🥗",name:"채식 메뉴 선택하기",point:60,co2:0.8,kw:"채식, 샐러드, 야채 요리"},
+  {id:"m4",emoji:"💡",name:"불필요한 전등 끄기",point:30,co2:0.1,kw:"꺼진 전등, 절전"},
+  {id:"m5",emoji:"♻️",name:"분리수거 완벽하게",point:40,co2:0.2,kw:"분리수거통, 재활용"},
+  {id:"m6",emoji:"🛍️",name:"장바구니 사용하기",point:35,co2:0.15,kw:"장바구니, 에코백"},
+  {id:"m7",emoji:"🚿",name:"샤워 5분 이내로",point:45,co2:0.4,kw:"샤워, 타이머, 욕실"},
+  {id:"m8",emoji:"🚲",name:"자전거/도보 이동",point:70,co2:1.0,kw:"자전거, 도보, 헬멧"},
+  {id:"m9",emoji:"🌱",name:"식물 물 주기",point:25,co2:0.05,kw:"화분, 식물"},
+  {id:"m10",emoji:"📱",name:"전자기기 절전 모드",point:30,co2:0.1,kw:"절전 모드, 배터리"},
 ];
 
 const CHALLENGES=[
-  {id:1,emoji:"🧴",title:"30일 텀블러 챌린지",desc:"매일 텀블러를 사용하고 AI 인증샷을 올려요!",tag:"🌿 환경",days:30,participants:1284,hot:true},
-  {id:2,emoji:"🚌",title:"14일 대중교통 챌린지",desc:"2주간 자가용 대신 대중교통을!",tag:"🚌 교통",days:14,participants:892,hot:true},
-  {id:3,emoji:"🥗",title:"7일 채식 챌린지",desc:"일주일간 하루 한 끼 채식 메뉴를!",tag:"🥗 식품",days:7,participants:547,hot:false},
-  {id:4,emoji:"♻️",title:"7일 쓰레기 줄이기",desc:"일주일간 쓰레기를 줄여나가요!",tag:"🗑️ 제로웨이스트",days:7,participants:328,hot:false},
+  {id:1,emoji:"🧴",title:"텀블러 사용하기",desc:"카페에서 텀블러나 개인 컵을 사용해요! AI가 인증샷을 확인해요.",tag:"🌿 환경",baseParticipants:1284,hot:true,missionId:"m1"},
+  {id:2,emoji:"🚌",title:"대중교통 이용하기",desc:"자가용 대신 버스, 지하철을 이용해요! 탄소 배출을 줄여요.",tag:"🚌 교통",baseParticipants:892,hot:true,missionId:"m2"},
+  {id:3,emoji:"🥗",title:"채식 한 끼 먹기",desc:"하루 한 끼 채식 메뉴를 선택해요! 지구를 위한 식단이에요.",tag:"🥗 식품",baseParticipants:547,hot:false,missionId:"m3"},
+  {id:4,emoji:"♻️",title:"분리수거 하기",desc:"쓰레기를 올바르게 분리수거해요! 자원을 순환시켜요.",tag:"🗑️ 제로웨이스트",baseParticipants:328,hot:false,missionId:"m5"},
+  {id:5,emoji:"🚲",title:"자전거/도보 이동",desc:"가까운 거리는 자전거나 걸어서 이동해요!",tag:"🌿 환경",baseParticipants:215,hot:false,missionId:"m8"},
+  {id:6,emoji:"🚿",title:"절수 샤워하기",desc:"샤워 시간을 5분 이내로 줄여봐요!",tag:"💧 절수",baseParticipants:183,hot:false,missionId:"m7"},
 ];
+
+const FREQ_OPTIONS=[
+  {id:"daily",label:"매일",desc:"매일 인증"},
+  {id:"w5",label:"주 5일",desc:"주 5일 인증"},
+  {id:"w3",label:"주 3일",desc:"주 3일 인증"},
+];
+const WEEK_OPTIONS=[
+  {id:1,label:"1주",days:7},
+  {id:2,label:"2주",days:14},
+  {id:4,label:"4주",days:28},
+];
+const DEP_OPTIONS=[10000,30000,50000,100000];
 
 const BOOKS=[
   {id:"b0",cover:null,emoji:"🎁",title:"EcoQuest 웰컴 기프티콘",author:"EcoQuest",desc:"환경 실천 응원 디지털 기프티콘",price:5000,tag:"추천"},
@@ -1018,12 +1032,12 @@ function renderOfficialChallenges(){
       <div class="cg-img">
         ${c.emoji}
         <span class="official-tag">공식챌린지</span>
-        <span class="cg-cnt">👥 ${c.participants.toLocaleString()}명</span>
+        <span class="cg-cnt">👥 ${c.baseParticipants.toLocaleString()}명</span>
         ${c.hot?'<span class="hot-badge">HOT</span>':""}
       </div>
       <div class="cg-body">
         <div class="cg-title">${c.title}</div>
-        <div class="cg-meta">${c.days}일 챌린지 · AI인증</div>
+        <div class="cg-meta">주 3일~ · AI인증</div>
       </div>
     </div>`).join("");
 }
@@ -1037,7 +1051,7 @@ function renderHomeChalls(){
         <span style="font-size:24px">${c.emoji}</span>
         <div>
           <div style="font-size:13px;font-weight:700;color:var(--txt)">${c.title}</div>
-          <div style="font-size:11px;color:var(--sub);margin-top:2px">${c.days}일 · 👥${c.participants.toLocaleString()}명</div>
+          <div style="font-size:11px;color:var(--sub);margin-top:2px">주 3일~ · 👥${c.baseParticipants.toLocaleString()}명</div>
         </div>
       </div>
       <div style="font-size:20px;color:var(--sub)">›</div>
@@ -1045,51 +1059,93 @@ function renderHomeChalls(){
 }
 
 // ══ 챌린지 상세 모달 ══
-let _dep=5000;
+let _dep=10000,_freq="w3",_weeks=2;
+
 function openChal(id){
   const c=CHALLENGES.find(x=>x.id===id);if(!c)return;
-  _dep=5000;
-  document.getElementById("chalDetail").innerHTML=`
-    <div style="font-size:28px;margin-bottom:8px">${c.emoji}</div>
-    <div style="font-size:7px;font-weight:700;background:var(--g1);color:#fff;padding:2px 8px;border-radius:8px;display:inline-block;margin-bottom:8px">공식 챌린지</div>
-    <div class="modal-title">${c.title}</div>
-    <div class="modal-desc">${c.desc}<br/><br/>🤖 AI가 매일 인증샷을 확인해요!</div>
-    <div style="font-size:13px;font-weight:700;color:var(--txt);margin-bottom:8px">💰 예치금 선택</div>
-    <div class="deposit-select">
-      <button class="dep-btn on" onclick="selDep(5000,this)">5,000P</button>
-      <button class="dep-btn" onclick="selDep(10000,this)">10,000P</button>
-      <button class="dep-btn" onclick="selDep(30000,this)">30,000P</button>
-      <button class="dep-btn" onclick="selDep(50000,this)">50,000P</button>
-    </div>
-    <div class="refund-box">
-      <div style="font-size:12px;font-weight:700;color:var(--txt);margin-bottom:6px">환급 구조 (${c.days}일 기준)</div>
-      <div class="refund-row"><span class="lbl">100% 달성</span><span class="val" style="color:var(--g2)" id="ref100">5,050P (원금+1%)</span></div>
-      <div class="refund-row"><span class="lbl">85% 이상</span><span class="val" id="ref85">5,000P</span></div>
-      <div class="refund-row"><span class="lbl">60~85%</span><span class="val" id="ref60">달성률만큼</span></div>
-      <div class="refund-row"><span class="lbl">60% 미만</span><span class="val" id="ref40">최소 10%</span></div>
-    </div>
-    <div style="background:#e8f5e9;border-radius:10px;padding:10px;margin-bottom:14px;font-size:12px;color:var(--g2)">
-      👥 ${c.participants.toLocaleString()}명 참여 중 · ${c.days}일 챌린지<br/>
-      💡 이 챌린지 참여자들은 평균 <b>12,800P</b>를 걸었어요!
-    </div>
-    <div style="display:flex;gap:8px">
-      <button class="btn btn-gray" style="flex:1" onclick="closeOv('ovChal')">닫기</button>
-      <button class="btn btn-g" style="flex:1" onclick="joinChal('${c.title}')">오늘부터 시작!</button>
-    </div>`;
+  _dep=10000;_freq="w3";_weeks=2;
+  renderChalDetail(c);
   openOv("ovChal");
 }
-function selDep(amt,el){
-  _dep=amt;
-  document.querySelectorAll("#chalDetail .dep-btn").forEach(b=>b.classList.remove("on"));
-  el.classList.add("on");
-  document.getElementById("ref100").textContent=(amt+Math.floor(amt*.01)).toLocaleString()+"P (원금+1%)";
-  document.getElementById("ref85").textContent=amt.toLocaleString()+"P";
-  document.getElementById("ref60").textContent="달성률×"+amt.toLocaleString()+"P";
-  document.getElementById("ref40").textContent=Math.floor(amt*.1).toLocaleString()+"P (10%)";
+
+function renderChalDetail(c){
+  const totalDays=_weeks*7;
+  const reqDays=_freq==="daily"?totalDays:_freq==="w5"?_weeks*5:_weeks*3;
+  const bonus=Math.floor(_dep*0.01);
+  const pts=c.baseParticipants+Math.floor(Math.random()*50);
+  document.getElementById("chalDetail").innerHTML=`
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+      <div style="font-size:40px">${c.emoji}</div>
+      <div>
+        <div style="font-size:10px;font-weight:700;background:var(--g1);color:#fff;padding:2px 8px;border-radius:8px;display:inline-block;margin-bottom:4px">공식 챌린지</div>
+        <div style="font-size:17px;font-weight:900;color:var(--txt)">${c.title}</div>
+        <div style="font-size:12px;color:var(--sub);margin-top:2px">⭐ 4.8 · 👥 ${pts.toLocaleString()}명 참가중</div>
+      </div>
+    </div>
+    <div style="font-size:13px;color:var(--sub);margin-bottom:16px;line-height:1.6">${c.desc}</div>
+
+    <!-- 빈도 선택 -->
+    <div style="font-size:13px;font-weight:700;color:var(--txt);margin-bottom:8px">📅 인증 빈도</div>
+    <div style="display:flex;gap:6px;margin-bottom:14px" id="freqSel">
+      ${FREQ_OPTIONS.map(f=>`<button class="dep-btn${_freq===f.id?" on":""}" style="flex:1" onclick="selFreq('${f.id}',${c.id})">${f.label}</button>`).join("")}
+    </div>
+
+    <!-- 기간 선택 -->
+    <div style="font-size:13px;font-weight:700;color:var(--txt);margin-bottom:8px">🗓️ 챌린지 기간</div>
+    <div style="display:flex;gap:6px;margin-bottom:14px" id="weekSel">
+      ${WEEK_OPTIONS.map(w=>`<button class="dep-btn${_weeks===w.id?" on":""}" style="flex:1" onclick="selWeeks(${w.id},${c.id})">${w.label}</button>`).join("")}
+    </div>
+
+    <!-- 요약 -->
+    <div style="background:#f0fbf4;border-radius:12px;padding:10px 12px;margin-bottom:14px;font-size:12px;color:var(--g2);border:1px solid var(--bdr)">
+      ${_freq==="daily"?"매일":_freq==="w5"?"주 5일":"주 3일"}, ${_weeks}주 동안 · 총 <b>${reqDays}회</b> 인증 필요
+    </div>
+
+    <!-- 예치금 선택 -->
+    <div style="font-size:13px;font-weight:700;color:var(--txt);margin-bottom:4px">💰 예치금</div>
+    <div style="font-size:11px;color:var(--sub);margin-bottom:8px">시작 전에 돈을 걸면, 종료 시점 달성률에 따라 환급해드려요!</div>
+    <div style="display:flex;gap:6px;margin-bottom:8px;overflow-x:auto;padding-bottom:4px" id="depSel">
+      ${DEP_OPTIONS.map(d=>`<button class="dep-btn${_dep===d?" on":""}" style="flex-shrink:0" onclick="selDep(${d},${c.id})">${(d/10000).toFixed(0)}만원</button>`).join("")}
+    </div>
+    <div style="font-size:22px;font-weight:900;color:var(--txt);text-align:center;margin:8px 0">${_dep.toLocaleString()}원</div>
+
+    <!-- 환급 구조 -->
+    <div class="refund-box">
+      <div style="font-size:12px;font-weight:700;color:var(--txt);margin-bottom:8px">환급 구조</div>
+      <div class="refund-row hi"><span class="lbl">100% 성공</span><span class="val">(예상) ${_dep.toLocaleString()} ~ ${(_dep+bonus).toLocaleString()}원</span></div>
+      <div class="refund-row"><span class="lbl">85% 이상 성공</span><span class="val">${_dep.toLocaleString()}원</span></div>
+      <div class="refund-row"><span class="lbl">85% 미만 성공</span><span class="val">달성률만큼 부분 환급</span></div>
+    </div>
+
+    <!-- 인증 방법 -->
+    <div style="background:#1a2e1a;border-radius:12px;padding:12px;margin:12px 0">
+      <div style="font-size:12px;font-weight:700;color:#fff;margin-bottom:6px">📸 이렇게 인증해 주세요</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.75);line-height:1.8">
+        🤖 AI가 인증샷을 자동으로 확인해요<br/>
+        ✅ 오전 0시 ~ 자정 사이에 인증<br/>
+        ✅ 사진첩 사용 가능<br/>
+        ✅ 인증샷은 참가자에게만 공개
+      </div>
+    </div>
+
+    <div style="font-size:12px;color:var(--sub);text-align:center;margin-bottom:12px">
+      이 챌린지 참가자들은 평균 <b style="color:var(--blue)">${Math.floor(_dep*0.9+Math.random()*_dep*0.5).toLocaleString()}원</b>을 걸었어요!
+    </div>
+
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-gray" style="flex:1" onclick="closeOv('ovChal')">닫기</button>
+      <button class="btn btn-g" style="flex:2" onclick="joinChal('${c.title}',${c.id})">${_dep.toLocaleString()}원으로 시작!</button>
+    </div>`;
 }
-function joinChal(title){
+
+function selFreq(f,cid){_freq=f;const c=CHALLENGES.find(x=>x.id===cid);if(c)renderChalDetail(c);}
+function selWeeks(w,cid){_weeks=w;const c=CHALLENGES.find(x=>x.id===cid);if(c)renderChalDetail(c);}
+function selDep(d,cid){_dep=d;const c=CHALLENGES.find(x=>x.id===cid);if(c)renderChalDetail(c);}
+
+function joinChal(title,cid){
   closeOv("ovChal");
-  toast('🎉 "'+title+'" 참여 완료! (결제 시스템 연동 예정)');
+  const freq=_freq==="daily"?"매일":_freq==="w5"?"주 5일":"주 3일";
+  toast(`🎉 "${title}" ${freq} ${_weeks}주 참여! (결제 연동 예정)`);
 }
 
 // 방 만들기 변수
@@ -1205,6 +1261,7 @@ document.querySelectorAll(".overlay").forEach(ov=>{
 });
 
 // 전역 노출
+window.selFreq=selFreq;window.selWeeks=selWeeks;window.selDep=selDep;
 window.goPage=goPage;window.setCTab=setCTab;window.openMissionSel=openMissionSel;
 window.toggleMSel=toggleMSel;window.confirmMissions=confirmMissions;
 window.openAI=openAI;window.doAnalyze=doAnalyze;window.doComplete=doComplete;

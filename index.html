@@ -578,8 +578,8 @@ async function loadUser(uid){
   const ref=window.FB.doc(window.FB.db,"users",uid);
   const snap=await window.FB.getDoc(ref);
   if(!snap.exists()){
-    await window.FB.setDoc(ref,{point:0,missionCount:0,streak:0,doneMissions:[],co2:0,todayMissions:[],joinedChallenges:[],createdAt:window.FB.serverTimestamp()});
-    window.UDATA={point:0,missionCount:0,streak:0,doneMissions:[],co2:0,todayMissions:[],joinedChallenges:[]};
+    await window.FB.setDoc(ref,{point:0,missionCount:0,streak:0,doneMissions:[],co2:0,todayMissions:[],createdAt:window.FB.serverTimestamp()});
+    window.UDATA={point:0,missionCount:0,streak:0,doneMissions:[],co2:0,todayMissions:[]};
     try{await window.FB.setDoc(window.FB.doc(window.FB.db,"stats","global"),{totalUsers:window.FB.increment(1),todayUsers:window.FB.increment(1),totalCo2:0},{merge:true});loadGlobalStats();}catch(e){}
     toast("🎉 EcoQuest에 오신 걸 환영해요! 미션을 완료해서 포인트를 모아봐요 🌱");
   }else{
@@ -875,52 +875,31 @@ function setCTab(t){
 // ══ 미션 렌더링 ══
 function renderMissions(uid){
   const wrap=document.getElementById("missionScroll");
+  const todayIds=window.UDATA?.todayMissions||[];
+  const today=todayIds.map(id=>MISSIONS.find(m=>m.id===id)).filter(Boolean);
   wrap.innerHTML="";
-
-  // 참여 중인 챌린지의 미션 자동 추출
-  const joinedChalIds=window.UDATA?.joinedChallenges||[];
-  const chalMissionIds=joinedChalIds
-    .map(jc=>CHALLENGES.find(c=>c.id===jc.chalId))
-    .filter(Boolean)
-    .map(c=>c.missionId);
-
-  // 수동 선택 미션과 합치기 (중복 제거)
-  const manualIds=window.UDATA?.todayMissions||[];
-  const allIds=[...new Set([...chalMissionIds,...manualIds])];
-  const today=allIds.map(id=>MISSIONS.find(m=>m.id===id)).filter(Boolean);
-
   if(!today.length){
     const empty=document.createElement("div");
     empty.style.cssText="display:flex;align-items:center;gap:12px;padding:4px 0;width:100%";
-    empty.innerHTML=`<button class="mc-add" onclick="openMissionSel('${uid}')"><span>➕</span><p>미션 선택</p></button><div style="font-size:13px;color:var(--sub);line-height:1.7">챌린지에 참여하거나<br/>미션을 선택해봐요!</div>`;
+    empty.innerHTML=`<button class="mc-add" onclick="openMissionSel('${uid}')"><span>➕</span><p>미션 선택</p></button><div style="font-size:13px;color:var(--sub);line-height:1.7">오늘 실천할<br/>미션을 골라봐요!</div>`;
     wrap.appendChild(empty);
     return;
   }
-
   today.forEach(m=>{
     const done=(window.UDATA?.doneMissions||[]).includes(m.id);
-    const fromChal=chalMissionIds.includes(m.id);
     const el=document.createElement("div");
     el.className="mc"+(done?" done":"");
-    el.innerHTML=`
-      <div class="mc-emoji">${m.emoji}</div>
-      <div class="mc-name">${m.name}</div>
-      ${fromChal?`<div style="font-size:9px;color:var(--g2);font-weight:700;margin-bottom:4px">챌린지 미션</div>`:""}
-      <div class="mc-badges">
-        <span class="badge badge-p">+${m.point}P</span>
-        <span class="badge badge-c">-${m.co2}kg</span>
-        <span class="badge badge-ai">🤖AI</span>
-      </div>`;
+    el.innerHTML=`<div class="mc-emoji">${m.emoji}</div><div class="mc-name">${m.name}</div><div class="mc-badges"><span class="badge badge-p">+${m.point}P</span><span class="badge badge-c">-${m.co2}kg</span><span class="badge badge-ai">🤖AI</span></div>`;
     el.onclick=()=>openAI(m,uid);
     wrap.appendChild(el);
   });
-
-  // 추가 버튼 (챌린지 미션 외 추가 가능)
-  const add=document.createElement("button");
-  add.className="mc-add";
-  add.innerHTML=`<span>➕</span><p>추가</p>`;
-  add.onclick=()=>openMissionSel(uid);
-  wrap.appendChild(add);
+  if(today.length<3){
+    const add=document.createElement("button");
+    add.className="mc-add";
+    add.innerHTML=`<span>➕</span><p>추가</p>`;
+    add.onclick=()=>openMissionSel(uid);
+    wrap.appendChild(add);
+  }
 }
 
 // ══ 미션 선택 ══
@@ -1066,29 +1045,17 @@ function renderOfficialChallenges(){
 // 홈 챌린지 목록
 function renderHomeChalls(){
   const w=document.getElementById("homeChallList");
-  const joined=window.UDATA?.joinedChallenges||[];
-  if(!joined.length){
-    w.innerHTML=`<div style="text-align:center;padding:20px;color:var(--sub);font-size:13px">
-      참여 중인 챌린지가 없어요!<br/>
-      <button onclick="goPage('chal')" style="margin-top:10px;background:var(--g1);color:#fff;border:none;border-radius:10px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">챌린지 참여하기 🌱</button>
-    </div>`;
-    return;
-  }
-  w.innerHTML=joined.map(j=>{
-    const chal=CHALLENGES.find(c=>c.id===j.chalId);
-    if(!chal)return"";
-    const freqLabel=j.freq==="daily"?"매일":j.freq==="w5"?"주 5일":"주 3일";
-    return`<div style="background:#fff;border-radius:12px;padding:12px 14px;margin-bottom:8px;border:1.5px solid var(--g1);display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="openChal(${chal.id})">
+  w.innerHTML=CHALLENGES.slice(0,2).map(c=>`
+    <div style="background:#fff;border-radius:12px;padding:12px 14px;margin-bottom:8px;border:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="openChal(${c.id})">
       <div style="display:flex;align-items:center;gap:10px">
-        <span style="font-size:24px">${chal.emoji}</span>
+        <span style="font-size:24px">${c.emoji}</span>
         <div>
-          <div style="font-size:13px;font-weight:700;color:var(--txt)">${chal.title}</div>
-          <div style="font-size:11px;color:var(--sub);margin-top:2px">${freqLabel} · ${j.weeks}주 · ${j.deposit.toLocaleString()}P 예치</div>
+          <div style="font-size:13px;font-weight:700;color:var(--txt)">${c.title}</div>
+          <div style="font-size:11px;color:var(--sub);margin-top:2px">주 3일~ · 👥${c.baseParticipants.toLocaleString()}명</div>
         </div>
       </div>
-      <span style="background:#e8f5e9;color:var(--g2);font-size:11px;font-weight:700;padding:3px 8px;border-radius:10px">참여중</span>
-    </div>`;
-  }).join("");
+      <div style="font-size:20px;color:var(--sub)">›</div>
+    </div>`).join("");
 }
 
 // ══ 챌린지 상세 모달 ══
@@ -1175,32 +1142,10 @@ function selFreq(f,cid){_freq=f;const c=CHALLENGES.find(x=>x.id===cid);if(c)rend
 function selWeeks(w,cid){_weeks=w;const c=CHALLENGES.find(x=>x.id===cid);if(c)renderChalDetail(c);}
 function selDep(d,cid){_dep=d;const c=CHALLENGES.find(x=>x.id===cid);if(c)renderChalDetail(c);}
 
-async function joinChal(title,cid){
+function joinChal(title,cid){
   closeOv("ovChal");
-  const user=window.ME;
-  if(!user){toast("로그인이 필요해요!");return;}
   const freq=_freq==="daily"?"매일":_freq==="w5"?"주 5일":"주 3일";
-  const joined=window.UDATA?.joinedChallenges||[];
-  // 이미 참여중인지 확인
-  if(joined.some(j=>j.chalId===cid)){
-    toast("이미 참여 중인 챌린지예요!");
-    return;
-  }
-  try{
-    const newJoined=[...joined,{
-      chalId:cid,title,freq:_freq,weeks:_weeks,deposit:_dep,
-      joinedAt:new Date().toISOString()
-    }];
-    await window.FB.updateDoc(window.FB.doc(window.FB.db,"users",user.uid),{
-      joinedChallenges:newJoined
-    });
-    window.UDATA.joinedChallenges=newJoined;
-    renderMissions(user.uid);
-    renderHomeChalls();
-    toast(`🎉 "${title}" ${freq} ${_weeks}주 참여 완료! (결제 연동 예정)`);
-  }catch(e){
-    toast("참여 실패: "+e.message);
-  }
+  toast(`🎉 "${title}" ${freq} ${_weeks}주 참여! (결제 연동 예정)`);
 }
 
 // 방 만들기 변수

@@ -493,10 +493,11 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
     <div class="form-group">
       <label>예치금</label>
       <div class="deposit-select" id="rDepSel">
-        <button class="dep-btn on" onclick="setDep(5000,this)">5,000P</button>
-        <button class="dep-btn" onclick="setDep(10000,this)">10,000P</button>
-        <button class="dep-btn" onclick="setDep(30000,this)">30,000P</button>
-        <button class="dep-btn" onclick="setDep(50000,this)">50,000P</button>
+        <button class="dep-btn on" onclick="setDep(3000,this)">3천P</button>
+        <button class="dep-btn" onclick="setDep(5000,this)">5천P</button>
+        <button class="dep-btn" onclick="setDep(10000,this)">1만P</button>
+        <button class="dep-btn" onclick="setDep(30000,this)">3만P</button>
+        <button class="dep-btn" onclick="setDep(50000,this)">5만P</button>
       </div>
     </div>
     <div class="form-group">
@@ -909,7 +910,7 @@ const WEEK_OPTIONS=[
   {id:2,label:"2주",days:14},
   {id:4,label:"4주",days:28},
 ];
-const DEP_OPTIONS=[10000,30000,50000,100000];
+const DEP_OPTIONS=[3000,5000,10000,30000,50000];
 
 const BOOKS=[
   {id:"b0",cover:null,emoji:"🎁",title:"EcoQuest 웰컴 기프티콘",author:"EcoQuest",desc:"환경 실천 응원 디지털 기프티콘",price:5000,tag:"추천"},
@@ -1229,11 +1230,11 @@ function renderHomeChalls(){
 }
 
 // ══ 챌린지 상세 모달 ══
-let _dep=10000,_freq="w3",_weeks=2;
+let _dep=3000,_freq="w3",_weeks=2;
 
 function openChal(id){
   const c=CHALLENGES.find(x=>x.id===id);if(!c)return;
-  _dep=10000;_freq="w3";_weeks=2;
+  _dep=3000;_freq="w3";_weeks=2;
   renderChalDetail(c);
   openOv("ovChal");
 }
@@ -1275,7 +1276,7 @@ function renderChalDetail(c){
     <div style="font-size:13px;font-weight:700;color:var(--txt);margin-bottom:4px">💰 예치금</div>
     <div style="font-size:11px;color:var(--sub);margin-bottom:8px">시작 전에 돈을 걸면, 종료 시점 달성률에 따라 환급해드려요!</div>
     <div style="display:flex;gap:6px;margin-bottom:8px;overflow-x:auto;padding-bottom:4px" id="depSel">
-      ${DEP_OPTIONS.map(d=>`<button class="dep-btn${_dep===d?" on":""}" style="flex-shrink:0" onclick="selDep(${d},${c.id})">${(d/10000).toFixed(0)}만원</button>`).join("")}
+      ${DEP_OPTIONS.map(d=>`<button class="dep-btn${_dep===d?" on":""}" style="flex-shrink:0" onclick="selDep(${d},${c.id})">${d>=10000?(d/10000)+"만원":(d/1000)+"천원"}</button>`).join("")}
     </div>
     <div style="font-size:22px;font-weight:900;color:var(--txt);text-align:center;margin:8px 0">${_dep.toLocaleString()}원</div>
 

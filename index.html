@@ -9,6 +9,8 @@
     :root{--primary:#2ECC71;--secondary:#27AE60;--accent:#F39C12;--bg:#F0FBF4;--card:#fff;--text:#1a2e1a;--sub:#6a8f6a;--border:#d4edd9;}
     *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
     body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);min-height:100vh;max-width:480px;margin:0 auto;}
+
+    /* 로그인 */
     .login-screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;background:linear-gradient(160deg,#0f3d20 0%,#1a6b3a 50%,#2ECC71 100%);}
     .login-logo{font-family:'Syne',sans-serif;font-size:48px;font-weight:800;color:white;margin-bottom:8px;text-align:center;}
     .login-sub{color:rgba(255,255,255,0.8);font-size:15px;margin-bottom:48px;text-align:center;line-height:1.6;}
@@ -16,6 +18,8 @@
     .btn-google{display:flex;align-items:center;gap:12px;background:white;color:#333;border:none;border-radius:16px;padding:16px 28px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 8px 24px rgba(0,0,0,0.2);width:100%;justify-content:center;max-width:320px;}
     .btn-google img{width:22px;height:22px;}
     .login-desc{color:rgba(255,255,255,0.6);font-size:12px;margin-top:24px;text-align:center;line-height:1.7;}
+
+    /* 헤더 */
     .header{background:linear-gradient(135deg,#1a6b3a 0%,#2ECC71 100%);padding:20px 16px 16px;position:sticky;top:0;z-index:100;box-shadow:0 4px 20px rgba(46,204,113,0.3);}
     .header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
     .logo-text{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:white;}
@@ -23,8 +27,10 @@
     .user-name{color:white;font-size:12px;font-weight:700;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
     .btn-logout{background:rgba(255,255,255,0.2);border:none;border-radius:10px;padding:5px 10px;color:white;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;}
     .main-tabs{display:flex;background:rgba(0,0,0,0.15);border-radius:12px;padding:3px;}
-    .mtab{flex:1;padding:7px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;border:none;background:transparent;color:rgba(255,255,255,0.7);font-family:inherit;transition:all 0.2s;text-align:center;}
+    .mtab{flex:1;padding:6px 2px;border-radius:10px;font-size:11px;font-weight:700;cursor:pointer;border:none;background:transparent;color:rgba(255,255,255,0.7);font-family:inherit;transition:all 0.2s;text-align:center;}
     .mtab.active{background:white;color:var(--secondary);}
+
+    /* 상태바 */
     .my-status{background:white;margin:12px 12px 0;border-radius:16px;padding:14px 16px;box-shadow:0 2px 12px rgba(0,0,0,0.06);border:1px solid var(--border);}
     .status-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
     .status-name{font-size:14px;font-weight:700;color:var(--text);}
@@ -38,9 +44,13 @@
     .xp-label{display:flex;justify-content:space-between;font-size:11px;color:var(--sub);margin-bottom:4px;}
     .xp-bar{background:#e8f5e9;border-radius:10px;height:8px;overflow:hidden;}
     .xp-fill{background:linear-gradient(90deg,var(--primary),var(--accent));height:100%;border-radius:10px;width:0%;transition:width 0.5s;}
+
+    /* 섹션 */
     .section-header{display:flex;align-items:center;justify-content:space-between;padding:16px 12px 8px;}
     .section-title{font-size:15px;font-weight:900;color:var(--text);}
     .section-more{font-size:12px;color:var(--sub);cursor:pointer;}
+
+    /* 미션 */
     .mission-scroll{display:flex;gap:10px;padding:0 12px 4px;overflow-x:auto;-webkit-overflow-scrolling:touch;}
     .mission-scroll::-webkit-scrollbar{height:0;}
     .mission-card{flex-shrink:0;width:155px;background:white;border-radius:16px;padding:14px;border:1.5px solid var(--border);cursor:pointer;transition:transform 0.15s;position:relative;box-shadow:0 2px 8px rgba(0,0,0,0.05);}
@@ -52,6 +62,11 @@
     .point-badge{background:#fff8e1;color:#e67e22;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;}
     .co2-badge{background:#e8f5e9;color:var(--secondary);font-size:10px;font-weight:600;padding:2px 6px;border-radius:8px;}
     .ai-badge{background:linear-gradient(135deg,#667eea,#764ba2);color:white;font-size:10px;font-weight:700;padding:2px 6px;border-radius:8px;}
+    .btn-add-mission{flex-shrink:0;width:80px;background:white;border-radius:16px;padding:14px 8px;border:1.5px dashed var(--border);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;box-shadow:0 2px 8px rgba(0,0,0,0.03);}
+    .btn-add-mission span{font-size:28px;}
+    .btn-add-mission p{font-size:11px;color:var(--sub);font-weight:600;text-align:center;}
+
+    /* 챌린지 */
     .challenge-list{padding:0 12px;}
     .challenge-card{background:white;border-radius:16px;padding:14px;margin-bottom:10px;border:1.5px solid var(--border);cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.05);}
     .challenge-card.hot{border-color:rgba(46,204,113,0.4);box-shadow:0 4px 16px rgba(46,204,113,0.15);}
@@ -62,10 +77,6 @@
     .tag-zero{background:#fce4ec;color:#e91e63;}
     .challenge-title{font-size:14px;font-weight:900;color:var(--text);margin-bottom:4px;}
     .challenge-desc{font-size:12px;color:var(--sub);line-height:1.5;}
-    .challenge-prize{text-align:right;flex-shrink:0;margin-left:10px;}
-    .prize-label{font-size:10px;color:var(--sub);margin-bottom:2px;}
-    .prize-amount{font-size:16px;font-weight:900;color:var(--secondary);}
-    .prize-sub{font-size:10px;color:var(--sub);}
     .challenge-bottom{display:flex;align-items:center;justify-content:space-between;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);}
     .avatar-stack{display:flex;}
     .avatar{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--accent));border:2px solid white;margin-right:-6px;display:flex;align-items:center;justify-content:center;font-size:10px;color:white;font-weight:700;}
@@ -75,26 +86,68 @@
     .days-left{color:var(--accent);font-weight:700;}
     .progress-bar{background:#e8f5e9;border-radius:10px;height:5px;overflow:hidden;margin-top:8px;}
     .progress-fill{background:linear-gradient(90deg,var(--primary),var(--accent));height:100%;border-radius:10px;}
+
+    /* 배너 */
     .earth-banner{margin:12px;background:linear-gradient(135deg,#0f3460,#16213e);border-radius:16px;padding:16px;color:white;position:relative;overflow:hidden;}
     .earth-banner::before{content:'🌍';position:absolute;right:-10px;bottom:-10px;font-size:80px;opacity:0.2;}
     .earth-banner-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;margin-bottom:4px;}
-    .earth-banner-sub{font-size:12px;color:rgba(255,255,255,0.75);}
-    .earth-stats{display:flex;gap:16px;margin-top:12px;}
+    .earth-banner-sub{font-size:12px;color:rgba(255,255,255,0.75);margin-bottom:12px;}
+    .earth-stats{display:flex;gap:20px;}
     .earth-stat-num{font-size:18px;font-weight:900;color:var(--primary);}
     .earth-stat-label{font-size:10px;color:rgba(255,255,255,0.6);}
-    .fab{position:fixed;bottom:24px;right:calc(50% - 228px);background:linear-gradient(135deg,var(--primary),var(--secondary));color:white;border:none;border-radius:20px;padding:14px 24px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 6px 20px rgba(46,204,113,0.4);display:flex;align-items:center;gap:8px;z-index:50;}
 
-    /* AI 인증 모달 */
-    .ai-modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:300;display:none;align-items:flex-end;justify-content:center;}
+    /* 부분환급 안내 */
+    .refund-info{margin:12px;background:linear-gradient(135deg,#fff8e1,#fff3cd);border-radius:16px;padding:14px 16px;border:1.5px solid #f39c12;}
+    .refund-title{font-size:14px;font-weight:900;color:#8B5E04;margin-bottom:8px;}
+    .refund-table{width:100%;border-collapse:collapse;}
+    .refund-table th{font-size:11px;color:#8B5E04;padding:4px 8px;background:#ffeaa7;border-radius:4px;}
+    .refund-table td{font-size:12px;color:#5d4037;padding:4px 8px;text-align:center;border-bottom:1px solid #fdd835;}
+
+    /* 책 샵 */
+    .shop-section{padding:0 12px 12px;}
+    .book-card{background:white;border-radius:16px;padding:14px;margin-bottom:10px;border:1.5px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,0.05);display:flex;gap:12px;align-items:flex-start;}
+    .book-cover{width:70px;height:100px;border-radius:10px;object-fit:cover;background:linear-gradient(135deg,var(--primary),var(--secondary));flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:28px;}
+    .book-info{flex:1;}
+    .book-title{font-size:14px;font-weight:900;color:var(--text);margin-bottom:4px;}
+    .book-author{font-size:11px;color:var(--sub);margin-bottom:6px;}
+    .book-desc{font-size:12px;color:var(--sub);line-height:1.5;margin-bottom:8px;}
+    .book-price{font-size:16px;font-weight:900;color:var(--secondary);}
+    .book-price span{font-size:11px;font-weight:500;color:var(--sub);}
+    .btn-buy-book{background:linear-gradient(135deg,var(--primary),var(--secondary));color:white;border:none;border-radius:10px;padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:6px;}
+    .btn-buy-book:disabled{background:#ddd;cursor:not-allowed;}
+
+    /* 협업 배너 */
+    .biz-banner{margin:12px;background:linear-gradient(135deg,#1a1a2e,#16213e);border-radius:16px;padding:16px;color:white;border:1px solid rgba(255,255,255,0.1);}
+    .biz-title{font-size:14px;font-weight:900;margin-bottom:6px;}
+    .biz-desc{font-size:12px;color:rgba(255,255,255,0.75);line-height:1.7;margin-bottom:10px;}
+    .biz-email{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:10px;padding:10px 14px;font-size:13px;font-weight:700;color:var(--primary);cursor:pointer;text-align:center;}
+
+    /* 관리자 */
+    .admin-section{padding:0 12px 80px;}
+    .admin-card{background:white;border-radius:14px;padding:14px;margin-bottom:10px;border:1px solid var(--border);}
+    .admin-order-id{font-size:11px;color:var(--sub);}
+    .admin-order-title{font-size:14px;font-weight:700;color:var(--text);margin:4px 0;}
+    .admin-order-buyer{font-size:12px;color:var(--sub);}
+    .admin-order-status{font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;}
+    .status-pending{background:#fff3e0;color:#e67e22;}
+    .status-done{background:#e8f5e9;color:var(--secondary);}
+
+    /* 미션 선택 모달 */
+    .mission-select-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:300;display:none;align-items:flex-end;justify-content:center;}
+    .mission-select-overlay.open{display:flex;}
+    .mission-select-modal{background:white;width:100%;max-width:480px;border-radius:24px 24px 0 0;padding:24px 20px 40px;max-height:85vh;overflow-y:auto;}
+    .mission-select-item{display:flex;align-items:center;gap:12px;background:#f8f8f8;border-radius:14px;padding:12px 14px;cursor:pointer;border:1.5px solid transparent;transition:all 0.2s;margin-bottom:8px;}
+    .mission-select-item.active{background:#f0fbf4;border-color:var(--primary);}
+    .mission-select-check{font-size:20px;color:var(--primary);display:none;margin-left:auto;}
+    .mission-select-item.active .mission-select-check{display:block;}
+    .btn-mission-confirm{width:100%;background:linear-gradient(135deg,var(--primary),var(--secondary));color:white;border:none;border-radius:14px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:16px;}
+
+    /* AI 모달 */
+    .ai-modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:400;display:none;align-items:flex-end;justify-content:center;}
     .ai-modal-overlay.open{display:flex;}
     .ai-modal{background:white;width:100%;max-width:480px;border-radius:24px 24px 0 0;padding:24px 20px 40px;max-height:92vh;overflow-y:auto;}
-    .ai-modal-handle{width:40px;height:4px;background:#ddd;border-radius:10px;margin:0 auto 16px;}
-    .ai-modal-title{font-size:17px;font-weight:900;color:var(--text);margin-bottom:4px;}
-    .ai-modal-desc{font-size:12px;color:var(--sub);margin-bottom:16px;line-height:1.6;}
     .camera-area{background:#f8f8f8;border:2px dashed var(--border);border-radius:16px;padding:20px;text-align:center;cursor:pointer;margin-bottom:12px;position:relative;overflow:hidden;min-height:140px;display:flex;align-items:center;justify-content:center;flex-direction:column;}
     .camera-area.has-image{border-style:solid;border-color:var(--primary);padding:0;}
-    .camera-placeholder-icon{font-size:40px;margin-bottom:8px;}
-    .camera-text{font-size:13px;color:var(--sub);font-weight:600;}
     #previewImg{width:100%;border-radius:14px;display:none;max-height:220px;object-fit:cover;}
     #fileInput{display:none;}
     .scan-overlay{position:absolute;top:0;left:0;width:100%;height:100%;display:none;pointer-events:none;}
@@ -120,13 +173,16 @@
     .btn-ai-cancel{background:#f5f5f5;color:var(--sub);border:none;border-radius:14px;padding:14px 16px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;}
     .btn-complete{flex:1;background:linear-gradient(135deg,var(--primary),var(--secondary));color:white;border:none;border-radius:14px;padding:14px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;display:none;}
 
+    /* 구매 모달 */
+    .buy-modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:400;display:none;align-items:flex-end;justify-content:center;}
+    .buy-modal-overlay.open{display:flex;}
+    .buy-modal{background:white;width:100%;max-width:480px;border-radius:24px 24px 0 0;padding:24px 20px 40px;}
+
+    /* 챌린지 모달 */
     .modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:200;display:none;align-items:flex-end;justify-content:center;}
     .modal-overlay.open{display:flex;}
     .modal{background:white;width:100%;max-width:480px;border-radius:24px 24px 0 0;padding:24px 20px 40px;max-height:80vh;overflow-y:auto;}
     .modal-handle{width:40px;height:4px;background:#ddd;border-radius:10px;margin:0 auto 20px;}
-    .modal-title{font-size:18px;font-weight:900;color:var(--text);margin-bottom:8px;}
-    .modal-desc{font-size:13px;color:var(--sub);line-height:1.7;margin-bottom:16px;}
-    .modal-detail{background:var(--bg);border-radius:12px;padding:14px;margin-bottom:16px;}
     .detail-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);}
     .detail-row:last-child{border-bottom:none;}
     .detail-label{font-size:12px;color:var(--sub);}
@@ -134,10 +190,11 @@
     .modal-btns{display:flex;gap:8px;margin-top:16px;}
     .btn-join{flex:1;background:linear-gradient(135deg,var(--primary),var(--secondary));color:white;border:none;border-radius:14px;padding:14px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;}
     .btn-cancel{background:#f5f5f5;color:var(--sub);border:none;border-radius:14px;padding:14px 20px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;}
-    .toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:#1a2e1a;color:white;padding:10px 20px;border-radius:20px;font-size:13px;font-weight:500;opacity:0;transition:all 0.3s;z-index:400;white-space:nowrap;}
+
+    .toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:#1a2e1a;color:white;padding:10px 20px;border-radius:20px;font-size:13px;font-weight:500;opacity:0;transition:all 0.3s;z-index:600;white-space:nowrap;}
     .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
     .content{padding-bottom:80px;}
-    .empty{text-align:center;padding:40px 20px;color:var(--sub);}
+    .fab{position:fixed;bottom:24px;right:calc(50% - 228px);background:linear-gradient(135deg,var(--primary),var(--secondary));color:white;border:none;border-radius:20px;padding:14px 24px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 6px 20px rgba(46,204,113,0.4);z-index:50;}
     .loading-screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--bg);}
     .spin{font-size:48px;animation:spin 1s linear infinite;display:inline-block;}
     @keyframes spin{to{transform:rotate(360deg);}}
@@ -176,17 +233,19 @@
     <div class="main-tabs">
       <button class="mtab active" onclick="switchTab('home',this)">🏠 홈</button>
       <button class="mtab" onclick="switchTab('challenge',this)">🏆 챌린지</button>
-      <button class="mtab" onclick="switchTab('map',this)">🗺️ 지구지도</button>
-      <button class="mtab" onclick="switchTab('reward',this)">🎁 리워드</button>
+      <button class="mtab" onclick="switchTab('shop',this)">📚 샵</button>
+      <button class="mtab" onclick="switchTab('mypage',this)">👤 마이</button>
     </div>
   </div>
 
   <div class="content">
+
+    <!-- 홈 탭 -->
     <div id="tab-home">
       <div class="my-status">
         <div class="status-row">
           <div class="status-name" id="statusName">🌱 지구지킴이</div>
-          <div class="status-level">Lv.4 새싹</div>
+          <div class="status-level" id="userLevel">Lv.1 씨앗</div>
         </div>
         <div class="status-stats">
           <div class="stat-item"><div class="stat-num" id="statMission">0</div><div class="stat-label">완료 미션</div></div>
@@ -200,13 +259,13 @@
         </div>
       </div>
 
-      <div class="earth-banner">
-        <div class="earth-banner-title">🌍 전 세계 EcoQuest 현황</div>
-        <div class="earth-banner-sub">오늘 전 세계에서 함께하고 있어요</div>
+      <div class="earth-banner" style="margin-top:12px;">
+        <div class="earth-banner-title">🌍 EcoQuest 현황</div>
+        <div class="earth-banner-sub">함께하는 사람들이 만드는 변화</div>
         <div class="earth-stats">
-          <div><div class="earth-stat-num">24,810</div><div class="earth-stat-label">오늘 참여자</div></div>
-          <div><div class="earth-stat-num">847t</div><div class="earth-stat-label">CO₂ 절감</div></div>
-          <div><div class="earth-stat-num">132국</div><div class="earth-stat-label">참여 국가</div></div>
+          <div><div class="earth-stat-num" id="todayUsers">0</div><div class="earth-stat-label">오늘 참여자</div></div>
+          <div><div class="earth-stat-num" id="totalUsers">0</div><div class="earth-stat-label">누적 참여자</div></div>
+          <div><div class="earth-stat-num" id="totalCo2Banner">0t</div><div class="earth-stat-label">누적 CO₂ 절감</div></div>
         </div>
       </div>
 
@@ -221,59 +280,126 @@
         <div class="section-more" onclick="switchTab('challenge',document.querySelectorAll('.mtab')[1])">전체보기 ›</div>
       </div>
       <div class="challenge-list" id="myChallengeList"></div>
+
+      <!-- 협업 배너 -->
+      <div class="biz-banner">
+        <div class="biz-title">🤝 기업 협업 문의</div>
+        <div class="biz-desc">ESG 경영에 관심 있는 기업과 함께 환경 챌린지를 만들어가요. 브랜드 챌린지, 탄소크레딧 연동, 임직원 환경 교육 프로그램 등 다양한 협업이 가능합니다.</div>
+        <div class="biz-email" onclick="copyEmail()">📧 808glocal@gmail.com</div>
+      </div>
     </div>
 
+    <!-- 챌린지 탭 -->
     <div id="tab-challenge" style="display:none">
-      <div class="section-header"><div class="section-title">🔥 인기 챌린지</div></div>
+      <!-- 부분 환급 안내 -->
+      <div class="refund-info" style="margin:12px 12px 0;">
+        <div class="refund-title">💰 일수 비례 환급 시스템</div>
+        <p style="font-size:12px;color:#8B5E04;margin-bottom:8px;">챌린지 기간 중 완료한 일수에 따라 예치금이 부분 환급돼요!</p>
+        <table class="refund-table">
+          <tr><th>달성률</th><th>환급률</th><th>3,000원 기준</th></tr>
+          <tr><td>100%</td><td style="color:var(--secondary);font-weight:900;">100%</td><td style="color:var(--secondary);font-weight:900;">3,000원 전액</td></tr>
+          <tr><td>80% 이상</td><td>80%</td><td>2,400원</td></tr>
+          <tr><td>60% 이상</td><td>60%</td><td>1,800원</td></tr>
+          <tr><td>40% 이상</td><td>40%</td><td>1,200원</td></tr>
+          <tr><td>40% 미만</td><td style="color:#e67e22;">기부</td><td style="color:#e67e22;">환경단체 기부</td></tr>
+        </table>
+      </div>
+      <div class="section-header"><div class="section-title">🔥 챌린지 참여하기</div></div>
       <div class="challenge-list" id="allChallengeList"></div>
     </div>
 
-    <div id="tab-map" style="display:none">
-      <div class="empty"><div style="font-size:48px;margin-bottom:12px;">🗺️</div>
-        <p style="font-weight:700;font-size:15px;color:var(--text);margin-bottom:8px;">전 세계 참여 지도</p>
-        <p style="font-size:13px;line-height:1.7;color:var(--sub)">미션 완료하면 내 위치가<br/>지구 지도에 불이 켜져요!<br/><br/><strong style="color:var(--secondary)">🌱 준비 중이에요</strong></p>
+    <!-- 샵 탭 -->
+    <div id="tab-shop" style="display:none">
+      <div class="section-header">
+        <div class="section-title">📚 라니 시리즈</div>
+        <div style="font-size:11px;color:var(--sub);">포인트로 구매 가능</div>
+      </div>
+      <div style="background:#f0fbf4;margin:0 12px 12px;border-radius:12px;padding:10px 14px;border:1px solid var(--border);">
+        <div style="font-size:12px;color:var(--sub);">내 포인트: <strong style="color:var(--secondary);font-size:14px;" id="shopPoint">0 P</strong></div>
+        <div style="font-size:11px;color:var(--sub);margin-top:2px;">미션 완료하고 포인트를 모아 책을 구매해요!</div>
+      </div>
+      <div class="shop-section" id="bookList"></div>
+
+      <!-- 기업 협업 배너 (샵에도) -->
+      <div class="biz-banner" style="margin:0 12px 12px;">
+        <div class="biz-title">🏢 출판사와의 협업 문의</div>
+        <div class="biz-desc">EcoQuest 샵에 책이나 친환경 제품을 입점하고 싶은 출판사·브랜드의 문의를 환영해요!</div>
+        <div class="biz-email" onclick="copyEmail()">📧 808glocal@gmail.com</div>
       </div>
     </div>
 
-    <div id="tab-reward" style="display:none">
+    <!-- 마이페이지 탭 -->
+    <div id="tab-mypage" style="display:none">
       <div class="my-status" style="margin:12px">
         <div class="status-row">
-          <div class="status-name">💰 내 포인트</div>
-          <div class="status-level" id="rewardPoint">0 P</div>
+          <div class="status-name" id="myPageName">내 프로필</div>
+          <div class="status-level" id="myPageLevel">Lv.1 씨앗</div>
         </div>
         <div class="status-stats">
-          <div class="stat-item"><div class="stat-num">5,000</div><div class="stat-label">현금 전환 기준</div></div>
-          <div class="stat-item"><div class="stat-num">500원</div><div class="stat-label">전환 금액</div></div>
-          <div class="stat-item"><div class="stat-num">10</div><div class="stat-label">협력 브랜드</div></div>
+          <div class="stat-item"><div class="stat-num" id="myStatMission">0</div><div class="stat-label">완료 미션</div></div>
+          <div class="stat-item"><div class="stat-num" id="myStatPoint">0</div><div class="stat-label">포인트</div></div>
+          <div class="stat-item"><div class="stat-num" id="myStatCo2">0kg</div><div class="stat-label">CO₂ 절감</div></div>
         </div>
       </div>
-      <div class="empty"><div style="font-size:48px;margin-bottom:12px;">🎁</div>
-        <p style="font-size:13px;color:var(--sub);line-height:1.7;">친환경 브랜드 쿠폰,<br/>현금 전환 기능<br/><strong style="color:var(--secondary)">🌱 준비 중이에요</strong></p>
+
+      <!-- 주문 내역 -->
+      <div class="section-header"><div class="section-title">📦 내 주문 내역</div></div>
+      <div id="myOrderList" style="padding:0 12px;">
+        <div style="text-align:center;padding:20px;color:var(--sub);font-size:13px;">주문 내역이 없어요 📚</div>
+      </div>
+
+      <!-- 관리자 버튼 (관리자만 표시) -->
+      <div id="adminBtn" style="display:none;padding:0 12px 12px;">
+        <button onclick="switchTab('admin',null)" style="width:100%;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:14px;padding:14px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">
+          🔐 관리자 페이지
+        </button>
       </div>
     </div>
+
+    <!-- 관리자 탭 (숨겨진) -->
+    <div id="tab-admin" style="display:none">
+      <div class="section-header">
+        <div class="section-title">🔐 관리자 — 주문 현황</div>
+        <button onclick="loadAllOrders()" style="background:var(--primary);color:white;border:none;border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;">새로고침</button>
+      </div>
+      <div class="admin-section" id="adminOrderList">
+        <div style="text-align:center;padding:20px;color:var(--sub);">로딩 중...</div>
+      </div>
+    </div>
+
   </div>
-  <button class="fab" onclick="showToast('챌린지 방 만들기 — 곧 오픈해요! 🌱')">+ 챌린지 방 만들기</button>
+
+  <button class="fab" onclick="switchTab('challenge',document.querySelectorAll('.mtab')[1])">+ 챌린지 참여하기</button>
+</div>
+
+<!-- 미션 선택 모달 -->
+<div class="mission-select-overlay" id="missionSelectOverlay">
+  <div class="mission-select-modal">
+    <div class="modal-handle"></div>
+    <div style="font-size:17px;font-weight:900;color:var(--text);margin-bottom:4px;">오늘 미션 선택하기</div>
+    <div style="font-size:12px;color:var(--sub);margin-bottom:16px;">오늘 실천할 미션을 골라요! (최대 3개)</div>
+    <div id="missionSelectList"></div>
+    <button class="btn-mission-confirm" onclick="confirmMissionSelect()">선택 완료!</button>
+  </div>
 </div>
 
 <!-- AI 인증 모달 -->
 <div class="ai-modal-overlay" id="aiModalOverlay">
   <div class="ai-modal">
-    <div class="ai-modal-handle"></div>
+    <div class="modal-handle"></div>
     <div id="aiMissionEmoji" style="font-size:32px;margin-bottom:6px;">🌱</div>
-    <div class="ai-modal-title" id="aiMissionName">미션 인증</div>
-    <div class="ai-modal-desc" id="aiMissionDesc">사진을 찍어 AI가 미션 완료를 인증해요!</div>
-
+    <div style="font-size:17px;font-weight:900;color:var(--text);margin-bottom:4px;" id="aiMissionName">미션 인증</div>
+    <div style="font-size:12px;color:var(--sub);margin-bottom:16px;line-height:1.6;" id="aiMissionDesc">사진을 찍어 AI가 미션 완료를 인증해요!</div>
     <div class="camera-area" id="cameraArea" onclick="document.getElementById('fileInput').click()">
       <div class="scan-overlay" id="scanOverlay"><div class="scan-line-el"></div></div>
       <img id="previewImg" alt="미리보기"/>
       <div id="cameraPlaceholder">
-        <div class="camera-placeholder-icon">📸</div>
-        <div class="camera-text">사진을 찍거나 갤러리에서 선택하세요</div>
+        <div style="font-size:40px;margin-bottom:8px;">📸</div>
+        <div style="font-size:13px;color:var(--sub);font-weight:600;">사진을 찍거나 갤러리에서 선택하세요</div>
         <div style="font-size:11px;color:#bbb;margin-top:4px;">AI가 자동으로 미션 완료를 확인해요</div>
       </div>
     </div>
     <input type="file" id="fileInput" accept="image/*" capture="environment"/>
-
     <div class="ai-result" id="aiResult">
       <div class="ai-result-title" id="aiResultTitle"></div>
       <div class="ai-result-text" id="aiResultText"></div>
@@ -282,12 +408,19 @@
         <div class="ai-score-label" id="aiScoreLabel"></div>
       </div>
     </div>
-
     <div class="ai-btns">
       <button class="btn-ai-cancel" onclick="closeAiModal()">취소</button>
       <button class="btn-analyze" id="btnAnalyze" onclick="analyzePhoto()" disabled>🤖 AI 분석하기</button>
       <button class="btn-complete" id="btnComplete" onclick="completeAfterAI()">✅ 미션 완료!</button>
     </div>
+  </div>
+</div>
+
+<!-- 책 구매 모달 -->
+<div class="buy-modal-overlay" id="buyModalOverlay">
+  <div class="buy-modal">
+    <div class="modal-handle"></div>
+    <div id="buyModalContent"></div>
   </div>
 </div>
 
@@ -297,11 +430,12 @@
 </div>
 <div class="toast" id="toast"></div>
 
+<!-- Firebase -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
   import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
     from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
-  import { getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp }
+  import { getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp, collection, getDocs, addDoc, query, orderBy, increment }
     from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -317,6 +451,9 @@
   const db = getFirestore(app);
   const provider = new GoogleAuthProvider();
 
+  // 관리자 이메일
+  const ADMIN_EMAIL = "808glocal@gmail.com";
+
   document.getElementById("btnGoogleLogin").addEventListener("click", async()=>{
     try{ await signInWithPopup(auth, provider); }
     catch(e){ showToast("로그인 실패: "+e.message); }
@@ -330,29 +467,70 @@
     if(user){
       document.getElementById("loginScreen").style.display="none";
       document.getElementById("appScreen").style.display="block";
-      document.getElementById("userName").textContent=user.displayName?.split(" ")[0]||"지구지킴이";
-      document.getElementById("statusName").textContent="🌱 "+(user.displayName?.split(" ")[0]||"지구지킴이");
+      window._currentUser = user;
+      const firstName = user.displayName?.split(" ")[0]||"지구지킴이";
+      document.getElementById("userName").textContent=firstName;
+      document.getElementById("statusName").textContent="🌱 "+firstName;
+      document.getElementById("myPageName").textContent="🌱 "+firstName;
       if(user.photoURL) document.getElementById("userAvatarPlaceholder").innerHTML=`<img src="${user.photoURL}" style="width:34px;height:34px;border-radius:50%;"/>`;
-      renderMyChallenges(); renderAllChallenges();
+      // 관리자 버튼 표시
+      if(user.email === ADMIN_EMAIL){
+        document.getElementById("adminBtn").style.display="block";
+      }
+      await loadGlobalStats();
       await loadUserData(user.uid);
+      renderMyChallenges();
+      renderAllChallenges();
+      renderBooks(user.uid);
     } else {
+      window._currentUser = null;
       document.getElementById("loginScreen").style.display="flex";
       document.getElementById("appScreen").style.display="none";
     }
   });
 
+  async function loadGlobalStats(){
+    try{
+      const ref=doc(db,"stats","global");
+      const snap=await getDoc(ref);
+      if(snap.exists()){
+        const d=snap.data();
+        document.getElementById("todayUsers").textContent=(d.todayUsers||0).toLocaleString();
+        document.getElementById("totalUsers").textContent=(d.totalUsers||0).toLocaleString();
+        const co2=d.totalCo2||0;
+        document.getElementById("totalCo2Banner").textContent=co2>=1000?(co2/1000).toFixed(1)+"t":co2+"kg";
+      }
+    }catch(e){}
+  }
+
   async function loadUserData(uid){
     const ref=doc(db,"users",uid);
     const snap=await getDoc(ref);
     if(!snap.exists()){
-      await setDoc(ref,{point:0,missionCount:0,streak:0,doneMissions:[],co2:0,createdAt:serverTimestamp()});
-      window._doneMissions=[]; updateStats(0,0,0,0);
+      await setDoc(ref,{point:0,missionCount:0,streak:0,doneMissions:[],co2:0,todayMissions:[],createdAt:serverTimestamp()});
+      window._doneMissions=[]; window._todayMissions=[];
+      updateStats(0,0,0,0);
+      try{
+        const statsRef=doc(db,"stats","global");
+        await setDoc(statsRef,{totalUsers:increment(1),todayUsers:increment(1),totalCo2:0},{merge:true});
+        loadGlobalStats();
+      }catch(e){}
     } else {
       const d=snap.data();
       window._doneMissions=d.doneMissions||[];
+      window._todayMissions=d.todayMissions||[];
       updateStats(d.missionCount||0,d.streak||0,d.point||0,d.co2||0);
     }
-    renderMissions(uid);
+    renderTodayMissions(uid);
+    loadMyOrders(uid);
+  }
+
+  function getLevel(n){
+    if(n>=100)return"Lv.10 지구수호자";if(n>=70)return"Lv.9 에코마스터";
+    if(n>=50)return"Lv.8 환경챔피언";if(n>=35)return"Lv.7 그린히어로";
+    if(n>=25)return"Lv.6 자연친구";if(n>=15)return"Lv.5 나무";
+    if(n>=10)return"Lv.4 새싹";if(n>=5)return"Lv.3 새순";
+    if(n>=2)return"Lv.2 싹";return"Lv.1 씨앗";
   }
 
   function updateStats(mission,streak,point,co2){
@@ -360,10 +538,17 @@
     document.getElementById("statStreak").textContent=streak;
     document.getElementById("statPoint").textContent=point.toLocaleString();
     document.getElementById("statCo2").textContent=(co2||0).toFixed(1)+"kg";
-    document.getElementById("rewardPoint").textContent=point.toLocaleString()+" P";
+    document.getElementById("shopPoint").textContent=point.toLocaleString()+" P";
+    document.getElementById("myStatMission").textContent=mission;
+    document.getElementById("myStatPoint").textContent=point.toLocaleString();
+    document.getElementById("myStatCo2").textContent=(co2||0).toFixed(1)+"kg";
+    const lv=getLevel(mission);
+    document.getElementById("userLevel").textContent=lv;
+    document.getElementById("myPageLevel").textContent=lv;
     const xp=(mission*80)%1000;
     document.getElementById("xpText").textContent=xp+" / 1000 XP";
     document.getElementById("xpFill").style.width=(xp/10)+"%";
+    window._currentPoint = point;
   }
 
   window.completeMissionFB=async(uid,missionId,missionName,point,co2Val)=>{
@@ -379,58 +564,217 @@
     await updateDoc(ref,{doneMissions:newDone,point:newPoint,missionCount:newCount,co2:newCo2,lastMissionAt:serverTimestamp()});
     window._doneMissions=newDone;
     updateStats(newCount,d.streak||0,newPoint,newCo2);
+    try{
+      const statsRef=doc(db,"stats","global");
+      await setDoc(statsRef,{totalCo2:increment(co2Val)},{merge:true});
+      loadGlobalStats();
+    }catch(e){}
     return true;
   };
-  window._auth=auth;
+
+  window.saveTodayMissions=async(uid,missions)=>{
+    const ref=doc(db,"users",uid);
+    await updateDoc(ref,{todayMissions:missions});
+    window._todayMissions=missions;
+  };
+
+  // 책 구매
+  window.purchaseBook=async(uid,book)=>{
+    const point=window._currentPoint||0;
+    if(point < book.price){showToast("포인트가 부족해요! "+book.price+"P 필요");return;}
+    const ref=doc(db,"users",uid);
+    const snap=await getDoc(ref);
+    const d=snap.data();
+    const newPoint=(d.point||0)-book.price;
+    await updateDoc(ref,{point:newPoint});
+    // 주문 저장
+    await addDoc(collection(db,"orders"),{
+      uid, userEmail:window._currentUser?.email||"",
+      userName:window._currentUser?.displayName||"",
+      bookId:book.id, bookTitle:book.title,
+      price:book.price, status:"pending",
+      createdAt:serverTimestamp()
+    });
+    updateStats(d.missionCount||0,d.streak||0,newPoint,d.co2||0);
+    document.getElementById("buyModalOverlay").classList.remove("open");
+    showToast("🎉 구매 완료! 관리자가 곧 연락드릴게요 📚");
+    loadMyOrders(uid);
+  };
+
+  // 내 주문 내역
+  async function loadMyOrders(uid){
+    try{
+      const q=query(collection(db,"orders"),orderBy("createdAt","desc"));
+      const snap=await getDocs(q);
+      const myOrders=snap.docs.filter(d=>d.data().uid===uid).map(d=>({id:d.id,...d.data()}));
+      const wrap=document.getElementById("myOrderList");
+      if(myOrders.length===0){
+        wrap.innerHTML=`<div style="text-align:center;padding:20px;color:var(--sub);font-size:13px;">주문 내역이 없어요 📚</div>`;
+        return;
+      }
+      wrap.innerHTML=myOrders.map(o=>`
+        <div class="admin-card">
+          <div class="admin-order-id">#${o.id.slice(-6)}</div>
+          <div class="admin-order-title">📚 ${o.bookTitle}</div>
+          <div class="admin-order-buyer">${o.price.toLocaleString()}P 사용</div>
+          <span class="admin-order-status ${o.status==='done'?'status-done':'status-pending'}">${o.status==='done'?'배송완료':'처리중'}</span>
+        </div>`).join("");
+    }catch(e){}
+  }
+
+  // 관리자 — 전체 주문
+  window.loadAllOrders=async()=>{
+    try{
+      const q=query(collection(db,"orders"),orderBy("createdAt","desc"));
+      const snap=await getDocs(q);
+      const orders=snap.docs.map(d=>({id:d.id,...d.data()}));
+      const wrap=document.getElementById("adminOrderList");
+      if(orders.length===0){
+        wrap.innerHTML=`<div style="text-align:center;padding:20px;color:var(--sub);">주문이 없어요!</div>`;
+        return;
+      }
+      wrap.innerHTML=orders.map(o=>`
+        <div class="admin-card">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+            <div>
+              <div class="admin-order-id">#${o.id.slice(-6)} · ${o.createdAt?.toDate?.()?.toLocaleDateString('ko-KR')||'-'}</div>
+              <div class="admin-order-title">📚 ${o.bookTitle}</div>
+              <div class="admin-order-buyer">👤 ${o.userName} (${o.userEmail})</div>
+              <div style="font-size:12px;color:var(--sub);">${o.price?.toLocaleString()}P</div>
+            </div>
+            <span class="admin-order-status ${o.status==='done'?'status-done':'status-pending'}">${o.status==='done'?'완료':'처리중'}</span>
+          </div>
+        </div>`).join("");
+    }catch(e){showToast("로딩 오류: "+e.message);}
+  };
+
+  window._db=db; window._auth=auth; window._collection=collection; window._addDoc=addDoc;
 </script>
 
 <script>
 const MISSIONS=[
-  {id:"m1",emoji:"🧴",name:"텀블러로 카페 이용하기",point:50,co2:0.3,keyword:"텀블러, 개인 컵, 머그컵, 재사용 컵"},
-  {id:"m2",emoji:"🚌",name:"대중교통 이용하기",point:80,co2:1.2,keyword:"버스, 지하철, 기차, 대중교통 승차권"},
-  {id:"m3",emoji:"🥗",name:"채식 메뉴 선택하기",point:60,co2:0.8,keyword:"채식, 샐러드, 야채 요리, 식물성 음식"},
-  {id:"m4",emoji:"💡",name:"불필요한 전등 끄기",point:30,co2:0.1,keyword:"꺼진 전등, 어두운 방, 절전 상태"},
-  {id:"m5",emoji:"♻️",name:"분리수거 완벽하게",point:40,co2:0.2,keyword:"분리수거통, 재활용 쓰레기, 분류된 쓰레기"},
-  {id:"m6",emoji:"🛍️",name:"장바구니 사용하기",point:35,co2:0.15,keyword:"장바구니, 에코백, 천가방, 비닐봉지 없음"},
-  {id:"m7",emoji:"🚿",name:"샤워 5분 이내로",point:45,co2:0.4,keyword:"샤워, 타이머, 욕실, 물 절약"},
+  {id:"m1",emoji:"🧴",name:"텀블러로 카페 이용하기",point:50,co2:0.3,keyword:"텀블러, 개인 컵, 머그컵"},
+  {id:"m2",emoji:"🚌",name:"대중교통 이용하기",point:80,co2:1.2,keyword:"버스, 지하철, 기차, 승차권"},
+  {id:"m3",emoji:"🥗",name:"채식 메뉴 선택하기",point:60,co2:0.8,keyword:"채식, 샐러드, 야채 요리"},
+  {id:"m4",emoji:"💡",name:"불필요한 전등 끄기",point:30,co2:0.1,keyword:"꺼진 전등, 어두운 방, 절전"},
+  {id:"m5",emoji:"♻️",name:"분리수거 완벽하게",point:40,co2:0.2,keyword:"분리수거통, 재활용 쓰레기"},
+  {id:"m6",emoji:"🛍️",name:"장바구니 사용하기",point:35,co2:0.15,keyword:"장바구니, 에코백, 천가방"},
+  {id:"m7",emoji:"🚿",name:"샤워 5분 이내로",point:45,co2:0.4,keyword:"샤워, 타이머, 욕실"},
+  {id:"m8",emoji:"🚲",name:"자전거/도보 이동",point:70,co2:1.0,keyword:"자전거, 도보, 헬멧"},
+  {id:"m9",emoji:"🌱",name:"식물 물 주기",point:25,co2:0.05,keyword:"화분, 식물, 물주기"},
+  {id:"m10",emoji:"📱",name:"전자기기 절전 모드",point:30,co2:0.1,keyword:"절전 모드, 배터리 절약"},
 ];
+
+// 라니 시리즈 (이미지는 루치아님이 나중에 추가!)
+const BOOKS=[
+  {id:"b1",emoji:"🐰",title:"라니와 숲의 친구들",author:"오현지 지음 | 출판사와고양이사원들",desc:"라니가 숲에서 만난 동물 친구들과 함께 환경을 지키는 이야기.",price:800,originalPrice:12000},
+  {id:"b2",emoji:"🌊",title:"라니의 바다 탐험",author:"오현지 지음 | 출판사와고양이사원들",desc:"바다가 더럽혀지고 있어요! 라니와 함께 바다를 지켜요.",price:800,originalPrice:12000},
+  {id:"b3",emoji:"🌸",title:"라니와 봄의 선물",author:"오현지 지음 | 출판사와고양이사원들",desc:"봄이 왜 늦게 오는지 라니가 알아내는 이야기.",price:800,originalPrice:12000},
+];
+
 const CHALLENGES=[
-  {id:1,hot:true,tag:"tag-env",tagName:"🌿 환경",title:"30일 텀블러 챌린지",desc:"매일 텀블러를 사용하고 AI 인증샷을 올려요!",prize:5000,deposit:3000,participants:1284,daysLeft:15,progress:50,missions:["매일 텀블러 사용 AI 인증","카페 방문 시 개인컵 사용","월말 총 30회 달성"]},
-  {id:2,hot:true,tag:"tag-transport",tagName:"🚌 교통",title:"대중교통 챌린지",desc:"2주간 자가용 대신 대중교통을 이용해요!",prize:8000,deposit:5000,participants:892,daysLeft:9,progress:36,missions:["주 5일 대중교통 이용 인증","이동 거리 기록","14일 완주"]},
-  {id:3,hot:false,tag:"tag-food",tagName:"🥗 식품",title:"채식 메뉴 챌린지",desc:"일주일간 하루 한 끼 채식 메뉴를 선택해요!",prize:3000,deposit:2000,participants:547,daysLeft:4,progress:43,missions:["매일 채식 메뉴 AI 인증","7일 연속 달성"]},
-  {id:4,hot:false,tag:"tag-zero",tagName:"🗑️ 제로웨이스트",title:"1주일 쓰레기 줄이기",desc:"일주일간 쓰레기를 기록하고 줄여나가요!",prize:4000,deposit:2000,participants:328,daysLeft:6,progress:14,missions:["매일 쓰레기 봉투 AI 인증","7일 달성"]},
+  {id:1,hot:true,tag:"tag-env",tagName:"🌿 환경",title:"30일 텀블러 챌린지",desc:"매일 텀블러를 사용하고 AI 인증샷을 올려요!",deposit:3000,days:30,participants:1284,daysLeft:15,progress:50,missions:["매일 텀블러 사용 AI 인증","30일 연속 달성"]},
+  {id:2,hot:true,tag:"tag-transport",tagName:"🚌 교통",title:"14일 대중교통 챌린지",desc:"2주간 자가용 대신 대중교통을 이용해요!",deposit:3000,days:14,participants:892,daysLeft:9,progress:36,missions:["주 5일 대중교통 이용 인증","14일 완주"]},
+  {id:3,hot:false,tag:"tag-food",tagName:"🥗 식품",title:"7일 채식 챌린지",desc:"일주일간 하루 한 끼 채식 메뉴를 선택해요!",deposit:3000,days:7,participants:547,daysLeft:4,progress:43,missions:["매일 채식 메뉴 AI 인증","7일 달성"]},
+  {id:4,hot:false,tag:"tag-zero",tagName:"🗑️ 제로웨이스트",title:"7일 쓰레기 줄이기",desc:"일주일간 쓰레기를 기록하고 줄여나가요!",deposit:3000,days:7,participants:328,daysLeft:6,progress:14,missions:["매일 쓰레기 봉투 AI 인증","7일 달성"]},
 ];
 
 window._doneMissions=[];
+window._todayMissions=[];
+window._selectedMissions=[];
+window._currentPoint=0;
 let _currentMission=null, _currentUid=null, _photoBase64=null, _aiPassed=false;
 
-function renderMissions(uid){
+// 환급률 계산
+function calcRefund(deposit, achieved, total){
+  const rate = achieved / total;
+  if(rate >= 1.0) return {refund:deposit, label:"100% 전액 환급!"};
+  if(rate >= 0.8) return {refund:Math.floor(deposit*0.8), label:"80% 환급"};
+  if(rate >= 0.6) return {refund:Math.floor(deposit*0.6), label:"60% 환급"};
+  if(rate >= 0.4) return {refund:Math.floor(deposit*0.4), label:"40% 환급"};
+  return {refund:0, label:"환경단체 기부"};
+}
+
+// 미션 렌더링
+function renderTodayMissions(uid){
   _currentUid=uid;
   const wrap=document.getElementById("missionScroll");
-  wrap.innerHTML=MISSIONS.map(m=>{
+  const todayIds=window._todayMissions||[];
+  const todayMissions=todayIds.map(id=>MISSIONS.find(m=>m.id===id)).filter(Boolean);
+  wrap.innerHTML="";
+  if(todayMissions.length===0){
+    wrap.innerHTML=`<div style="padding:8px 0 4px;display:flex;align-items:center;gap:12px;width:100%;">
+      <button class="btn-add-mission" onclick="openMissionSelect('${uid}')"><span>➕</span><p>미션 선택</p></button>
+      <div style="font-size:13px;color:var(--sub);line-height:1.6;">오늘 실천할<br/>미션을 골라봐요!</div>
+    </div>`;
+    return;
+  }
+  todayMissions.forEach(m=>{
     const done=(window._doneMissions||[]).includes(m.id);
-    return `<div class="mission-card${done?" done":""}" onclick="openAiModal('${m.id}','${uid}')">
-      <div class="mission-emoji">${m.emoji}</div>
+    const card=document.createElement("div");
+    card.className="mission-card"+(done?" done":"");
+    card.innerHTML=`<div class="mission-emoji">${m.emoji}</div>
       <div class="mission-name">${m.name}</div>
       <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;">
         <span class="point-badge">+${m.point}P</span>
         <span class="co2-badge">-${m.co2}kg</span>
-        <span class="ai-badge">🤖 AI</span>
-      </div>
-    </div>`;
-  }).join("");
+        <span class="ai-badge">🤖</span>
+      </div>`;
+    card.onclick=()=>openAiModal(m.id,uid);
+    wrap.appendChild(card);
+  });
+  if(todayMissions.length<3){
+    const btn=document.createElement("button");
+    btn.className="btn-add-mission";
+    btn.innerHTML=`<span>➕</span><p>추가</p>`;
+    btn.onclick=()=>openMissionSelect(uid);
+    wrap.appendChild(btn);
+  }
 }
 
-function openAiModal(missionId, uid){
+function openMissionSelect(uid){
+  _currentUid=uid;
+  window._selectedMissions=[...window._todayMissions];
+  const list=document.getElementById("missionSelectList");
+  list.innerHTML=MISSIONS.map(m=>{
+    const done=(window._doneMissions||[]).includes(m.id);
+    const sel=window._selectedMissions.includes(m.id);
+    return `<div class="mission-select-item${sel?" active":""}" onclick="toggleMissionSelect('${m.id}','${uid}',this)">
+      <div style="font-size:28px;">${m.emoji}</div>
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:700;color:var(--text);">${m.name}${done?" ✓완료":""}</div>
+        <div style="display:flex;gap:4px;margin-top:4px;"><span class="point-badge">+${m.point}P</span><span class="co2-badge">-${m.co2}kg</span></div>
+      </div>
+      <div class="mission-select-check">✅</div>
+    </div>`;
+  }).join("");
+  document.getElementById("missionSelectOverlay").classList.add("open");
+}
+
+function toggleMissionSelect(id,uid,el){
+  const idx=window._selectedMissions.indexOf(id);
+  if(idx>-1){window._selectedMissions.splice(idx,1);el.classList.remove("active");}
+  else{if(window._selectedMissions.length>=3){showToast("최대 3개까지 선택할 수 있어요!");return;}window._selectedMissions.push(id);el.classList.add("active");}
+}
+async function confirmMissionSelect(){
+  document.getElementById("missionSelectOverlay").classList.remove("open");
+  if(_currentUid&&window.saveTodayMissions) await window.saveTodayMissions(_currentUid,window._selectedMissions);
+  window._todayMissions=window._selectedMissions;
+  renderTodayMissions(_currentUid);
+  showToast(`✅ 오늘의 미션 ${window._selectedMissions.length}개 선택 완료!`);
+}
+
+// AI 인증
+const ANTHROPIC_API_KEY="";
+function openAiModal(missionId,uid){
   const m=MISSIONS.find(x=>x.id===missionId);
   if(!m) return;
   if((window._doneMissions||[]).includes(missionId)){showToast("이미 완료한 미션이에요 ✅");return;}
-  _currentMission=m; _currentUid=uid; _aiPassed=false; _photoBase64=null;
+  _currentMission=m;_currentUid=uid;_aiPassed=false;_photoBase64=null;
   document.getElementById("aiMissionEmoji").textContent=m.emoji;
   document.getElementById("aiMissionName").textContent=m.name;
   document.getElementById("aiMissionDesc").textContent=`📸 ${m.keyword} 관련 사진을 찍어주세요!`;
   document.getElementById("previewImg").style.display="none";
-  document.getElementById("previewImg").src="";
   document.getElementById("cameraPlaceholder").style.display="flex";
   document.getElementById("cameraArea").classList.remove("has-image");
   document.getElementById("scanOverlay").classList.remove("active");
@@ -441,18 +785,12 @@ function openAiModal(missionId, uid){
   document.getElementById("btnComplete").style.display="none";
   document.getElementById("aiModalOverlay").classList.add("open");
 }
-
-function closeAiModal(){
-  document.getElementById("aiModalOverlay").classList.remove("open");
-  document.getElementById("fileInput").value="";
-}
-
+function closeAiModal(){document.getElementById("aiModalOverlay").classList.remove("open");document.getElementById("fileInput").value="";}
 document.getElementById("fileInput").addEventListener("change",function(e){
-  const file=e.target.files[0]; if(!file) return;
+  const file=e.target.files[0];if(!file)return;
   const reader=new FileReader();
   reader.onload=function(ev){
-    const result=ev.target.result;
-    _photoBase64=result.split(",")[1];
+    const result=ev.target.result;_photoBase64=result.split(",")[1];
     document.getElementById("previewImg").src=result;
     document.getElementById("previewImg").style.display="block";
     document.getElementById("cameraPlaceholder").style.display="none";
@@ -463,115 +801,100 @@ document.getElementById("fileInput").addEventListener("change",function(e){
     document.getElementById("btnAnalyze").style.display="block";
     document.getElementById("btnAnalyze").textContent="🤖 AI 분석하기";
     _aiPassed=false;
-  };
-  reader.readAsDataURL(file);
+  };reader.readAsDataURL(file);
 });
-
-// ── API 키 설정 (여기에 발급받은 키 입력) ──
-const ANTHROPIC_API_KEY = ""; // ← 나중에 여기 넣으면 돼요!
-
 async function analyzePhoto(){
-  if(!_photoBase64||!_currentMission) return;
+  if(!_photoBase64||!_currentMission)return;
   const btn=document.getElementById("btnAnalyze");
-  btn.disabled=true; btn.textContent="🔍 분석 중...";
+  btn.disabled=true;btn.textContent="🔍 분석 중...";
   const resultBox=document.getElementById("aiResult");
-  resultBox.className="ai-result analyzing"; resultBox.style.display="block";
+  resultBox.className="ai-result analyzing";resultBox.style.display="block";
   document.getElementById("aiResultTitle").textContent="🤖 AI가 사진을 분석하고 있어요...";
   document.getElementById("aiResultText").textContent="잠시만 기다려주세요!";
   document.getElementById("aiScoreRow").style.display="none";
   document.getElementById("scanOverlay").classList.add("active");
-
-  // API 키 없으면 데모 모드로 작동
   if(!ANTHROPIC_API_KEY){
-    await new Promise(r=>setTimeout(r,2000)); // 2초 기다리는 척
+    await new Promise(r=>setTimeout(r,2000));
     document.getElementById("scanOverlay").classList.remove("active");
-
-    const demoResults = {
-      "m1": {passed:true,  score:92, title:"텀블러 인증 완료!", reason:"텀블러를 가지고 카페를 이용하셨네요! 정말 멋진 환경 실천이에요. 오늘 하루 플라스틱 컵 하나를 줄이셨어요.", tip:"이렇게 매일 실천하면 한 달에 30개의 일회용 컵을 줄일 수 있어요 🌱"},
-      "m2": {passed:true,  score:88, title:"대중교통 인증!", reason:"버스나 지하철을 이용하셨군요! 자가용 대신 대중교통을 선택해 탄소를 크게 줄이셨어요.", tip:"오늘 절감한 CO₂가 나무 한 그루가 하루에 흡수하는 양과 같아요 🌳"},
-      "m3": {passed:true,  score:85, title:"채식 메뉴 완료!", reason:"오늘 채식 메뉴를 선택하셨네요! 육류 대신 식물성 식단은 탄소 발자국을 크게 줄여요.", tip:"채식 한 끼가 자동차로 3km를 덜 달리는 것과 같은 효과예요 🥗"},
-      "m4": {passed:true,  score:78, title:"절전 인증 완료!", reason:"불필요한 전등을 끄셨네요! 작은 습관이 에너지 절약으로 이어져요.", tip:"이런 습관이 모이면 한 달 전기세도 줄어들어요 💡"},
-      "m5": {passed:true,  score:90, title:"분리수거 완벽!", reason:"분리수거를 꼼꼼하게 하셨네요! 재활용을 통해 자원 순환에 기여하셨어요.", tip:"올바른 분리수거 한 번이 새 제품 생산에 필요한 에너지를 30% 줄여요 ♻️"},
-      "m6": {passed:true,  score:87, title:"장바구니 사용!", reason:"장바구니나 에코백을 사용하셨네요! 비닐봉지 없는 쇼핑이 바다를 지켜요.", tip:"에코백 하나로 평생 1,000개 이상의 비닐봉지를 줄일 수 있어요 🛍️"},
-      "m7": {passed:true,  score:82, title:"샤워 절수 완료!", reason:"짧은 샤워로 물을 아끼셨네요! 수자원 절약은 미래 세대를 위한 선물이에요.", tip:"5분 샤워로 욕조 목욕보다 물을 75% 절약할 수 있어요 🚿"},
-    };
-
-    const result = demoResults[_currentMission.id] || {passed:true,score:85,title:"미션 인증 완료!",reason:"환경 미션을 잘 수행하셨어요! 지구가 조금 더 건강해졌어요.",tip:"오늘도 지구를 위한 선택을 해주셔서 감사해요 🌍"};
-
+    const demos={"m1":{passed:true,score:92,title:"텀블러 인증 완료!",reason:"텀블러를 가지고 카페를 이용하셨네요!",tip:"매일 이렇게 하면 한 달에 30개의 일회용 컵을 줄여요 🌱"},"m2":{passed:true,score:88,title:"대중교통 인증!",reason:"대중교통을 이용하셨군요! 탄소를 크게 줄이셨어요.",tip:"나무 한 그루의 하루 흡수량과 같아요 🌳"},"m3":{passed:true,score:85,title:"채식 메뉴 완료!",reason:"채식 메뉴를 선택하셨네요!",tip:"자동차로 3km 덜 달리는 것과 같아요 🥗"}};
+    const r=demos[_currentMission.id]||{passed:true,score:85,title:"미션 인증 완료!",reason:"환경 미션을 잘 수행하셨어요!",tip:"지구가 조금 더 건강해졌어요 🌍"};
     resultBox.className="ai-result success";
-    document.getElementById("aiResultTitle").textContent="✅ "+result.title;
-    document.getElementById("aiResultText").textContent=result.reason+" "+result.tip;
-    _aiPassed=true;
-    btn.style.display="none";
+    document.getElementById("aiResultTitle").textContent="✅ "+r.title;
+    document.getElementById("aiResultText").textContent=r.reason+" "+r.tip;
+    _aiPassed=true;btn.style.display="none";
     document.getElementById("btnComplete").style.display="block";
     document.getElementById("aiScoreRow").style.display="flex";
-    const fill=document.getElementById("aiScoreFill");
-    fill.style.width=result.score+"%";
-    fill.style.background="var(--primary)";
-    document.getElementById("aiScoreLabel").textContent=result.score+"점";
+    const fill=document.getElementById("aiScoreFill");fill.style.width=r.score+"%";fill.style.background="var(--primary)";
+    document.getElementById("aiScoreLabel").textContent=r.score+"점";
     return;
   }
-
-  // API 키 있으면 진짜 AI 분석
   try{
-    const resp=await fetch("https://api.anthropic.com/v1/messages",{
-      method:"POST",
-      headers:{"Content-Type":"application/json","x-api-key":ANTHROPIC_API_KEY,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
-      body:JSON.stringify({
-        model:"claude-sonnet-4-20250514",
-        max_tokens:500,
-        messages:[{role:"user",content:[
-          {type:"image",source:{type:"base64",media_type:"image/jpeg",data:_photoBase64}},
-          {type:"text",text:`EcoQuest AI 미션 인증 시스템입니다.
-미션: "${_currentMission.name}"
-확인 키워드: ${_currentMission.keyword}
-이 사진이 미션 수행 증거인지 판단하세요.
-JSON만 응답: {"passed":true/false,"score":0-100,"title":"결과제목(8자이내)","reason":"판단이유(친근하게 2문장)","tip":"칭찬또는개선팁(1문장)"}`}
-        ]}]
-      })
-    });
-    const data=await resp.json();
-    const text=data.content?.[0]?.text||"";
-    let result;
-    try{ const m=text.match(/\{[\s\S]*\}/); result=JSON.parse(m?m[0]:text); }
-    catch{ result={passed:false,score:0,title:"분석 오류",reason:"사진을 다시 찍어봐요!",tip:""}; }
+    const resp=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":ANTHROPIC_API_KEY,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:500,messages:[{role:"user",content:[{type:"image",source:{type:"base64",media_type:"image/jpeg",data:_photoBase64}},{type:"text",text:`EcoQuest 미션: "${_currentMission.name}" 키워드: ${_currentMission.keyword}. JSON만: {"passed":true/false,"score":0-100,"title":"제목8자","reason":"이유2문장","tip":"팁1문장"}`}]}]})});
+    const data=await resp.json();const text=data.content?.[0]?.text||"";
+    let result;try{const m=text.match(/\{[\s\S]*\}/);result=JSON.parse(m?m[0]:text);}catch{result={passed:false,score:0,title:"분석 오류",reason:"다시 찍어봐요!",tip:""};}
     document.getElementById("scanOverlay").classList.remove("active");
-    if(result.passed){
-      resultBox.className="ai-result success";
-      document.getElementById("aiResultTitle").textContent="✅ "+result.title;
-      _aiPassed=true; btn.style.display="none";
-      document.getElementById("btnComplete").style.display="block";
-    } else {
-      resultBox.className="ai-result fail";
-      document.getElementById("aiResultTitle").textContent="❌ "+result.title;
-      _aiPassed=false; btn.disabled=false; btn.textContent="📸 다시 찍기";
-    }
+    if(result.passed){resultBox.className="ai-result success";document.getElementById("aiResultTitle").textContent="✅ "+result.title;_aiPassed=true;btn.style.display="none";document.getElementById("btnComplete").style.display="block";}
+    else{resultBox.className="ai-result fail";document.getElementById("aiResultTitle").textContent="❌ "+result.title;_aiPassed=false;btn.disabled=false;btn.textContent="📸 다시 찍기";}
     document.getElementById("aiResultText").textContent=(result.reason||"")+" "+(result.tip||"");
     const score=Math.max(0,Math.min(100,result.score||0));
     document.getElementById("aiScoreRow").style.display="flex";
-    const fill=document.getElementById("aiScoreFill");
-    fill.style.width=score+"%";
-    fill.style.background=score>=70?"var(--primary)":score>=40?"var(--accent)":"#ef4444";
+    const fill=document.getElementById("aiScoreFill");fill.style.width=score+"%";fill.style.background=score>=70?"var(--primary)":score>=40?"var(--accent)":"#ef4444";
     document.getElementById("aiScoreLabel").textContent=score+"점";
-  }catch(e){
-    document.getElementById("scanOverlay").classList.remove("active");
-    resultBox.className="ai-result fail";
-    document.getElementById("aiResultTitle").textContent="⚠️ 분석 실패";
-    document.getElementById("aiResultText").textContent="네트워크 오류예요. 다시 시도해주세요.";
-    btn.disabled=false; btn.textContent="🤖 다시 분석하기";
-  }
+  }catch(e){document.getElementById("scanOverlay").classList.remove("active");resultBox.className="ai-result fail";document.getElementById("aiResultTitle").textContent="⚠️ 분석 실패";document.getElementById("aiResultText").textContent="다시 시도해주세요.";btn.disabled=false;btn.textContent="🤖 다시 분석하기";}
 }
-
 async function completeAfterAI(){
-  if(!_aiPassed||!_currentMission||!_currentUid) return;
+  if(!_aiPassed||!_currentMission||!_currentUid)return;
   const btn=document.getElementById("btnComplete");
-  btn.disabled=true; btn.textContent="저장 중...";
+  btn.disabled=true;btn.textContent="저장 중...";
   const ok=await window.completeMissionFB(_currentUid,_currentMission.id,_currentMission.name,_currentMission.point,_currentMission.co2);
-  if(ok){ closeAiModal(); renderMissions(_currentUid); showToast(`🎉 AI 인증 완료! +${_currentMission.point}P 적립!`); }
-  btn.disabled=false; btn.textContent="✅ 미션 완료!";
+  if(ok){closeAiModal();renderTodayMissions(_currentUid);showToast(`🎉 AI 인증 완료! +${_currentMission.point}P 적립!`);}
+  btn.disabled=false;btn.textContent="✅ 미션 완료!";
 }
 
+// 책 렌더링
+function renderBooks(uid){
+  const wrap=document.getElementById("bookList");
+  wrap.innerHTML=BOOKS.map(b=>`
+    <div class="book-card">
+      <div class="book-cover">${b.emoji}</div>
+      <div class="book-info">
+        <div class="book-title">${b.title}</div>
+        <div class="book-author">${b.author}</div>
+        <div class="book-desc">${b.desc}</div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="book-price">${b.price.toLocaleString()}P <span>정가 ${b.originalPrice.toLocaleString()}원</span></div>
+        </div>
+        <button class="btn-buy-book" onclick="openBuyModal('${b.id}','${uid}')">포인트로 구매</button>
+      </div>
+    </div>`).join("");
+}
+
+function openBuyModal(bookId, uid){
+  const b=BOOKS.find(x=>x.id===bookId);if(!b)return;
+  const point=window._currentPoint||0;
+  const canBuy=point>=b.price;
+  document.getElementById("buyModalContent").innerHTML=`
+    <div class="modal-handle"></div>
+    <div style="font-size:18px;font-weight:900;color:var(--text);margin-bottom:4px;">${b.emoji} ${b.title}</div>
+    <div style="font-size:13px;color:var(--sub);margin-bottom:16px;">${b.author}</div>
+    <div style="background:var(--bg);border-radius:12px;padding:14px;margin-bottom:16px;">
+      <div class="detail-row"><span class="detail-label">책 가격</span><span class="detail-value">${b.price.toLocaleString()}P</span></div>
+      <div class="detail-row"><span class="detail-label">내 포인트</span><span class="detail-value" style="color:${canBuy?'var(--secondary)':'#ef4444'}">${point.toLocaleString()}P</span></div>
+      <div class="detail-row"><span class="detail-label">구매 후 포인트</span><span class="detail-value">${canBuy?(point-b.price).toLocaleString()+"P":"포인트 부족"}</span></div>
+    </div>
+    <p style="font-size:12px;color:var(--sub);margin-bottom:16px;line-height:1.7;">구매 완료 후 관리자(808glocal@gmail.com)가 배송 정보를 이메일로 연락드려요!</p>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="document.getElementById('buyModalOverlay').classList.remove('open')">취소</button>
+      <button class="btn-join" ${canBuy?"":'disabled style="background:#ddd"'} onclick="window.purchaseBook('${uid}',${JSON.stringify(b).replace(/'/g,'&#39;')})">
+        ${canBuy?"구매하기 📚":"포인트 부족"}
+      </button>
+    </div>`;
+  document.getElementById("buyModalOverlay").classList.add("open");
+}
+
+// 챌린지
 function renderChallengeCard(c,showProgress){
+  const refundInfo = calcRefund(c.deposit, Math.floor(c.days*0.8), c.days);
   return `<div class="challenge-card${c.hot?" hot":""}" onclick="openChallenge(${c.id})">
     <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;">
       <div style="flex:1">
@@ -579,10 +902,10 @@ function renderChallengeCard(c,showProgress){
         <div class="challenge-title">${c.title}</div>
         <div class="challenge-desc">${c.desc}</div>
       </div>
-      <div class="challenge-prize">
-        <div class="prize-label">예치금 환급</div>
-        <div class="prize-amount">${c.prize.toLocaleString()}P</div>
-        <div class="prize-sub">예치 ${c.deposit.toLocaleString()}원</div>
+      <div style="text-align:right;flex-shrink:0;margin-left:10px;">
+        <div style="font-size:10px;color:var(--sub);margin-bottom:2px;">예치금</div>
+        <div style="font-size:16px;font-weight:900;color:var(--secondary);">${c.deposit.toLocaleString()}원</div>
+        <div style="font-size:10px;color:var(--sub);">성공 시 전액 환급</div>
       </div>
     </div>
     ${showProgress?`<div class="progress-bar"><div class="progress-fill" style="width:${c.progress}%"></div></div>`:""}
@@ -595,26 +918,27 @@ function renderChallengeCard(c,showProgress){
     </div>
   </div>`;
 }
-
-function renderMyChallenges(){ document.getElementById("myChallengeList").innerHTML=CHALLENGES.slice(0,2).map(c=>renderChallengeCard(c,true)).join(""); }
-function renderAllChallenges(){ document.getElementById("allChallengeList").innerHTML=CHALLENGES.map(c=>renderChallengeCard(c,false)).join(""); }
-
-function switchTab(name,btn){
-  ["home","challenge","map","reward"].forEach(t=>{ document.getElementById("tab-"+t).style.display=t===name?"block":"none"; });
-  document.querySelectorAll(".mtab").forEach(b=>b.classList.remove("active"));
-  if(btn) btn.classList.add("active");
-  else document.querySelectorAll(".mtab")[["home","challenge","map","reward"].indexOf(name)].classList.add("active");
-}
+function renderMyChallenges(){document.getElementById("myChallengeList").innerHTML=CHALLENGES.slice(0,2).map(c=>renderChallengeCard(c,true)).join("");}
+function renderAllChallenges(){document.getElementById("allChallengeList").innerHTML=CHALLENGES.map(c=>renderChallengeCard(c,false)).join("");}
 
 function openChallenge(id){
-  const c=CHALLENGES.find(x=>x.id===id); if(!c) return;
+  const c=CHALLENGES.find(x=>x.id===id);if(!c)return;
   document.getElementById("modalContent").innerHTML=`
-    <div class="modal-title">${c.title}</div>
-    <div class="modal-desc">${c.desc}<br/><br/>🤖 모든 미션은 AI가 인증해요! 실패하면 예치금이 환경단체에 기부돼요 🌍</div>
-    <div class="modal-detail">
-      <div class="detail-row"><span class="detail-label">예치금</span><span class="detail-value">${c.deposit.toLocaleString()}원</span></div>
-      <div class="detail-row"><span class="detail-label">성공 시</span><span class="detail-value" style="color:var(--secondary)">${c.prize.toLocaleString()}P + 전액 환급</span></div>
-      <div class="detail-row"><span class="detail-label">실패 시</span><span class="detail-value" style="color:var(--sub)">환경단체 기부</span></div>
+    <div style="font-size:18px;font-weight:900;color:var(--text);margin-bottom:8px;">${c.title}</div>
+    <div style="font-size:13px;color:var(--sub);line-height:1.7;margin-bottom:16px;">${c.desc}</div>
+    <div style="background:#fff8e1;border-radius:12px;padding:14px;margin-bottom:12px;border:1px solid #f39c12;">
+      <div style="font-size:13px;font-weight:900;color:#8B5E04;margin-bottom:8px;">💰 일수 비례 환급</div>
+      <div style="font-size:12px;color:#8B5E04;line-height:1.8;">
+        완주(100%) → <b>3,000원 전액 환급</b><br/>
+        80% 이상 → 2,400원 환급<br/>
+        60% 이상 → 1,800원 환급<br/>
+        40% 이상 → 1,200원 환급<br/>
+        40% 미만 → 환경단체 기부 🌱
+      </div>
+    </div>
+    <div style="background:var(--bg);border-radius:12px;padding:14px;margin-bottom:16px;">
+      <div class="detail-row"><span class="detail-label">예치금</span><span class="detail-value">3,000원 (참여자 부담)</span></div>
+      <div class="detail-row"><span class="detail-label">챌린지 기간</span><span class="detail-value">${c.days}일</span></div>
       <div class="detail-row"><span class="detail-label">참여자</span><span class="detail-value">${c.participants.toLocaleString()}명</span></div>
     </div>
     ${c.missions.map(m=>`<div style="font-size:13px;padding:6px 0;border-bottom:1px solid var(--border)">✅ ${m}</div>`).join("")}
@@ -625,14 +949,30 @@ function openChallenge(id){
   document.getElementById("modalOverlay").classList.add("open");
 }
 
-function closeModal(e){ if(!e||e.target===document.getElementById("modalOverlay")) document.getElementById("modalOverlay").classList.remove("open"); }
-function joinChallenge(title){ document.getElementById("modalOverlay").classList.remove("open"); showToast(`🎉 "${title}" 참여 완료!`); }
-function showToast(msg){ const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),2500); }
+function copyEmail(){
+  navigator.clipboard.writeText("808glocal@gmail.com").then(()=>showToast("이메일 복사됐어요! 📧")).catch(()=>showToast("808glocal@gmail.com"));
+}
 
-window.showToast=showToast; window.switchTab=switchTab; window.openChallenge=openChallenge;
-window.closeModal=closeModal; window.joinChallenge=joinChallenge;
-window.openAiModal=openAiModal; window.closeAiModal=closeAiModal;
-window.analyzePhoto=analyzePhoto; window.completeAfterAI=completeAfterAI;
+function switchTab(name,btn){
+  ["home","challenge","shop","mypage","admin"].forEach(t=>{
+    const el=document.getElementById("tab-"+t);if(el)el.style.display=t===name?"block":"none";
+  });
+  document.querySelectorAll(".mtab").forEach(b=>b.classList.remove("active"));
+  if(btn)btn.classList.add("active");
+  else{const tabs=["home","challenge","shop","mypage"];const idx=tabs.indexOf(name);if(idx>-1)document.querySelectorAll(".mtab")[idx].classList.add("active");}
+  if(name==="admin")loadAllOrders();
+}
+function closeModal(e){if(!e||e.target===document.getElementById("modalOverlay"))document.getElementById("modalOverlay").classList.remove("open");}
+function joinChallenge(title){document.getElementById("modalOverlay").classList.remove("open");showToast(`🎉 "${title}" 참여 완료! (결제 시스템 준비 중)`);}
+function showToast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2500);}
+
+window.showToast=showToast;window.switchTab=switchTab;window.openChallenge=openChallenge;
+window.closeModal=closeModal;window.joinChallenge=joinChallenge;
+window.openAiModal=openAiModal;window.closeAiModal=closeAiModal;
+window.analyzePhoto=analyzePhoto;window.completeAfterAI=completeAfterAI;
+window.openMissionSelect=openMissionSelect;window.toggleMissionSelect=toggleMissionSelect;
+window.confirmMissionSelect=confirmMissionSelect;window.openBuyModal=openBuyModal;
+window.copyEmail=copyEmail;window.loadAllOrders=loadAllOrders;
 </script>
 </body>
 </html>

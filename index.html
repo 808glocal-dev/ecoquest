@@ -546,12 +546,21 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
       <label>지역</label>
       <select class="sel" id="regionSelect">
         <option value="">선택해주세요</option>
-        <option>서울</option><option>경기</option><option>인천</option>
-        <option>부산</option><option>대구</option><option>광주</option>
-        <option>대전</option><option>울산</option><option>세종</option>
-        <option>강원</option><option>충북</option><option>충남</option>
-        <option>전북</option><option>전남</option><option>경북</option>
-        <option>경남</option><option>제주</option>
+        <optgroup label="서울 (구별 대기질 제공)">
+          <option>강남</option><option>강동</option><option>강북</option><option>강서</option>
+          <option>관악</option><option>광진</option><option>구로</option><option>금천</option>
+          <option>노원</option><option>도봉</option><option>동대문</option><option>동작</option>
+          <option>마포</option><option>서대문</option><option>서초</option><option>성동</option>
+          <option>성북</option><option>송파</option><option>양천</option><option>영등포</option>
+          <option>용산</option><option>은평</option><option>종로</option><option>중구</option>
+          <option>중랑</option>
+        </optgroup>
+        <optgroup label="서울 외 지역">
+          <option>경기</option><option>인천</option><option>부산</option><option>대구</option>
+          <option>광주</option><option>대전</option><option>울산</option><option>세종</option>
+          <option>강원</option><option>충북</option><option>충남</option><option>전북</option>
+          <option>전남</option><option>경북</option><option>경남</option><option>제주</option>
+        </optgroup>
       </select>
     </div>
 
@@ -817,12 +826,12 @@ async function loadGlobalStats(){
     const s=await window.FB.getDoc(window.FB.doc(window.FB.db,"stats","global"));
     if(s.exists()){
       const d=s.data();
-      const t=d.totalUsers||0,td=d.todayUsers||0,co2=d.totalCo2||0;
+      const t=d.totalUsers||0,td=d.todayUsers||0,co2=Math.round((d.totalCo2||0)*100)/100;
       document.getElementById("bToday").textContent=td.toLocaleString();
       document.getElementById("bTotal").textContent=t.toLocaleString();
       document.getElementById("mapTotal").textContent=t>0?t.toLocaleString():"24,810";
-      const co2r=parseFloat(co2.toFixed(2));
-      const c=co2r>=1000?(co2r/1000).toFixed(1)+"t":co2r.toFixed(2)+"kg";
+      const co2r=Math.round(co2*100)/100;
+      const c=co2r>=1000?(co2r/1000).toFixed(1)+"t":co2r.toFixed(1)+"kg";
       document.getElementById("bCo2").textContent=c;
       document.getElementById("mapCo2").textContent=c;
     }
@@ -917,7 +926,7 @@ window.saveMission=async(uid,m)=>{
   }catch(e){}
   await window.FB.updateDoc(window.FB.doc(window.FB.db,"users",uid),{doneMissions:done,point:p,missionCount:cnt,co2,lastAt:window.FB.serverTimestamp()});
   window.UDATA={...d,doneMissions:done,point:p,missionCount:cnt,co2};
-  try{await window.FB.setDoc(window.FB.doc(window.FB.db,"stats","global"),{totalCo2:window.FB.increment(m.co2)},{merge:true});loadGlobalStats();}catch(e){}
+  try{await window.FB.setDoc(window.FB.doc(window.FB.db,"stats","global"),{totalCo2:window.FB.increment(parseFloat(m.co2.toFixed(3)))},{merge:true});loadGlobalStats();}catch(e){}
   updateUI();
   return true;
 };
@@ -1853,6 +1862,22 @@ function airGrade(val, type){
   return{grade:"보통",color:"#F39C12",emoji:"🙂",bg:"linear-gradient(135deg,#b8860b,#F39C12)"};
 }
 
+// 지역별 측정소 매핑 (서울 열린데이터광장 기준)
+const REGION_STATION = {
+  "서울": null, // 전체 평균
+  "강남": "강남구", "강동": "강동구", "강북": "강북구", "강서": "강서구",
+  "관악": "관악구", "광진": "광진구", "구로": "구로구", "금천": "금천구",
+  "노원": "노원구", "도봉": "도봉구", "동대문": "동대문구", "동작": "동작구",
+  "마포": "마포구", "서대문": "서대문구", "서초": "서초구", "성동": "성동구",
+  "성북": "성북구", "송파": "송파구", "양천": "양천구", "영등포": "영등포구",
+  "용산": "용산구", "은평": "은평구", "종로": "종로구", "중구": "중구",
+  "중랑": "중랑구",
+  // 서울 외 지역은 서울 전체 평균 사용
+  "경기": null, "인천": null, "부산": null, "대구": null, "광주": null,
+  "대전": null, "울산": null, "세종": null, "강원": null, "충북": null,
+  "충남": null, "전북": null, "전남": null, "경북": null, "경남": null, "제주": null,
+};
+
 async function loadSeoulAir(){
   const card = document.getElementById("airCard");
   const statusEl = document.getElementById("airStatus");
@@ -1861,42 +1886,54 @@ async function loadSeoulAir(){
   const missionText = document.getElementById("airMissionText");
   if(!card) return;
 
+  // 유저 지역 확인
+  const userRegion = window.UDATA?.region || "";
+  const station = REGION_STATION[userRegion] || null;
+  const regionLabel = userRegion ? userRegion : "서울 전체";
+
   try{
-    const url = `https://openapi.seoul.go.kr:8088/${SEOUL_API_KEY}/json/RealtimeCityAir/1/5/`;
+    const url = `https://openapi.seoul.go.kr:8088/${SEOUL_API_KEY}/json/RealtimeCityAir/1/25/`;
     const res = await fetch(url);
     const data = await res.json();
-    const rows = data?.RealtimeCityAir?.row || [];
+    let rows = data?.RealtimeCityAir?.row || [];
 
     if(!rows.length) throw new Error("데이터 없음");
 
-    // 평균값 계산
-    const avg25 = Math.round(rows.reduce((s,r)=>s+(r.PM25||0),0)/rows.length);
-    const avg10 = Math.round(rows.reduce((s,r)=>s+(r.PM10||0),0)/rows.length);
+    // 지역 필터링 — 해당 구 데이터만 추출
+    let filtered = station
+      ? rows.filter(r => r.MSRSTE_NM && r.MSRSTE_NM.includes(station.replace("구","")))
+      : rows;
+    if(!filtered.length) filtered = rows; // 못 찾으면 전체 평균
+
+    const avg25 = Math.round(filtered.reduce((s,r)=>s+(r.PM25||0),0)/filtered.length);
+    const avg10 = Math.round(filtered.reduce((s,r)=>s+(r.PM10||0),0)/filtered.length);
     const g = airGrade(avg25,"pm25");
 
     card.style.background = g.bg;
-    statusEl.textContent = `${g.emoji} PM2.5 ${avg25}㎍/m³ · ${g.grade}`;
-    detailEl.innerHTML = `PM10 ${avg10}㎍/m³<br/>측정 지점: ${rows.slice(0,3).map(r=>r.MSRSTE_NM).join(", ")}`;
+    statusEl.innerHTML = `${g.emoji} PM2.5 ${avg25}㎍/m³ · <b>${g.grade}</b>`;
+    detailEl.innerHTML = `PM10 ${avg10}㎍/m³<br/>📍 ${regionLabel} 기준`;
 
-    // 대기질 나쁘면 → 대중교통 미션 추천 (환경+교통 데이터 결합!)
+    missionEl.style.display = "block";
     if(avg25 > 35){
-      missionEl.style.display = "block";
-      missionText.textContent = `오늘 대기질이 ${g.grade}해요! 자동차 대신 대중교통으로 미세먼지 줄여봐요 🚌`;
+      missionText.textContent = `${regionLabel} 대기질 ${g.grade}! 자동차 대신 대중교통으로 미세먼지 줄여봐요 🚌`;
       window._airBad = true;
     } else {
-      missionEl.style.display = "block";
-      missionText.textContent = `오늘 공기가 ${g.grade}해요! 자전거·도보 미션에 딱 좋은 날이에요 🚲`;
+      missionText.textContent = `${regionLabel} 공기 ${g.grade}! 자전거·도보 미션에 딱 좋은 날이에요 🚲`;
       window._airBad = false;
     }
-    window._airData = {pm25: avg25, pm10: avg10, grade: g.grade};
+    window._airData = {pm25:avg25, pm10:avg10, grade:g.grade, region:regionLabel};
+
+    // 타이틀에 지역 표시
+    const titleEl = card.querySelector("div[style*='font-size:11px']");
+    if(titleEl) titleEl.textContent = `📡 ${regionLabel} 실시간 대기질 (열린데이터광장)`;
+
   }catch(e){
-    // API 키 미설정 or 오류 시 샘플 데이터로 표시
     card.style.background = "linear-gradient(135deg,#b8860b,#F39C12)";
     statusEl.textContent = "🙂 PM2.5 23㎍/m³ · 보통";
-    detailEl.innerHTML = "PM10 45㎍/m³<br/>측정 지점: 중구, 종로구, 강남구";
+    detailEl.innerHTML = `PM10 45㎍/m³<br/>📍 ${regionLabel} 기준`;
     missionEl.style.display = "block";
     missionText.textContent = "오늘 공기 보통이에요! 가까운 거리는 자전거로 이동해봐요 🚲";
-    window._airData = {pm25:23, pm10:45, grade:"보통"};
+    window._airData = {pm25:23, pm10:45, grade:"보통", region:regionLabel};
   }
 }
 window.loadSeoulAir = loadSeoulAir;
@@ -1968,9 +2005,12 @@ function renderMyContrib(){
   const totalCo2  = parseFloat((d.co2||0).toFixed(2));
   const totalMission = d.missionCount||0;
 
+  // 미션 없어도 항상 표시
+  contribEl.style.display = "block";
   if(totalMission === 0){
-    contribEl.style.display = "block";
-    statsEl.innerHTML = `<div style="font-size:12px;color:rgba(255,255,255,.8)">아직 미션을 완료하지 않았어요! 첫 미션을 해봐요 🌱</div>`;
+    statsEl.innerHTML = `<div style="font-size:12px;color:rgba(255,255,255,.8);padding:8px 0">아직 미션이 없어요! 챌린지 참여 후 첫 미션을 완료해봐요 🌱</div>`;
+    barEl.innerHTML = "";
+    msgEl.innerHTML = "미션을 완료하면 내 환경 기여도가 여기 나타나요!";
     return;
   }
 

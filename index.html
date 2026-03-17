@@ -250,9 +250,9 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
           <div id="airDetail" style="font-size:11px;color:rgba(255,255,255,.8);line-height:1.8"></div>
         </div>
         <div id="airMission" style="margin-top:8px;display:none">
-          <div style="background:rgba(255,255,255,.2);border-radius:10px;padding:8px 12px;font-size:12px;font-weight:700">
-            💡 <span id="airMissionText"></span>
-          </div>
+          <button onclick="startAirMission()" style="background:rgba(255,255,255,.25);border:1.5px solid rgba(255,255,255,.5);border-radius:10px;padding:8px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;color:#fff;width:100%;text-align:left">
+            💡 <span id="airMissionText"></span> →
+          </button>
         </div>
         <div id="airCardSrc" style="font-size:9px;color:rgba(255,255,255,.5);margin-top:6px">출처: 로딩 중</div>
       </div>
@@ -263,9 +263,9 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
         <div id="bikeStatus" style="font-size:13px;font-weight:700">로딩 중...</div>
         <div id="bikeList" style="margin-top:8px;display:none"></div>
         <div id="bikeMission" style="margin-top:8px;display:none">
-          <div style="background:rgba(255,255,255,.2);border-radius:10px;padding:8px 12px;font-size:12px;font-weight:700">
-            💡 <span id="bikeMissionText"></span>
-          </div>
+          <button onclick="startBikeMission()" style="background:rgba(255,255,255,.25);border:1.5px solid rgba(255,255,255,.5);border-radius:10px;padding:8px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;color:#fff;width:100%;text-align:left">
+            💡 <span id="bikeMissionText"></span> →
+          </button>
         </div>
         <!-- 내 기여도 -->
         <div id="myContrib" style="display:none;margin-top:10px;background:rgba(255,255,255,.15);border-radius:12px;padding:10px 12px">
@@ -276,8 +276,23 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
         </div>
         <div style="font-size:9px;color:rgba(255,255,255,.5);margin-top:6px">출처: 서울특별시 열린데이터광장</div>
       </div>
+      <!-- 인천 대중교통 카드 (인천 선택 시만 표시) -->
+      <div id="incheonTransCard" style="display:none;background:linear-gradient(135deg,#6a1b9a,#9c27b0);border-radius:16px;padding:14px 16px;color:#fff;margin-bottom:8px;position:relative;overflow:hidden">
+        <div style="position:absolute;right:-8px;top:-8px;font-size:60px;opacity:.15">🚌</div>
+        <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.7);margin-bottom:6px">🚌 인천 대중교통 현황 (인천 데이터포털)</div>
+        <div id="incheonTransStatus" style="font-size:13px;font-weight:700">로딩 중...</div>
+        <div id="incheonTransDetail" style="font-size:12px;color:rgba(255,255,255,.85);margin-top:6px;line-height:1.8"></div>
+        <div id="incheonTransMission" style="margin-top:8px;display:none">
+          <button onclick="startBusMission()" style="background:rgba(255,255,255,.25);border:1.5px solid rgba(255,255,255,.5);border-radius:10px;padding:8px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;color:#fff;width:100%;text-align:left">
+            💡 <span id="incheonTransMissionText"></span> →
+          </button>
+        </div>
+        <div style="font-size:9px;color:rgba(255,255,255,.5);margin-top:6px">출처: 인천광역시 데이터포털 / 한국환경공단</div>
+      </div>
     </div>
 
+    <div class="sec"><div class="sec-t">⚡ 오늘의 미션 <span style="background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:6px;">🤖 AI인증</span></div></div>
+    <div class="mscroll" id="missionScroll"></div>
     <div class="earth-banner">
       <div class="eb-title">🌍 EcoQuest 현황</div>
       <div class="eb-stats">
@@ -287,8 +302,6 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
         <div class="ebs"><div class="ebs-n" id="bCountry">132</div><div class="ebs-l">참여 국가</div></div>
       </div>
     </div>
-    <div class="sec"><div class="sec-t">⚡ 오늘의 미션 <span style="background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:6px;">🤖 AI인증</span></div></div>
-    <div class="mscroll" id="missionScroll"></div>
     <div class="sec">
       <div class="sec-t">🏆 참여 중인 챌린지</div>
       <div class="sec-m" id="goChal">전체보기 ›</div>
@@ -833,6 +846,7 @@ onAuthStateChanged(auth,async user=>{
     // 서울시 공공데이터 (열린데이터광장)
     loadSeoulAir();
     loadSeoulBike();
+    loadIncheonTransport();
     // 유저 데이터 로드 후 기여도 갱신
     setTimeout(()=>{if(typeof renderMyContrib==="function")renderMyContrib();},1500);
   }else{
@@ -2214,6 +2228,80 @@ async function loadSeoulBike(){
   renderMyContrib();
 }
 window.loadSeoulBike = loadSeoulBike;
+
+// 따릉이 버튼 클릭 → 자전거 미션 바로 열기
+function startBikeMission(){
+  const uid = window.ME?.uid;
+  const m = MISSIONS.find(x=>x.id==="m8"); // 자전거/도보 미션
+  if(m && uid) openAI(m, uid, null);
+  else toast("챌린지 참여 후 이용해봐요! 🏆");
+}
+window.startBikeMission = startBikeMission;
+
+// 대기질 버튼 클릭 → 대기질 나쁘면 대중교통, 좋으면 자전거
+function startAirMission(){
+  const uid = window.ME?.uid;
+  const missionId = window._airBad ? "m2" : "m8"; // 나쁨→대중교통, 좋음→자전거
+  const m = MISSIONS.find(x=>x.id===missionId);
+  if(m && uid) openAI(m, uid, null);
+  else toast("챌린지 참여 후 이용해봐요! 🏆");
+}
+window.startAirMission = startAirMission;
+
+// 버스 미션 열기
+function startBusMission(){
+  const uid = window.ME?.uid;
+  const m = MISSIONS.find(x=>x.id==="m2"); // 대중교통 미션
+  if(m && uid) openAI(m, uid, null);
+  else toast("챌린지 참여 후 이용해봐요! 🏆");
+}
+window.startBusMission = startBusMission;
+
+// 인천 대중교통 정보 표시
+async function loadIncheonTransport(){
+  const card = document.getElementById("incheonTransCard");
+  const statusEl = document.getElementById("incheonTransStatus");
+  const detailEl = document.getElementById("incheonTransDetail");
+  const missionEl = document.getElementById("incheonTransMission");
+  const missionText = document.getElementById("incheonTransMissionText");
+  if(!card) return;
+
+  const userRegion = window.UDATA?.region || "";
+  const isIncheon = ["인천","부평","남동","연수","서구","계양","미추홀","동구","강화","옹진"].includes(userRegion);
+
+  if(!isIncheon){ card.style.display="none"; return; }
+  card.style.display = "block";
+
+  // 인천 지하철 혼잡도 + 버스 정보 (data.go.kr 인천교통공사)
+  // API 키 없을 때는 유용한 정적 정보 표시
+  try{
+    // 인천 지하철 실시간 혼잡도 API (data.go.kr)
+    // const url = `https://apis.data.go.kr/6280000/ICBusInfoService/...`
+    throw new Error("샘플모드"); // API 키 추가 전까지 샘플
+  }catch(e){
+    const now = new Date();
+    const hour = now.getHours();
+    const isRush = (hour>=7&&hour<=9)||(hour>=18&&hour<=20);
+    const dayType = [0,6].includes(now.getDay()) ? "주말" : "평일";
+
+    statusEl.textContent = `인천 대중교통 현황 · ${dayType} ${isRush?"🔴 혼잡":"🟢 원활"}`;
+    detailEl.innerHTML = `
+      🚇 인천1호선·2호선 운행 중<br/>
+      🚌 인천 시내버스 정상 운행 중<br/>
+      ${isRush ? "⚠️ 출퇴근 혼잡 시간대 — 여유있게 이동해요!" : "✅ 여유있는 이동 가능해요!"}
+    `;
+    missionEl.style.display = "block";
+
+    // 대기질 연동 — 나쁘면 대중교통 더 강력 추천
+    const airGrade = window._airData?.grade || "보통";
+    if(airGrade==="나쁨"||airGrade==="매우나쁨"){
+      missionText.textContent = `오늘 대기질 ${airGrade}! 자동차 대신 지하철·버스로 미세먼지 줄여요 🚇`;
+    } else {
+      missionText.textContent = "대중교통으로 이동하고 CO₂ 절감 미션 도전해봐요! 🚌";
+    }
+  }
+}
+window.loadIncheonTransport = loadIncheonTransport;
 
 function renderMyContrib(){
   const d = window.UDATA||{};

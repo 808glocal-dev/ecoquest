@@ -215,6 +215,7 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
       <div class="hdr-right">
         <div class="avatar" id="uAvatar">👤</div>
         <span class="uname" id="uName">-</span>
+        <button onclick="openOnboardEdit()" style="background:rgba(255,255,255,.2);border:none;border-radius:8px;padding:4px 8px;color:#fff;font-size:14px;cursor:pointer;margin-right:2px">⚙️</button>
         <button class="btn-logout" id="btnLogout">로그아웃</button>
       </div>
     </div>
@@ -243,7 +244,7 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
       <!-- 대기질 카드 -->
       <div id="airCard" style="background:linear-gradient(135deg,#1a6b3a,#2ECC71);border-radius:16px;padding:14px 16px;color:#fff;margin-bottom:8px;position:relative;overflow:hidden">
         <div style="position:absolute;right:-8px;top:-8px;font-size:60px;opacity:.15">🌫️</div>
-        <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.7);margin-bottom:6px">📡 서울시 실시간 대기질 (열린데이터광장)</div>
+        <div id="airCardTitle" style="font-size:11px;font-weight:700;color:rgba(255,255,255,.7);margin-bottom:6px">📡 대기질 로딩 중...</div>
         <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
           <div id="airStatus" style="font-size:22px;font-weight:900">로딩 중...</div>
           <div id="airDetail" style="font-size:11px;color:rgba(255,255,255,.8);line-height:1.8"></div>
@@ -253,7 +254,7 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
             💡 <span id="airMissionText"></span>
           </div>
         </div>
-        <div style="font-size:9px;color:rgba(255,255,255,.5);margin-top:6px">출처: 서울특별시 열린데이터광장</div>
+        <div id="airCardSrc" style="font-size:9px;color:rgba(255,255,255,.5);margin-top:6px">출처: 로딩 중</div>
       </div>
       <!-- 따릉이 카드 -->
       <div id="bikeCard" style="background:linear-gradient(135deg,#1565C0,#3498DB);border-radius:16px;padding:14px 16px;color:#fff;margin-bottom:8px;position:relative;overflow:hidden">
@@ -412,7 +413,7 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
       <button class="btn btn-g" style="flex:1;padding:12px" onclick="showCert()">🏆 증명서 발급</button>
     </div>
     <div style="padding:0 12px;margin-bottom:4px">
-      <button class="btn btn-gray" style="padding:10px" onclick="openOv('ovOnboard')">✏️ 나이대/지역 정보 수정</button>
+      <button class="btn btn-gray" style="padding:10px" onclick="openOnboardEdit()">✏️ 내 정보 / 지역 수정</button>
     </div>
     <div class="sec"><div class="sec-t">📸 내 인증 기록</div></div>
     <div id="myVerifs" style="padding:0 12px"></div>
@@ -1539,12 +1540,74 @@ async function saveOnboard(){
         ecoLevel:_onboardData.ecoLevel,
       }
     );
-    toast("🌱 정보 저장 완료! EcoQuest 시작해요!");
-    // 온보딩 완료 → 앱 표시
+    toast("🌱 정보 저장 완료!");
     if(typeof showApp==="function")showApp();
+    // 지역 변경 시 대기질 즉시 갱신
+    if(typeof loadSeoulAir==="function")loadSeoulAir();
   }
 }
 window.selAge=selAge;window.selOnboard=selOnboard;window.toggleInterest=toggleInterest;window.saveOnboard=saveOnboard;
+
+// 기존 정보 채워서 온보딩 열기
+function openOnboardEdit(){
+  const d = window.UDATA||{};
+
+  // 기존 데이터로 _onboardData 초기화
+  _onboardData = {
+    age: d.age||"",
+    gender: d.gender||"",
+    job: d.job||"",
+    hasCar: d.hasCar||"",
+    household: d.household||"",
+    ecoLevel: d.ecoLevel||"",
+  };
+  _selInterests = [...(d.interests||[])];
+
+  // 모달 열기
+  openOv("ovOnboard");
+
+  // 버튼 상태 복원 (약간의 딜레이로 DOM 렌더 후)
+  setTimeout(()=>{
+    // 성별
+    document.querySelectorAll("#genderSelect .dep-btn").forEach(b=>{
+      b.classList.toggle("on", b.textContent.trim()===_onboardData.gender);
+    });
+    // 나이대
+    document.querySelectorAll("#ageSelect .dep-btn").forEach(b=>{
+      b.classList.toggle("on", b.textContent.trim()===_onboardData.age);
+    });
+    // 지역
+    const rSel = document.getElementById("regionSelect");
+    if(rSel && d.region) rSel.value = d.region;
+    // 직업
+    document.querySelectorAll("#jobSelect .dep-btn").forEach(b=>{
+      b.classList.toggle("on", b.textContent.includes(_onboardData.job) && _onboardData.job);
+    });
+    // 자동차
+    document.querySelectorAll("#carSelect .dep-btn").forEach(b=>{
+      b.classList.toggle("on", b.textContent.includes(_onboardData.hasCar) && _onboardData.hasCar);
+    });
+    // 가구형태
+    document.querySelectorAll("#householdSelect .dep-btn").forEach(b=>{
+      b.classList.toggle("on", b.textContent.trim()===_onboardData.household);
+    });
+    // 환경관심도
+    document.querySelectorAll("#ecoLevelSelect .dep-btn").forEach(b=>{
+      b.classList.toggle("on", b.textContent.includes(_onboardData.ecoLevel) && _onboardData.ecoLevel);
+    });
+    // 관심분야
+    document.querySelectorAll("#interestSelect .dep-btn").forEach(b=>{
+      const txt = b.textContent.trim();
+      const matched = _selInterests.some(i => txt.includes(i));
+      b.classList.toggle("on", matched);
+    });
+
+    // 버튼 텍스트 변경
+    const saveBtn = document.querySelector("#ovOnboard .btn-g");
+    if(saveBtn) saveBtn.textContent = d.age ? "저장하기! ✅" : "시작하기! 🌱";
+  }, 100);
+}
+window.openOnboardEdit = openOnboardEdit;
 
 // ══ 탄소 비유 ══
 function getCo2Analogy(co2kg){
@@ -1974,8 +2037,10 @@ async function loadSeoulAir(){
     window._airData = {pm25:avg25, pm10:avg10, grade:g.grade, region:regionLabel};
 
     // 타이틀에 지역 표시
-    const titleEl = card.querySelector("div[style*='font-size:11px']");
-    if(titleEl) titleEl.textContent = `📡 ${regionLabel} 실시간 대기질 (열린데이터광장)`;
+    const titleEl = document.getElementById("airCardTitle");
+    const srcEl = document.getElementById("airCardSrc");
+    if(titleEl) titleEl.textContent = `📡 ${regionLabel} 실시간 대기질`;
+    if(srcEl) srcEl.textContent = "출처: 서울특별시 열린데이터광장";
 
   }catch(e){
     card.style.background = "linear-gradient(135deg,#b8860b,#F39C12)";
@@ -1984,6 +2049,10 @@ async function loadSeoulAir(){
     missionEl.style.display = "block";
     missionText.textContent = "오늘 공기 보통이에요! 가까운 거리는 자전거로 이동해봐요 🚲";
     window._airData = {pm25:23, pm10:45, grade:"보통", region:regionLabel};
+    const titleEl2 = document.getElementById("airCardTitle");
+    const srcEl2 = document.getElementById("airCardSrc");
+    if(titleEl2) titleEl2.textContent = `📡 ${regionLabel} 실시간 대기질`;
+    if(srcEl2) srcEl2.textContent = "출처: 서울특별시 열린데이터광장";
   }
 }
 window.loadSeoulAir = loadSeoulAir;
@@ -2017,8 +2086,10 @@ async function loadAirKorea(city, regionLabel, card, statusEl, detailEl, mission
     }
     window._airData = {pm25, pm10, grade:g.grade, region:regionLabel};
 
-    const titleEl = card.querySelector("div[style*='font-size:11px']");
-    if(titleEl) titleEl.textContent = `📡 ${regionLabel} 실시간 대기질 (한국환경공단)`;
+    const titleEl = document.getElementById("airCardTitle");
+    const srcEl = document.getElementById("airCardSrc");
+    if(titleEl) titleEl.textContent = `📡 ${regionLabel} 실시간 대기질`;
+    if(srcEl) srcEl.textContent = "출처: 한국환경공단 에어코리아";
 
   }catch(e){
     // API 키 없으면 샘플
@@ -2029,8 +2100,10 @@ async function loadAirKorea(city, regionLabel, card, statusEl, detailEl, mission
     missionText.textContent = `${regionLabel} 공기 보통이에요! 자전거 미션에 좋은 날이에요 🚲`;
     window._airData = {pm25:20, pm10:38, grade:"보통", region:regionLabel};
 
-    const titleEl = card.querySelector("div[style*='font-size:11px']");
-    if(titleEl) titleEl.textContent = `📡 ${regionLabel} 실시간 대기질 (한국환경공단)`;
+    const titleEl = document.getElementById("airCardTitle");
+    const srcEl = document.getElementById("airCardSrc");
+    if(titleEl) titleEl.textContent = `📡 ${regionLabel} 실시간 대기질`;
+    if(srcEl) srcEl.textContent = "출처: 한국환경공단 에어코리아";
   }
 }
 

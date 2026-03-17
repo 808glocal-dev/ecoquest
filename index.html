@@ -747,10 +747,12 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
     </div>
     <div id="pubToggle" style="display:none;margin-bottom:10px">
       <div style="font-size:12px;color:var(--sub);margin-bottom:6px">📸 인증샷 공개 설정</div>
-      <div style="display:flex;gap:6px">
+      <div style="display:flex;gap:6px;margin-bottom:8px">
         <button id="pubBtn" class="dep-btn on" onclick="setVerifPub(true)" style="flex:1">🌍 공개</button>
         <button id="priBtn" class="dep-btn" onclick="setVerifPub(false)" style="flex:1">🔒 나만 보기</button>
       </div>
+      <div style="font-size:12px;color:var(--sub);margin-bottom:4px">💬 한마디 남기기 (선택)</div>
+      <input id="verifComment" class="inp" placeholder="오늘도 지구를 위해 실천했어요! 🌱" maxlength="50" style="font-size:13px;padding:10px 12px"/>
     </div>
     <div class="ai-btns">
       <button class="btn btn-gray btn-sm" onclick="closeOv('ovAI')">취소</button>
@@ -817,6 +819,15 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
     <div class="handle" onclick="closeOv('ovBuy')"></div>
     <button class="modal-close" onclick="closeOv('ovBuy')">✕</button>
     <div id="buyDetail"></div>
+  </div>
+</div>
+
+<!-- 피드 상세 모달 -->
+<div class="overlay" id="ovFeedDetail">
+  <div class="modal">
+    <div class="handle" onclick="closeOv('ovFeedDetail')"></div>
+    <button class="modal-close" onclick="closeOv('ovFeedDetail')">✕</button>
+    <div id="feedDetailContent"></div>
   </div>
 </div>
 
@@ -903,12 +914,7 @@ onAuthStateChanged(auth,async user=>{
     renderBooks();
     renderOfficialChallenges();
     drawMap();
-    // 서울시 공공데이터 (열린데이터광장)
-    loadSeoulAir();
-    loadSeoulBike();
-    loadIncheonTransport();
-    // 유저 데이터 로드 후 기여도 갱신
-    setTimeout(()=>{if(typeof renderMyContrib==="function")renderMyContrib();},1500);
+    // 공공데이터는 showApp() 내부에서 호출됨
   }else{
     window.ME=null;
     document.getElementById("loginScreen").style.display="flex";
@@ -971,6 +977,13 @@ window.loadUser=loadUser;
 
 function showApp(){
   document.getElementById("app").style.display="block";
+  // 앱 표시 후 공공데이터 로드
+  setTimeout(()=>{
+    if(typeof loadSeoulAir==="function") loadSeoulAir();
+    if(typeof loadSeoulBike==="function") loadSeoulBike();
+    if(typeof loadIncheonTransport==="function") loadIncheonTransport();
+    setTimeout(()=>{if(typeof renderMyContrib==="function")renderMyContrib();},1500);
+  }, 200);
 }
 window.showApp=showApp;
 
@@ -1036,45 +1049,78 @@ window.saveTodayMissions=async(uid,ids)=>{
   window.UDATA.todayMissions=ids;
 };
 
-window.saveVerification=async(uid,m,b64,isPublic)=>{
+window.saveVerification=async(uid,m,b64,isPublic,comment)=>{
   try{
     const thumb=await compressImage(b64,200);
     await window.FB.addDoc(window.FB.collection(window.FB.db,"verifications"),{
       uid,userName:window.ME?.displayName||"익명",userPhoto:window.ME?.photoURL||"",
       missionId:m.id,missionName:m.name,missionEmoji:m.emoji,isPublic,thumb,
+      comment:comment||"",
       createdAt:window.FB.serverTimestamp()
     });
     return true;
   }catch(e){console.log("인증 저장 오류",e);return false;}
 };
 
+// 피드 선택 상태
+let _feedSelected = null;
+
 window.loadFeed=async()=>{
   const w=document.getElementById("feedList");if(!w)return;
   w.innerHTML='<div style="text-align:center;padding:16px;color:var(--sub);font-size:12px">로딩 중...</div>';
   try{
     const snap=await window.FB.getDocs(window.FB.collection(window.FB.db,"verifications"));
-    const items=snap.docs.map(d=>({id:d.id,...d.data()})).filter(d=>d.isPublic).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0)).slice(0,20);
+    const items=snap.docs.map(d=>({id:d.id,...d.data()})).filter(d=>d.isPublic).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0)).slice(0,30);
     if(!items.length){
       w.innerHTML='<div style="text-align:center;padding:20px;color:var(--sub);font-size:13px">아직 공개 인증샷이 없어요!<br/>첫 번째 인증샷을 올려봐요 🌱</div>';
       return;
     }
-    w.innerHTML=items.map(v=>`
-      <div style="background:#fff;border-radius:14px;padding:12px;margin-bottom:10px;border:1px solid var(--bdr);box-shadow:0 2px 6px rgba(0,0,0,.04)">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-          <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--g1),var(--g2));display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">
-            ${v.userPhoto?`<img src="${v.userPhoto}" style="width:32px;height:32px;border-radius:50%;object-fit:cover"/>`:'👤'}
+    // 3열 그리드
+    w.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px">
+      ${items.map(v=>`
+        <div onclick="openFeedDetail('${v.id}')" style="position:relative;aspect-ratio:1;background:#f0f0f0;cursor:pointer;border-radius:4px;overflow:hidden">
+          ${v.thumb
+            ?`<img src="${v.thumb}" style="width:100%;height:100%;object-fit:cover"/>`
+            :`<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:32px;background:linear-gradient(135deg,#f0fbf4,#e8f5e9)">${v.missionEmoji}</div>`
+          }
+          <div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.55));padding:4px 5px">
+            <div style="font-size:9px;color:#fff;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${v.missionEmoji} ${v.missionName}</div>
           </div>
-          <div style="flex:1">
-            <div style="font-size:13px;font-weight:700;color:var(--txt)">${v.userName}</div>
-            <div style="font-size:11px;color:var(--sub)">${v.missionEmoji} ${v.missionName}</div>
-          </div>
-          <div style="font-size:11px;color:var(--sub)">${timeAgo(v.createdAt?.seconds)}</div>
-        </div>
-        ${v.thumb?`<img src="${v.thumb}" style="width:100%;border-radius:10px;max-height:200px;object-fit:cover" alt="인증샷"/>`:''}
-        <div style="margin-top:6px;font-size:12px;color:var(--g2);font-weight:700">✅ AI 인증 완료!</div>
-      </div>`).join("");
+          ${v.comment?`<div style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,.5);border-radius:6px;padding:1px 5px;font-size:9px;color:#fff">💬</div>`:''}
+        </div>`).join("")}
+    </div>`;
+
+    // 상세 모달 데이터 저장
+    window._feedItems = {};
+    items.forEach(v=>{ window._feedItems[v.id]=v; });
   }catch(e){w.innerHTML='<div style="text-align:center;padding:16px;color:var(--sub);font-size:12px">불러오기 실패</div>';}
 };
+
+// 피드 상세 모달
+function openFeedDetail(id){
+  const v = window._feedItems?.[id];
+  if(!v) return;
+  const detail = document.getElementById("feedDetailContent");
+  if(!detail) return;
+  detail.innerHTML=`
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+      <div style="width:36px;height:36px;border-radius:50%;overflow:hidden;background:linear-gradient(135deg,var(--g1),var(--g2));display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">
+        ${v.userPhoto?`<img src="${v.userPhoto}" style="width:100%;height:100%;object-fit:cover"/>`:'👤'}
+      </div>
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:700;color:var(--txt)">${v.userName}</div>
+        <div style="font-size:11px;color:var(--sub)">${timeAgo(v.createdAt?.seconds)}</div>
+      </div>
+    </div>
+    ${v.thumb?`<img src="${v.thumb}" style="width:100%;border-radius:12px;max-height:280px;object-fit:cover;margin-bottom:10px"/>`:''}
+    <div style="background:#f0fbf4;border-radius:10px;padding:8px 12px;margin-bottom:8px">
+      <span style="font-size:13px;font-weight:700;color:var(--g2)">✅ ${v.missionEmoji} ${v.missionName}</span>
+    </div>
+    ${v.comment?`<div style="background:#f8f8f8;border-radius:10px;padding:10px 12px;font-size:13px;color:var(--txt);line-height:1.6">💬 "${v.comment}"</div>`:''}
+  `;
+  openOv("ovFeedDetail");
+}
+window.openFeedDetail=openFeedDetail;
 
 window.loadMyVerifs=async(uid)=>{
   const w=document.getElementById("myVerifs");if(!w)return;
@@ -1547,8 +1593,10 @@ async function doComplete(){
       window.UDATA.verifiedDates=vd;window.UDATA.completedDates=cd;
       await window.FB.updateDoc(window.FB.doc(window.FB.db,"users",_curUid),{verifiedDates:vd,completedDates:cd});
     }
-    if(_b64)await window.saveVerification(_curUid,_curM,_b64,_verifPub);
+    const comment = document.getElementById("verifComment")?.value?.trim()||"";
+    if(_b64)await window.saveVerification(_curUid,_curM,_b64,_verifPub,comment);
     closeOv("ovAI");
+    const ci=document.getElementById("verifComment");if(ci)ci.value="";
     renderTodayQuests(_curUid);
     renderHomeChalls();
     if(window.loadFeed)window.loadFeed();
@@ -1616,8 +1664,6 @@ async function saveOnboard(){
     );
     toast("🌱 정보 저장 완료!");
     if(typeof showApp==="function")showApp();
-    // 지역 변경 시 대기질 즉시 갱신
-    if(typeof loadSeoulAir==="function")loadSeoulAir();
   }
 }
 window.selAge=selAge;window.selOnboard=selOnboard;window.toggleInterest=toggleInterest;window.saveOnboard=saveOnboard;
@@ -2499,7 +2545,8 @@ function drawMap(){
     }
   }
   if(myBar){
-    const prev = {🌰:0,🌱:1,🌿:5,🌳:21.4,🌲:50,🏕️:100}[myTree.emoji]||0;
+    const prevMap = {"🌰":0,"🌱":1,"🌿":5,"🌳":21.4,"🌲":50,"🏕️":100};
+    const prev = prevMap[myTree.emoji]||0;
     const next = myTree.next===Infinity?totalCo2:myTree.next;
     const pct = Math.min(100, Math.floor((totalCo2-prev)/(next-prev)*100));
     myBar.style.width = pct+"%";

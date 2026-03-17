@@ -852,7 +852,7 @@ import{initializeApp}from"https://www.gstatic.com/firebasejs/12.10.0/firebase-ap
 import{getAuth,GoogleAuthProvider,signInWithPopup,signInWithRedirect,getRedirectResult,signOut,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
 import{getFirestore,doc,getDoc,setDoc,updateDoc,addDoc,getDocs,deleteDoc,collection,query,where,orderBy,increment,serverTimestamp,arrayUnion}from"https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
-const cfg={apiKey:"AIzaSyAMpLdwkyXS1usudjbkI7BcyjvbY8VZzxY",authDomain:"ecoquest-ochre.vercel.app",projectId:"ecoquest-c6380",storageBucket:"ecoquest-c6380.firebasestorage.app",messagingSenderId:"403119608388",appId:"1:403119608388:web:6ab39c611d0df9a81ea211"};
+const cfg={apiKey:"AIzaSyAMpLdwkyXS1usudjbkI7BcyjvbY8VZzxY",authDomain:"ecoquest-c6380.firebaseapp.com",projectId:"ecoquest-c6380",storageBucket:"ecoquest-c6380.firebasestorage.app",messagingSenderId:"403119608388",appId:"1:403119608388:web:6ab39c611d0df9a81ea211"};
 const app=initializeApp(cfg);
 const auth=getAuth(app);
 const db=getFirestore(app);
@@ -862,25 +862,15 @@ window.FB={db,doc,getDoc,setDoc,updateDoc,addDoc,getDocs,deleteDoc,collection,qu
 window.ADMIN="808glocal@gmail.com";
 
 document.getElementById("btnLogin").onclick=async()=>{
-  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-  if(isMobile){
-    // 모바일: 리다이렉트 방식
-    try{
-      await signInWithRedirect(auth,pv);
-    }catch(e){
+  try{
+    await signInWithPopup(auth,pv);
+  }catch(e){
+    if(e.code==="auth/popup-blocked"||e.code==="auth/popup-closed-by-user"){
+      toast("팝업이 차단됐어요. 브라우저에서 팝업을 허용해주세요!");
+    }else if(e.code==="auth/cancelled-popup-request"){
+      // 무시
+    }else{
       toast("로그인 실패: "+e.message);
-    }
-  } else {
-    // 데스크탑: 팝업 방식
-    try{
-      await signInWithPopup(auth,pv);
-    }catch(e){
-      if(e.code==="auth/popup-blocked"||e.code==="auth/popup-closed-by-user"){
-        // 팝업 차단시 리다이렉트로 폴백
-        await signInWithRedirect(auth,pv);
-      }else{
-        toast("로그인 실패: "+e.message);
-      }
     }
   }
 };

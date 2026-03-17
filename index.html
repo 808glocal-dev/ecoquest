@@ -266,6 +266,13 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
             💡 <span id="bikeMissionText"></span>
           </div>
         </div>
+        <!-- 내 기여도 -->
+        <div id="myContrib" style="display:none;margin-top:10px;background:rgba(255,255,255,.15);border-radius:12px;padding:10px 12px">
+          <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.9);margin-bottom:8px">🏅 내 환경 기여도</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap" id="contribStats"></div>
+          <div id="contribBar" style="margin-top:8px"></div>
+          <div id="contribMsg" style="font-size:11px;color:rgba(255,255,255,.85);margin-top:6px;line-height:1.6"></div>
+        </div>
         <div style="font-size:9px;color:rgba(255,255,255,.5);margin-top:6px">출처: 서울특별시 열린데이터광장</div>
       </div>
     </div>
@@ -796,6 +803,8 @@ onAuthStateChanged(auth,async user=>{
     // 서울시 공공데이터 (열린데이터광장)
     loadSeoulAir();
     loadSeoulBike();
+    // 유저 데이터 로드 후 기여도 갱신
+    setTimeout(()=>{if(typeof renderMyContrib==="function")renderMyContrib();},1500);
   }else{
     window.ME=null;
     document.getElementById("loginScreen").style.display="flex";
@@ -812,7 +821,8 @@ async function loadGlobalStats(){
       document.getElementById("bToday").textContent=td.toLocaleString();
       document.getElementById("bTotal").textContent=t.toLocaleString();
       document.getElementById("mapTotal").textContent=t>0?t.toLocaleString():"24,810";
-      const c=co2>=1000?(co2/1000).toFixed(1)+"t":co2+"kg";
+      const co2r=parseFloat(co2.toFixed(2));
+      const c=co2r>=1000?(co2r/1000).toFixed(1)+"t":co2r.toFixed(2)+"kg";
       document.getElementById("bCo2").textContent=c;
       document.getElementById("mapCo2").textContent=c;
     }
@@ -1936,8 +1946,77 @@ async function loadSeoulBike(){
     missionText.textContent = "근처 따릉이 있어요! 자전거 미션 지금 바로 도전해봐요 🚲";
     window._bikeData = {total:42, stations:8};
   }
+  // 내 기여도 렌더링
+  renderMyContrib();
 }
 window.loadSeoulBike = loadSeoulBike;
+
+function renderMyContrib(){
+  const d = window.UDATA||{};
+  const contribEl = document.getElementById("myContrib");
+  const statsEl = document.getElementById("contribStats");
+  const barEl = document.getElementById("contribBar");
+  const msgEl = document.getElementById("contribMsg");
+  if(!contribEl) return;
+
+  // 미션별 완료 횟수
+  const done = d.doneMissions||[];
+  const bikeCount = done.filter(id=>id==="m8").length;   // 자전거/도보
+  const busCount  = done.filter(id=>id==="m2").length;   // 대중교통
+  const tumblerCount = done.filter(id=>id==="m1").length; // 텀블러
+  const vegiCount = done.filter(id=>id==="m3").length;   // 채식
+  const totalCo2  = parseFloat((d.co2||0).toFixed(2));
+  const totalMission = d.missionCount||0;
+
+  if(totalMission === 0){
+    contribEl.style.display = "block";
+    statsEl.innerHTML = `<div style="font-size:12px;color:rgba(255,255,255,.8)">아직 미션을 완료하지 않았어요! 첫 미션을 해봐요 🌱</div>`;
+    return;
+  }
+
+  contribEl.style.display = "block";
+
+  // 통계 칩
+  const chips = [
+    bikeCount   ? {emoji:"🚲", label:"자전거/도보", count:bikeCount,  co2:(bikeCount*1.05).toFixed(2)} : null,
+    busCount    ? {emoji:"🚌", label:"대중교통",    count:busCount,   co2:(busCount*1.17).toFixed(2)}  : null,
+    tumblerCount? {emoji:"🧴", label:"텀블러",      count:tumblerCount,co2:(tumblerCount*0.332).toFixed(2)}: null,
+    vegiCount   ? {emoji:"🥗", label:"채식",        count:vegiCount,  co2:(vegiCount*0.8).toFixed(2)}  : null,
+  ].filter(Boolean);
+
+  statsEl.innerHTML = chips.map(c=>`
+    <div style="background:rgba(255,255,255,.18);border-radius:10px;padding:6px 10px;text-align:center;min-width:70px">
+      <div style="font-size:18px">${c.emoji}</div>
+      <div style="font-size:11px;font-weight:700;margin-top:2px">${c.count}회</div>
+      <div style="font-size:10px;color:rgba(255,255,255,.8)">-${c.co2}kg</div>
+      <div style="font-size:9px;color:rgba(255,255,255,.6)">${c.label}</div>
+    </div>`).join("") +
+    `<div style="background:rgba(255,255,255,.25);border-radius:10px;padding:6px 10px;text-align:center;min-width:70px;border:1.5px solid rgba(255,255,255,.4)">
+      <div style="font-size:18px">🌍</div>
+      <div style="font-size:11px;font-weight:700;margin-top:2px">${totalMission}회</div>
+      <div style="font-size:10px;color:rgba(255,255,255,.8)">-${totalCo2}kg</div>
+      <div style="font-size:9px;color:rgba(255,255,255,.6)">총 절감</div>
+    </div>`;
+
+  // 비유 메시지
+  const trees = (totalCo2/21.4);
+  const seoulAvgCo2PerDay = 8.2; // 서울시민 1인 일평균 CO₂ kg
+  const savedDays = (totalCo2/seoulAvgCo2PerDay).toFixed(1);
+  const carKm = (totalCo2/0.13).toFixed(0); // 자동차 km 환산
+
+  // 서울 대기질 연동 메시지
+  const airGrade = window._airData?.grade||"보통";
+  const airMsg = airGrade==="나쁨"||airGrade==="매우나쁨"
+    ? `오늘 서울 대기질이 ${airGrade}한데, 내 활동 덕분에 조금 더 깨끗해졌어요! 💪`
+    : `오늘 서울 공기가 ${airGrade}해요. 내 꾸준한 실천이 쌓여서예요! 🌱`;
+
+  msgEl.innerHTML = `
+    🚗 자동차 ${carKm}km 안 탄 효과<br/>
+    📅 서울시민 평균 탄소 ${savedDays}일치 절감<br/>
+    🌳 나무 ${trees>=1?trees.toFixed(1)+"그루":"한 그루의 "+Math.floor(trees*100)+"%"} 심은 효과<br/>
+    ${airMsg}`;
+}
+window.renderMyContrib = renderMyContrib;
 
 // ══ 지도 ══
 function drawMap(){

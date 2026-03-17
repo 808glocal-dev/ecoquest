@@ -47,6 +47,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);max-width:480px;
 .page{display:none;padding-bottom:20px;animation:fadeIn .2s ease}
 .page.on{display:block}
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes growTree{from{opacity:0;transform:scale(0) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
 .stat-card{background:#fff;margin:12px;border-radius:16px;padding:14px 16px;box-shadow:0 2px 10px rgba(0,0,0,.06);border:1px solid var(--bdr)}
 .stat-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
 .stat-name{font-size:14px;font-weight:700;color:var(--txt)}
@@ -230,7 +231,7 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
         <div class="ebs"><div class="ebs-n" id="bToday">0</div><div class="ebs-l">오늘 참여자</div></div>
         <div class="ebs"><div class="ebs-n" id="bTotal">0</div><div class="ebs-l">누적 참여자</div></div>
         <div class="ebs"><div class="ebs-n" id="bCo2">0t</div><div class="ebs-l">CO₂ 절감</div></div>
-        <div class="ebs"><div class="ebs-n" id="bCountry">132</div><div class="ebs-l">참여 국가</div></div>
+
       </div>
     </div>
 
@@ -256,9 +257,15 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
     <div class="sec"><div class="sec-t">⚡ 오늘의 미션 <span style="background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:6px;">🤖 AI인증</span></div></div>
     <div class="mscroll" id="missionScroll"></div>
 
-    <!-- 2. 서울시 공공데이터 배너 -->
+    <!-- 4. 참여 중인 챌린지 -->
+    <div class="sec">
+      <div class="sec-t">🏆 참여 중인 챌린지</div>
+      <div class="sec-m" id="goChal">전체보기 ›</div>
+    </div>
+    <div id="homeChallList" style="padding:0 12px"></div>
+
+    <!-- 5. 서울/인천 공공데이터 -->
     <div id="seoulDataBanner" style="margin:4px 12px 0;border-radius:16px;overflow:hidden">
-      <!-- 대기질 카드 -->
       <div id="airCard" style="background:linear-gradient(135deg,#1a6b3a,#2ECC71);border-radius:16px;padding:14px 16px;color:#fff;margin-bottom:8px;position:relative;overflow:hidden">
         <div style="position:absolute;right:-8px;top:-8px;font-size:60px;opacity:.15">🌫️</div>
         <div id="airCardTitle" style="font-size:11px;font-weight:700;color:rgba(255,255,255,.7);margin-bottom:6px">📡 대기질 로딩 중...</div>
@@ -273,7 +280,6 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
         </div>
         <div id="airCardSrc" style="font-size:9px;color:rgba(255,255,255,.5);margin-top:6px">출처: 로딩 중</div>
       </div>
-      <!-- 따릉이 카드 -->
       <div id="bikeCard" style="background:linear-gradient(135deg,#1565C0,#3498DB);border-radius:16px;padding:14px 16px;color:#fff;margin-bottom:8px;position:relative;overflow:hidden">
         <div style="position:absolute;right:-8px;top:-8px;font-size:60px;opacity:.15">🚲</div>
         <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.7);margin-bottom:6px">🚲 서울시 따릉이 현황 (열린데이터광장)</div>
@@ -284,7 +290,6 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
             💡 <span id="bikeMissionText"></span> →
           </button>
         </div>
-        <!-- 내 기여도 -->
         <div id="myContrib" style="display:none;margin-top:10px;background:rgba(255,255,255,.15);border-radius:12px;padding:10px 12px">
           <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.9);margin-bottom:8px">🏅 내 환경 기여도</div>
           <div style="display:flex;gap:8px;flex-wrap:wrap" id="contribStats"></div>
@@ -293,7 +298,6 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
         </div>
         <div style="font-size:9px;color:rgba(255,255,255,.5);margin-top:6px">출처: 서울특별시 열린데이터광장</div>
       </div>
-      <!-- 인천 대중교통 카드 -->
       <div id="incheonTransCard" style="display:none;background:linear-gradient(135deg,#6a1b9a,#9c27b0);border-radius:16px;padding:14px 16px;color:#fff;margin-bottom:8px;position:relative;overflow:hidden">
         <div style="position:absolute;right:-8px;top:-8px;font-size:60px;opacity:.15">🚌</div>
         <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.7);margin-bottom:6px">🚌 인천 대중교통 현황 (인천 데이터포털)</div>
@@ -308,14 +312,7 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
       </div>
     </div>
 
-    <!-- 4. 참여 중인 챌린지 -->
-    <div class="sec">
-      <div class="sec-t">🏆 참여 중인 챌린지</div>
-      <div class="sec-m" id="goChal">전체보기 ›</div>
-    </div>
-    <div id="homeChallList" style="padding:0 12px"></div>
-
-    <!-- 5. 인증 피드 -->
+    <!-- 6. 인증 피드 -->
     <div class="sec">
       <div class="sec-t">📸 인증 피드</div>
       <div class="sec-m" onclick="window.loadFeed&&window.loadFeed()">새로고침</div>
@@ -358,20 +355,74 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
 
   <!-- 지도 -->
   <div class="page" id="page-map">
-    <div style="margin:12px;background:linear-gradient(135deg,#0f3460,#1a237e);border-radius:14px;padding:14px;color:#fff">
-      <div style="font-size:15px;font-weight:900;margin-bottom:10px">🌍 전세계 EcoQuest 현황</div>
-      <div style="display:flex;gap:16px">
-        <div><div class="ebs-n" id="mapTotal">0</div><div class="ebs-l">누적 참여자</div></div>
-        <div><div class="ebs-n" id="mapCo2" style="color:#F39C12">0kg</div><div class="ebs-l">CO₂ 절감</div></div>
-        <div><div class="ebs-n" id="mapCountry" style="color:#3498DB">132</div><div class="ebs-l">참여 국가</div></div>
+    <!-- 상단 요약 -->
+    <div style="margin:12px;background:linear-gradient(135deg,#0f3d20,#1a6b3a);border-radius:16px;padding:16px;color:#fff;text-align:center">
+      <div style="font-size:14px;font-weight:700;color:rgba(255,255,255,.8);margin-bottom:4px">🌍 EcoQuest 숲</div>
+      <div style="font-size:13px;color:rgba(255,255,255,.7);margin-bottom:12px">우리가 함께 만든 탄소 절감 기록</div>
+      <div style="display:flex;justify-content:center;gap:20px">
+        <div>
+          <div style="font-size:24px;font-weight:900;color:#2ECC71" id="forestTotal">0</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.7)">총 참여자</div>
+        </div>
+        <div>
+          <div style="font-size:24px;font-weight:900;color:#F39C12" id="forestCo2">0kg</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.7)">CO₂ 절감</div>
+        </div>
+        <div>
+          <div style="font-size:24px;font-weight:900;color:#fff" id="forestTrees">0</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.7)">심은 나무 🌳</div>
+        </div>
       </div>
     </div>
-    <div style="padding:0 12px 12px">
-      <canvas id="mapCanvas"></canvas>
-      <div style="text-align:center;font-size:11px;color:var(--sub);margin-top:6px">● 실시간 활동 중인 국가</div>
+
+    <!-- 나무 숲 시각화 -->
+    <div style="margin:0 12px 12px;background:linear-gradient(180deg,#87CEEB 0%,#87CEEB 45%,#90EE90 45%,#228B22 100%);border-radius:16px;padding:20px 16px 16px;position:relative;overflow:hidden;min-height:220px">
+      <!-- 하늘 구름 -->
+      <div style="position:absolute;top:10px;left:20px;font-size:28px;opacity:.7;animation:float 4s ease-in-out infinite">☁️</div>
+      <div style="position:absolute;top:6px;right:30px;font-size:20px;opacity:.6;animation:float 6s ease-in-out infinite">☁️</div>
+      <div style="position:absolute;top:18px;left:50%;font-size:16px;opacity:.5;animation:float 5s ease-in-out infinite">☁️</div>
+      <!-- 태양 -->
+      <div style="position:absolute;top:8px;right:16px;font-size:32px">☀️</div>
+      <!-- 나무들 -->
+      <div id="forestGrid" style="display:flex;flex-wrap:wrap;gap:4px;justify-content:center;align-items:flex-end;min-height:120px;padding-top:40px"></div>
+      <!-- 땅 텍스트 -->
+      <div style="text-align:center;font-size:11px;color:#fff;margin-top:8px;font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,.4)" id="forestMsg">나무를 심는 중...</div>
     </div>
-    <div class="sec"><div class="sec-t">🏆 TOP 국가</div></div>
-    <div id="rankList" style="padding:0 12px 20px"></div>
+
+    <!-- 성장 단계 안내 -->
+    <div style="margin:0 12px 12px;background:#fff;border-radius:14px;padding:14px;border:1px solid var(--bdr)">
+      <div style="font-size:13px;font-weight:900;color:var(--txt);margin-bottom:10px">🌱 나무 성장 단계</div>
+      <div style="display:flex;justify-content:space-between;text-align:center">
+        <div><div style="font-size:22px">🌱</div><div style="font-size:10px;color:var(--sub);margin-top:2px">씨앗<br/>~1kg</div></div>
+        <div style="color:#ddd;font-size:16px;line-height:40px">→</div>
+        <div><div style="font-size:22px">🌿</div><div style="font-size:10px;color:var(--sub);margin-top:2px">새싹<br/>~5kg</div></div>
+        <div style="color:#ddd;font-size:16px;line-height:40px">→</div>
+        <div><div style="font-size:22px">🌳</div><div style="font-size:10px;color:var(--sub);margin-top:2px">나무<br/>~21kg</div></div>
+        <div style="color:#ddd;font-size:16px;line-height:40px">→</div>
+        <div><div style="font-size:22px">🌲</div><div style="font-size:10px;color:var(--sub);margin-top:2px">큰나무<br/>~50kg</div></div>
+        <div style="color:#ddd;font-size:16px;line-height:40px">→</div>
+        <div><div style="font-size:22px">🏕️</div><div style="font-size:10px;color:var(--sub);margin-top:2px">숲<br/>100kg+</div></div>
+      </div>
+    </div>
+
+    <!-- 내 나무 -->
+    <div style="margin:0 12px 12px;background:linear-gradient(135deg,#f0fbf4,#e8f5e9);border-radius:14px;padding:14px;border:1.5px solid var(--g1)">
+      <div style="font-size:13px;font-weight:900;color:var(--txt);margin-bottom:8px">🌳 내가 심은 나무</div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="font-size:48px" id="myTreeEmoji">🌱</div>
+        <div>
+          <div style="font-size:14px;font-weight:700;color:var(--txt)" id="myTreeStatus">첫 미션을 완료해봐요!</div>
+          <div style="font-size:12px;color:var(--sub);margin-top:2px" id="myTreeDesc">미션을 완료할수록 나무가 자라요</div>
+          <div style="margin-top:6px;background:#e0f2e7;border-radius:8px;height:8px;overflow:hidden">
+            <div id="myTreeBar" style="width:0%;background:linear-gradient(90deg,var(--g1),var(--acc));height:100%;border-radius:8px;transition:width 1s"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 상위 기여자 -->
+    <div class="sec"><div class="sec-t">🏆 TOP 기여자</div></div>
+    <div id="topContrib" style="padding:0 12px 20px"></div>
   </div>
 
   <!-- 내활동 탭 -->
@@ -2383,36 +2434,116 @@ function renderMyContrib(){
 window.renderMyContrib = renderMyContrib;
 
 // ══ 지도 ══
+// CO₂ kg → 나무 이모지
+function co2ToTree(co2kg){
+  if(co2kg>=100) return{emoji:"🏕️",label:"숲",next:Infinity};
+  if(co2kg>=50)  return{emoji:"🌲",label:"큰나무",next:100};
+  if(co2kg>=21.4)return{emoji:"🌳",label:"나무",next:50};
+  if(co2kg>=5)   return{emoji:"🌿",label:"새싹",next:21.4};
+  if(co2kg>=1)   return{emoji:"🌱",label:"씨앗",next:5};
+  return{emoji:"🌰",label:"도토리",next:1};
+}
+
 function drawMap(){
-  const cv=document.getElementById("mapCanvas");if(!cv)return;
-  const W=cv.offsetWidth||320,H=Math.floor(W*0.55);
-  cv.width=W;cv.height=H;
-  const ctx=cv.getContext("2d");
-  ctx.fillStyle="#0a1628";ctx.fillRect(0,0,W,H);
-  COUNTRIES.forEach(c=>{
-    const x=c.x*W,y=c.y*H,r=Math.max(4,Math.min(16,c.u/400));
-    ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);
-    ctx.fillStyle="rgba(46,204,113,0.25)";ctx.fill();
-    ctx.beginPath();ctx.arc(x,y,r*.5,0,Math.PI*2);
-    ctx.fillStyle="rgba(46,204,113,0.8)";ctx.fill();
-    ctx.font=`${Math.max(10,r)}px serif`;ctx.textAlign="center";
-    ctx.fillText(c.flag,x,y-r-2);
-  });
-  // 랭킹
-  const top=[...COUNTRIES].sort((a,b)=>b.u-a.u).slice(0,5);
-  const rl=document.getElementById("rankList");
-  if(rl)rl.innerHTML=top.map((c,i)=>`
-    <div style="display:flex;align-items:center;gap:10px;padding:10px;background:#fff;border-radius:12px;margin-bottom:6px;border:1px solid var(--bdr)">
-      <div style="font-size:18px;font-weight:900;color:${i<3?"var(--acc)":"var(--sub)"};width:24px">${i+1}</div>
-      <div style="font-size:22px">${c.flag}</div>
-      <div style="flex:1">
-        <div style="font-size:13px;font-weight:700;color:var(--txt)">${c.name}</div>
-        <div style="font-size:11px;color:var(--sub)">${c.u.toLocaleString()}명 참가</div>
-      </div>
-      <div style="font-size:12px;font-weight:700;color:var(--g2)">${(c.u*0.8).toFixed(0)}kg CO₂ ↓</div>
-    </div>`).join("");
+  const d = window.UDATA||{};
+  const totalCo2 = Math.round((d.co2||0)*100)/100;
+  const totalUsers = parseInt(document.getElementById("bTotal")?.textContent?.replace(/,/g,"")||"0");
+  const globalCo2 = parseFloat(document.getElementById("bCo2")?.textContent)||0;
+
+  // 상단 요약 업데이트
+  const fTotal = document.getElementById("forestTotal");
+  const fCo2 = document.getElementById("forestCo2");
+  const fTrees = document.getElementById("forestTrees");
+  if(fTotal) fTotal.textContent = totalUsers > 0 ? totalUsers.toLocaleString()+"명" : "0명";
+  if(fCo2) fCo2.textContent = globalCo2 >= 1000 ? (globalCo2/1000).toFixed(1)+"t" : globalCo2.toFixed(1)+"kg";
+
+  // 전체 나무 수 계산 (1그루 = 21.4kg CO₂)
+  const totalTrees = Math.max(1, Math.floor(globalCo2/21.4));
+  if(fTrees) fTrees.textContent = totalTrees.toLocaleString()+"그루";
+
+  // 나무 숲 그리기
+  const grid = document.getElementById("forestGrid");
+  const msg = document.getElementById("forestMsg");
+  if(grid){
+    const showTrees = Math.min(totalTrees, 60); // 최대 60그루 표시
+    const treeEmojis = ["🌳","🌲","🌴","🎋"];
+    let html = "";
+    for(let i=0;i<showTrees;i++){
+      const size = 20 + Math.random()*14;
+      const emoji = treeEmojis[Math.floor(Math.random()*treeEmojis.length)];
+      const delay = (i*0.05).toFixed(2);
+      html += `<span style="font-size:${size}px;animation:growTree .5s ease ${delay}s both;display:inline-block">${emoji}</span>`;
+    }
+    if(totalTrees > 60){
+      html += `<div style="font-size:12px;color:#fff;font-weight:700;background:rgba(0,0,0,.3);border-radius:10px;padding:4px 10px;margin:4px">+${(totalTrees-60).toLocaleString()}그루 더!</div>`;
+    }
+    grid.innerHTML = html;
+    if(msg) msg.textContent = `EcoQuest 유저들이 함께 심은 나무 🌳 ${totalTrees.toLocaleString()}그루`;
+  }
+
+  // 내 나무
+  const myTree = co2ToTree(totalCo2);
+  const myEmoji = document.getElementById("myTreeEmoji");
+  const myStatus = document.getElementById("myTreeStatus");
+  const myDesc = document.getElementById("myTreeDesc");
+  const myBar = document.getElementById("myTreeBar");
+  if(myEmoji) myEmoji.textContent = myTree.emoji;
+  if(myStatus) myStatus.textContent = `${myTree.label} (${totalCo2.toFixed(1)}kg 절감)`;
+  if(myDesc){
+    if(totalCo2 === 0){
+      myDesc.textContent = "첫 미션을 완료하면 나무가 자라기 시작해요!";
+    } else if(myTree.next === Infinity){
+      myDesc.textContent = "최고 단계 달성! 🏕️ 완전한 숲을 이뤘어요!";
+    } else {
+      myDesc.textContent = `다음 단계까지 ${(myTree.next - totalCo2).toFixed(1)}kg 더 절감하면 돼요!`;
+    }
+  }
+  if(myBar){
+    const prev = {🌰:0,🌱:1,🌿:5,🌳:21.4,🌲:50,🏕️:100}[myTree.emoji]||0;
+    const next = myTree.next===Infinity?totalCo2:myTree.next;
+    const pct = Math.min(100, Math.floor((totalCo2-prev)/(next-prev)*100));
+    myBar.style.width = pct+"%";
+  }
+
+  // TOP 기여자 (미션 수 기준)
+  loadTopContrib();
 }
 window.drawMap=drawMap;
+
+async function loadTopContrib(){
+  const w = document.getElementById("topContrib");
+  if(!w) return;
+  try{
+    const snap = await window.FB.getDocs(window.FB.collection(window.FB.db,"users"));
+    const users = snap.docs.map(d=>({id:d.id,...d.data()}))
+      .filter(u=>u.missionCount>0)
+      .sort((a,b)=>(b.co2||0)-(a.co2||0))
+      .slice(0,5);
+    if(!users.length){
+      w.innerHTML='<div style="text-align:center;padding:20px;color:var(--sub);font-size:13px">아직 기여자가 없어요!</div>';
+      return;
+    }
+    const medals=["🥇","🥈","🥉","4️⃣","5️⃣"];
+    w.innerHTML=users.map((u,i)=>{
+      const tree=co2ToTree(u.co2||0);
+      return`<div style="display:flex;align-items:center;gap:10px;padding:10px;background:#fff;border-radius:12px;margin-bottom:6px;border:1px solid var(--bdr)">
+        <div style="font-size:20px">${medals[i]}</div>
+        <div style="font-size:28px">${tree.emoji}</div>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:700;color:var(--txt)">${u.id===window.ME?.uid?"나 🌟":"익명 지구지킴이"}</div>
+          <div style="font-size:11px;color:var(--sub)">${tree.label} · 미션 ${u.missionCount||0}개</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:13px;font-weight:900;color:var(--g2)">${(u.co2||0).toFixed(1)}kg</div>
+          <div style="font-size:10px;color:var(--sub)">CO₂ 절감</div>
+        </div>
+      </div>`;
+    }).join("");
+  }catch(e){
+    w.innerHTML='<div style="text-align:center;padding:16px;color:var(--sub);font-size:12px">불러오기 실패</div>';
+  }
+}
+window.loadTopContrib=loadTopContrib;
 
 // ══ 관리자 ══
 function openAdmin(){

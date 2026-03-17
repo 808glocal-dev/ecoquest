@@ -697,7 +697,7 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
 import{getAuth,GoogleAuthProvider,signInWithPopup,signInWithRedirect,getRedirectResult,signOut,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
-import{getFirestore,doc,getDoc,setDoc,updateDoc,addDoc,getDocs,collection,query,where,orderBy,increment,serverTimestamp,arrayUnion}from"https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+import{getFirestore,doc,getDoc,setDoc,updateDoc,addDoc,getDocs,deleteDoc,collection,query,where,orderBy,increment,serverTimestamp,arrayUnion}from"https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
 const cfg={apiKey:"AIzaSyAMpLdwkyXS1usudjbkI7BcyjvbY8VZzxY",authDomain:"ecoquest-c6380.firebaseapp.com",projectId:"ecoquest-c6380",storageBucket:"ecoquest-c6380.firebasestorage.app",messagingSenderId:"403119608388",appId:"1:403119608388:web:6ab39c611d0df9a81ea211"};
 const app=initializeApp(cfg);
@@ -705,7 +705,7 @@ const auth=getAuth(app);
 const db=getFirestore(app);
 const pv=new GoogleAuthProvider();
 
-window.FB={db,doc,getDoc,setDoc,updateDoc,addDoc,getDocs,collection,query,where,orderBy,increment,serverTimestamp,arrayUnion};
+window.FB={db,doc,getDoc,setDoc,updateDoc,addDoc,getDocs,deleteDoc,collection,query,where,orderBy,increment,serverTimestamp,arrayUnion};
 window.ADMIN="808glocal@gmail.com";
 
 document.getElementById("btnLogin").onclick=async()=>{
@@ -919,19 +919,54 @@ window.loadMyVerifs=async(uid)=>{
   const w=document.getElementById("myVerifs");if(!w)return;
   try{
     const snap=await window.FB.getDocs(window.FB.collection(window.FB.db,"verifications"));
-    const items=snap.docs.map(d=>({id:d.id,...d.data()})).filter(d=>d.uid===uid).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0)).slice(0,10);
+    const items=snap.docs.map(d=>({id:d.id,...d.data()})).filter(d=>d.uid===uid).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0)).slice(0,30);
     if(!items.length){w.innerHTML='<div style="text-align:center;padding:16px;color:var(--sub);font-size:12px">아직 인증 기록이 없어요!</div>';return;}
-    w.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
-      ${items.map(v=>`
-        <div style="position:relative;border-radius:10px;overflow:hidden;aspect-ratio:1;background:#f0f0f0">
-          ${v.thumb?`<img src="${v.thumb}" style="width:100%;height:100%;object-fit:cover"/>`:`<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:28px">${v.missionEmoji}</div>`}
-          <div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.6));padding:4px 6px">
-            <div style="font-size:10px;color:#fff;font-weight:700">${v.missionEmoji} ${v.missionName.slice(0,6)}</div>
+    w.innerHTML=items.map(v=>`
+      <div style="background:#fff;border-radius:14px;padding:12px;margin-bottom:10px;border:1px solid var(--bdr);display:flex;gap:10px;align-items:flex-start">
+        <!-- 썸네일 -->
+        <div style="width:64px;height:64px;border-radius:10px;overflow:hidden;flex-shrink:0;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:24px">
+          ${v.thumb?`<img src="${v.thumb}" style="width:100%;height:100%;object-fit:cover"/>`:`${v.missionEmoji}`}
+        </div>
+        <!-- 정보 -->
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:700;color:var(--txt)">${v.missionEmoji} ${v.missionName}</div>
+          <div style="font-size:11px;color:var(--sub);margin-top:2px">${timeAgo(v.createdAt?.seconds)}</div>
+          <div style="display:flex;gap:6px;margin-top:6px;align-items:center">
+            <!-- 공개/비공개 토글 -->
+            <button onclick="toggleVerifPub('${v.id}',${!v.isPublic},'${uid}')"
+              style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:10px;border:none;cursor:pointer;font-family:inherit;background:${v.isPublic?'#e8f5e9':'#f0f0f0'};color:${v.isPublic?'var(--g2)':'var(--sub)'}">
+              ${v.isPublic?'🌍 공개':'🔒 비공개'}
+            </button>
+            <!-- 삭제 -->
+            <button onclick="deleteVerif('${v.id}','${uid}')"
+              style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:10px;border:none;cursor:pointer;font-family:inherit;background:#fff0f0;color:var(--red)">
+              🗑️ 삭제
+            </button>
           </div>
-          <div style="position:absolute;top:4px;right:4px;font-size:10px">${v.isPublic?'🌍':'🔒'}</div>
-        </div>`).join("")}
-    </div>`;
+        </div>
+      </div>`).join("");
   }catch(e){}
+};
+
+// 인증 공개/비공개 토글
+window.toggleVerifPub=async(id,newPub,uid)=>{
+  try{
+    await window.FB.updateDoc(window.FB.doc(window.FB.db,"verifications",id),{isPublic:newPub});
+    toast(newPub?"🌍 공개로 변경됐어요!":"🔒 비공개로 변경됐어요!");
+    window.loadMyVerifs(uid);
+    if(window.loadFeed)window.loadFeed();
+  }catch(e){toast("변경 실패: "+e.message);}
+};
+
+// 인증 삭제
+window.deleteVerif=async(id,uid)=>{
+  if(!confirm("이 인증 기록을 삭제할까요?"))return;
+  try{
+    await window.FB.deleteDoc(window.FB.doc(window.FB.db,"verifications",id));
+    toast("🗑️ 삭제됐어요!");
+    window.loadMyVerifs(uid);
+    if(window.loadFeed)window.loadFeed();
+  }catch(e){toast("삭제 실패: "+e.message);}
 };
 
 window.saveOrder=async(uid,book)=>{
@@ -960,14 +995,7 @@ async function loadMyOrders(uid){
 }
 window.loadMyOrders=loadMyOrders;
 
-window.loadAdminOrders=async()=>{
-  try{
-    const snap=await window.FB.getDocs(window.FB.collection(window.FB.db,"orders"));
-    const all=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
-    const w=document.getElementById("adminOrders");
-    w.innerHTML=all.map(o=>`<div class="order-card"><div class="order-id">#${o.id.slice(-6)}</div><div class="order-title">📚 ${o.bookTitle}</div><div class="order-buyer">👤 ${o.userName} (${o.userEmail})</div><div class="order-buyer">${o.price?.toLocaleString()}P</div><span class="status-chip ${o.status==="done"?"s-done":"s-pending"}">${o.status==="done"?"완료":"처리중"}</span></div>`).join("");
-  }catch(e){toast("로딩 실패");}
-};
+// loadAdminOrders는 아래 일반 스크립트에서 정의
 
 window.doCreateRoom=async()=>{
   const name=document.getElementById("rNameInp").value.trim();

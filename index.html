@@ -711,11 +711,24 @@ document.getElementById("btnLogin").onclick=async()=>{
 getRedirectResult(auth).then(result=>{
   if(result?.user) console.log("리디렉트 로그인 성공:", result.user.displayName);
 }).catch(e=>{
-  if(e.code!=="auth/no-auth-event") console.log("리디렉트 결과 오류:", e.message);
+  console.log("리디렉트 결과:", e.code, e.message);
+  // 오류여도 로딩 숨기기
+  document.getElementById("loading").style.display="none";
+  document.getElementById("loginScreen").style.display="flex";
 });
 document.getElementById("btnLogout").onclick=async()=>{
   await signOut(auth);toast("로그아웃 됐어요 👋");
 };
+
+// 혹시 onAuthStateChanged 안 불릴 때를 대비해 타임아웃 설정
+setTimeout(()=>{
+  const loading=document.getElementById("loading");
+  if(loading&&loading.style.display!=="none"){
+    loading.style.display="none";
+    document.getElementById("loginScreen").style.display="flex";
+    console.log("Auth 타임아웃 - 로그인 화면 표시");
+  }
+},5000);
 
 onAuthStateChanged(auth,async user=>{
   document.getElementById("loading").style.display="none";

@@ -2107,6 +2107,35 @@ async function loadAirKorea(city, regionLabel, card, statusEl, detailEl, mission
   }
 }
 
+// 구별 따릉이 샘플 데이터 (API 실패 시)
+const BIKE_SAMPLE = {
+  "강남":["강남역 1번출구","역삼역","선릉역"],
+  "강동":["천호역","강동역","길동생태공원"],
+  "강북":["수유역","미아사거리역","강북구청"],
+  "강서":["김포공항역","화곡역","강서구청"],
+  "관악":["서울대입구역","낙성대역","봉천역"],
+  "광진":["건대입구역","구의역","광진구청"],
+  "구로":["구로디지털단지역","신도림역","구로역"],
+  "금천":["가산디지털단지역","독산역","금천구청"],
+  "노원":["노원역","중계역","태릉입구역"],
+  "도봉":["도봉산역","방학역","도봉구청"],
+  "동대문":["청량리역","회기역","동대문역사문화공원"],
+  "동작":["노량진역","사당역","이수역"],
+  "마포":["홍대입구역","합정역","상수역"],
+  "서대문":["신촌역","이대역","서대문구청"],
+  "서초":["교대역","방배역","서초구청"],
+  "성동":["왕십리역","행당역","성동구청"],
+  "성북":["길음역","성신여대입구역","한성대입구역"],
+  "송파":["잠실역","석촌역","올림픽공원"],
+  "양천":["목동역","오목교역","양천구청"],
+  "영등포":["영등포역","당산역","여의도역"],
+  "용산":["이태원역","삼각지역","용산역"],
+  "은평":["연신내역","불광역","은평구청"],
+  "종로":["광화문역","종로3가","경복궁역"],
+  "중구":["시청역","을지로입구","명동역"],
+  "중랑":["면목역","상봉역","중랑구청"],
+};
+
 async function loadSeoulBike(){
   const statusEl = document.getElementById("bikeStatus");
   const bikeListEl = document.getElementById("bikeList");
@@ -2114,43 +2143,72 @@ async function loadSeoulBike(){
   const missionText = document.getElementById("bikeMissionText");
   if(!statusEl) return;
 
+  const userRegion = window.UDATA?.region || "";
+  const isSeoul = SEOUL_GU.includes(userRegion) || userRegion === "서울";
+  const regionLabel = userRegion || "서울";
+
+  // 서울 아닌 지역은 따릉이 카드 숨기기
+  const bikeCard = document.getElementById("bikeCard");
+  if(!isSeoul){
+    if(bikeCard) bikeCard.style.display = "none";
+    renderMyContrib();
+    return;
+  }
+  if(bikeCard) bikeCard.style.display = "block";
+
+  // 따릉이 API — 전체 1000개 조회 후 지역 필터링
   try{
-    const url = `https://openapi.seoul.go.kr:8088/${SEOUL_API_KEY}/json/bikeList/1/10/`;
+    const url = `https://openapi.seoul.go.kr:8088/${SEOUL_API_KEY}/json/bikeList/1/1000/`;
     const res = await fetch(url);
     const data = await res.json();
     const rows = data?.rentBikeStatus?.row || [];
-
     if(!rows.length) throw new Error("데이터 없음");
 
-    const totalBikes = rows.reduce((s,r)=>s+(parseInt(r.parkingBikeTotCnt)||0),0);
-    const availableStations = rows.filter(r=>parseInt(r.parkingBikeTotCnt)>0);
+    // 선택한 구 이름으로 필터링 (stationName에 구 이름 포함된 것)
+    const guName = userRegion === "서울" ? "" : userRegion;
+    const filtered = guName
+      ? rows.filter(r => r.stationName && r.stationName.includes(guName))
+      : rows;
 
-    statusEl.textContent = `현재 ${availableStations.length}개 대여소 이용 가능 · 총 ${totalBikes}대`;
+    const target = filtered.length > 0 ? filtered : rows.slice(0, 20);
+    const available = target.filter(r => parseInt(r.parkingBikeTotCnt) > 0);
+    const totalBikes = available.reduce((s,r)=>s+(parseInt(r.parkingBikeTotCnt)||0), 0);
 
-    if(availableStations.length > 0){
+    // 따릉이 카드 타이틀 업데이트
+    const titleEl = document.querySelector("#bikeCard div[style*='font-size:11px']");
+    if(titleEl) titleEl.textContent = `🚲 ${regionLabel} 따릉이 현황 (열린데이터광장)`;
+
+    statusEl.textContent = `${regionLabel} ${available.length}개 대여소 · 총 ${totalBikes}대 이용 가능`;
+
+    if(available.length > 0){
       bikeListEl.style.display = "block";
       bikeListEl.innerHTML = `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">
-        ${availableStations.slice(0,4).map(r=>`
+        ${available.slice(0,5).map(r=>`
           <div style="background:rgba(255,255,255,.15);border-radius:8px;padding:4px 8px;font-size:11px">
-            🚲 ${r.stationName?.replace("따릉이",'').trim()} (${r.parkingBikeTotCnt}대)
+            🚲 ${r.stationName?.replace("따릉이","").replace(guName,"").trim()} (${r.parkingBikeTotCnt}대)
           </div>`).join("")}
       </div>`;
       missionEl.style.display = "block";
-      missionText.textContent = "근처 따릉이 있어요! 자전거 미션 지금 바로 도전해봐요 🚲";
+      missionText.textContent = `${regionLabel} 근처 따릉이 있어요! 자전거 미션 지금 바로 도전해봐요 🚲`;
+    } else {
+      bikeListEl.style.display = "block";
+      bikeListEl.innerHTML = `<div style="font-size:12px;color:rgba(255,255,255,.8);margin-top:4px">${regionLabel} 근처 현재 대여 가능한 따릉이가 없어요 😢</div>`;
     }
-    window._bikeData = {total: totalBikes, stations: availableStations.length};
+    window._bikeData = {total:totalBikes, stations:available.length};
+
   }catch(e){
-    // 샘플 데이터
-    statusEl.textContent = "현재 8개 대여소 이용 가능 · 총 42대";
+    // 샘플 데이터 — 구별로 다른 역 표시
+    const samples = BIKE_SAMPLE[userRegion] || ["광화문역","시청역","종로3가"];
+    const titleEl = document.querySelector("#bikeCard div[style*='font-size:11px']");
+    if(titleEl) titleEl.textContent = `🚲 ${regionLabel} 따릉이 현황 (열린데이터광장)`;
+    statusEl.textContent = `${regionLabel} 인근 대여소 이용 가능`;
     bikeListEl.style.display = "block";
     bikeListEl.innerHTML = `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">
-      <div style="background:rgba(255,255,255,.15);border-radius:8px;padding:4px 8px;font-size:11px">🚲 광화문역 (6대)</div>
-      <div style="background:rgba(255,255,255,.15);border-radius:8px;padding:4px 8px;font-size:11px">🚲 시청역 (4대)</div>
-      <div style="background:rgba(255,255,255,.15);border-radius:8px;padding:4px 8px;font-size:11px">🚲 종로3가 (5대)</div>
+      ${samples.map(s=>`<div style="background:rgba(255,255,255,.15);border-radius:8px;padding:4px 8px;font-size:11px">🚲 ${s}</div>`).join("")}
     </div>`;
     missionEl.style.display = "block";
-    missionText.textContent = "근처 따릉이 있어요! 자전거 미션 지금 바로 도전해봐요 🚲";
-    window._bikeData = {total:42, stations:8};
+    missionText.textContent = `${regionLabel} 근처 따릉이 있어요! 자전거 미션 도전해봐요 🚲`;
+    window._bikeData = {total:0, stations:0};
   }
   // 내 기여도 렌더링
   renderMyContrib();

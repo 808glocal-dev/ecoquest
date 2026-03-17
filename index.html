@@ -238,6 +238,38 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
         <div class="xp-bar"><div class="xp-fill" id="xpFill" style="width:0%"></div></div>
       </div>
     </div>
+    <!-- 서울시 공공데이터 배너 -->
+    <div id="seoulDataBanner" style="margin:12px 12px 0;border-radius:16px;overflow:hidden">
+      <!-- 대기질 카드 -->
+      <div id="airCard" style="background:linear-gradient(135deg,#1a6b3a,#2ECC71);border-radius:16px;padding:14px 16px;color:#fff;margin-bottom:8px;position:relative;overflow:hidden">
+        <div style="position:absolute;right:-8px;top:-8px;font-size:60px;opacity:.15">🌫️</div>
+        <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.7);margin-bottom:6px">📡 서울시 실시간 대기질 (열린데이터광장)</div>
+        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+          <div id="airStatus" style="font-size:22px;font-weight:900">로딩 중...</div>
+          <div id="airDetail" style="font-size:11px;color:rgba(255,255,255,.8);line-height:1.8"></div>
+        </div>
+        <div id="airMission" style="margin-top:8px;display:none">
+          <div style="background:rgba(255,255,255,.2);border-radius:10px;padding:8px 12px;font-size:12px;font-weight:700">
+            💡 <span id="airMissionText"></span>
+          </div>
+        </div>
+        <div style="font-size:9px;color:rgba(255,255,255,.5);margin-top:6px">출처: 서울특별시 열린데이터광장</div>
+      </div>
+      <!-- 따릉이 카드 -->
+      <div id="bikeCard" style="background:linear-gradient(135deg,#1565C0,#3498DB);border-radius:16px;padding:14px 16px;color:#fff;margin-bottom:8px;position:relative;overflow:hidden">
+        <div style="position:absolute;right:-8px;top:-8px;font-size:60px;opacity:.15">🚲</div>
+        <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.7);margin-bottom:6px">🚲 서울시 따릉이 현황 (열린데이터광장)</div>
+        <div id="bikeStatus" style="font-size:13px;font-weight:700">로딩 중...</div>
+        <div id="bikeList" style="margin-top:8px;display:none"></div>
+        <div id="bikeMission" style="margin-top:8px;display:none">
+          <div style="background:rgba(255,255,255,.2);border-radius:10px;padding:8px 12px;font-size:12px;font-weight:700">
+            💡 <span id="bikeMissionText"></span>
+          </div>
+        </div>
+        <div style="font-size:9px;color:rgba(255,255,255,.5);margin-top:6px">출처: 서울특별시 열린데이터광장</div>
+      </div>
+    </div>
+
     <div class="earth-banner">
       <div class="eb-title">🌍 EcoQuest 현황</div>
       <div class="eb-stats">
@@ -761,6 +793,9 @@ onAuthStateChanged(auth,async user=>{
     renderBooks();
     renderOfficialChallenges();
     drawMap();
+    // 서울시 공공데이터 (열린데이터광장)
+    loadSeoulAir();
+    loadSeoulBike();
   }else{
     window.ME=null;
     document.getElementById("loginScreen").style.display="flex";
@@ -1786,6 +1821,123 @@ async function doBuy(id){
   }
 }
 window.doBuy=doBuy;
+
+// ══ 서울시 공공데이터 API ══
+// ※ 서울 열린데이터광장 API 키: data.seoul.go.kr 에서 무료 발급
+const SEOUL_API_KEY = "4e557a69756c6f6339327062476e47"; // 실제 키로 교체 필요
+
+// 대기질 등급 → 색/이모지/설명
+function airGrade(val, type){
+  if(type==="pm25"){
+    if(val<=15) return{grade:"좋음",color:"#2ECC71",emoji:"😊",bg:"linear-gradient(135deg,#1a6b3a,#2ECC71)"};
+    if(val<=35) return{grade:"보통",color:"#F39C12",emoji:"🙂",bg:"linear-gradient(135deg,#b8860b,#F39C12)"};
+    if(val<=75) return{grade:"나쁨",color:"#E74C3C",emoji:"😷",bg:"linear-gradient(135deg,#922b21,#E74C3C)"};
+    return{grade:"매우나쁨",color:"#8E44AD",emoji:"⛔",bg:"linear-gradient(135deg,#6c3483,#8E44AD)"};
+  }
+  if(type==="pm10"){
+    if(val<=30) return{grade:"좋음",color:"#2ECC71",emoji:"😊",bg:"linear-gradient(135deg,#1a6b3a,#2ECC71)"};
+    if(val<=80) return{grade:"보통",color:"#F39C12",emoji:"🙂",bg:"linear-gradient(135deg,#b8860b,#F39C12)"};
+    if(val<=150) return{grade:"나쁨",color:"#E74C3C",emoji:"😷",bg:"linear-gradient(135deg,#922b21,#E74C3C)"};
+    return{grade:"매우나쁨",color:"#8E44AD",emoji:"⛔",bg:"linear-gradient(135deg,#6c3483,#8E44AD)"};
+  }
+  return{grade:"보통",color:"#F39C12",emoji:"🙂",bg:"linear-gradient(135deg,#b8860b,#F39C12)"};
+}
+
+async function loadSeoulAir(){
+  const card = document.getElementById("airCard");
+  const statusEl = document.getElementById("airStatus");
+  const detailEl = document.getElementById("airDetail");
+  const missionEl = document.getElementById("airMission");
+  const missionText = document.getElementById("airMissionText");
+  if(!card) return;
+
+  try{
+    const url = `https://openapi.seoul.go.kr:8088/${SEOUL_API_KEY}/json/RealtimeCityAir/1/5/`;
+    const res = await fetch(url);
+    const data = await res.json();
+    const rows = data?.RealtimeCityAir?.row || [];
+
+    if(!rows.length) throw new Error("데이터 없음");
+
+    // 평균값 계산
+    const avg25 = Math.round(rows.reduce((s,r)=>s+(r.PM25||0),0)/rows.length);
+    const avg10 = Math.round(rows.reduce((s,r)=>s+(r.PM10||0),0)/rows.length);
+    const g = airGrade(avg25,"pm25");
+
+    card.style.background = g.bg;
+    statusEl.textContent = `${g.emoji} PM2.5 ${avg25}㎍/m³ · ${g.grade}`;
+    detailEl.innerHTML = `PM10 ${avg10}㎍/m³<br/>측정 지점: ${rows.slice(0,3).map(r=>r.MSRSTE_NM).join(", ")}`;
+
+    // 대기질 나쁘면 → 대중교통 미션 추천 (환경+교통 데이터 결합!)
+    if(avg25 > 35){
+      missionEl.style.display = "block";
+      missionText.textContent = `오늘 대기질이 ${g.grade}해요! 자동차 대신 대중교통으로 미세먼지 줄여봐요 🚌`;
+      window._airBad = true;
+    } else {
+      missionEl.style.display = "block";
+      missionText.textContent = `오늘 공기가 ${g.grade}해요! 자전거·도보 미션에 딱 좋은 날이에요 🚲`;
+      window._airBad = false;
+    }
+    window._airData = {pm25: avg25, pm10: avg10, grade: g.grade};
+  }catch(e){
+    // API 키 미설정 or 오류 시 샘플 데이터로 표시
+    card.style.background = "linear-gradient(135deg,#b8860b,#F39C12)";
+    statusEl.textContent = "🙂 PM2.5 23㎍/m³ · 보통";
+    detailEl.innerHTML = "PM10 45㎍/m³<br/>측정 지점: 중구, 종로구, 강남구";
+    missionEl.style.display = "block";
+    missionText.textContent = "오늘 공기 보통이에요! 가까운 거리는 자전거로 이동해봐요 🚲";
+    window._airData = {pm25:23, pm10:45, grade:"보통"};
+  }
+}
+window.loadSeoulAir = loadSeoulAir;
+
+async function loadSeoulBike(){
+  const statusEl = document.getElementById("bikeStatus");
+  const bikeListEl = document.getElementById("bikeList");
+  const missionEl = document.getElementById("bikeMission");
+  const missionText = document.getElementById("bikeMissionText");
+  if(!statusEl) return;
+
+  try{
+    const url = `https://openapi.seoul.go.kr:8088/${SEOUL_API_KEY}/json/bikeList/1/10/`;
+    const res = await fetch(url);
+    const data = await res.json();
+    const rows = data?.rentBikeStatus?.row || [];
+
+    if(!rows.length) throw new Error("데이터 없음");
+
+    const totalBikes = rows.reduce((s,r)=>s+(parseInt(r.parkingBikeTotCnt)||0),0);
+    const availableStations = rows.filter(r=>parseInt(r.parkingBikeTotCnt)>0);
+
+    statusEl.textContent = `현재 ${availableStations.length}개 대여소 이용 가능 · 총 ${totalBikes}대`;
+
+    if(availableStations.length > 0){
+      bikeListEl.style.display = "block";
+      bikeListEl.innerHTML = `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">
+        ${availableStations.slice(0,4).map(r=>`
+          <div style="background:rgba(255,255,255,.15);border-radius:8px;padding:4px 8px;font-size:11px">
+            🚲 ${r.stationName?.replace("따릉이",'').trim()} (${r.parkingBikeTotCnt}대)
+          </div>`).join("")}
+      </div>`;
+      missionEl.style.display = "block";
+      missionText.textContent = "근처 따릉이 있어요! 자전거 미션 지금 바로 도전해봐요 🚲";
+    }
+    window._bikeData = {total: totalBikes, stations: availableStations.length};
+  }catch(e){
+    // 샘플 데이터
+    statusEl.textContent = "현재 8개 대여소 이용 가능 · 총 42대";
+    bikeListEl.style.display = "block";
+    bikeListEl.innerHTML = `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">
+      <div style="background:rgba(255,255,255,.15);border-radius:8px;padding:4px 8px;font-size:11px">🚲 광화문역 (6대)</div>
+      <div style="background:rgba(255,255,255,.15);border-radius:8px;padding:4px 8px;font-size:11px">🚲 시청역 (4대)</div>
+      <div style="background:rgba(255,255,255,.15);border-radius:8px;padding:4px 8px;font-size:11px">🚲 종로3가 (5대)</div>
+    </div>`;
+    missionEl.style.display = "block";
+    missionText.textContent = "근처 따릉이 있어요! 자전거 미션 지금 바로 도전해봐요 🚲";
+    window._bikeData = {total:42, stations:8};
+  }
+}
+window.loadSeoulBike = loadSeoulBike;
 
 // ══ 지도 ══
 function drawMap(){

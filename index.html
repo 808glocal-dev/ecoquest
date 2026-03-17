@@ -1741,12 +1741,16 @@ window.openOnboardEdit = openOnboardEdit;
 
 // ══ 탄소 비유 ══
 function getCo2Analogy(co2kg){
-  if(co2kg<=0)return{emoji:"🌱",text:"첫 번째 미션을 완료해봐요!",sub:"퀘스트를 깨면 지구가 건강해져요"};
+  if(co2kg<=0)   return{emoji:"🌱",text:"첫 미션을 완료하면 나무가 자라요!",sub:"지금 바로 환경 실천을 시작해봐요 🌍"};
+  if(co2kg<1)    return{emoji:"🌱",text:`CO₂ ${(co2kg*1000).toFixed(0)}g, 첫 걸음을 뗐어요!`,sub:"작은 실천이 지구를 바꿔요. 계속해봐요!"};
+  if(co2kg<5)    return{emoji:"🌿",text:`${co2kg.toFixed(1)}kg 절감! 새싹이 돋아나고 있어요`,sub:"꾸준히 실천하면 나무 한 그루가 될 거예요 🌱"};
+  if(co2kg<10)   return{emoji:"🌿",text:`${co2kg.toFixed(1)}kg 절감! 환경 실천이 습관이 됐어요`,sub:"이 정도면 진짜 지구지킴이! 더 성장해봐요 💚"};
+  if(co2kg<21.4) return{emoji:"🌳",text:`${co2kg.toFixed(1)}kg 절감! 나무 한 그루가 눈앞이에요`,sub:"조금만 더! 나무 한 그루를 완성해봐요 🌳"};
   const trees=co2kg/21.4;
-  if(trees>=10)return{emoji:"🌲",text:`나무 ${trees.toFixed(0)}그루를 심은 효과!`,sub:`CO₂ ${co2kg.toFixed(1)}kg 절감 달성`};
-  if(trees>=1)return{emoji:"🌳",text:`나무 ${trees.toFixed(1)}그루를 심은 효과!`,sub:`CO₂ ${co2kg.toFixed(1)}kg 절감 달성`};
-  if(co2kg>=1)return{emoji:"🌿",text:"서울→부산 버스보다 깨끗해요",sub:`CO₂ ${co2kg.toFixed(1)}kg 절감 중`};
-  return{emoji:"🌱",text:`CO₂ ${(co2kg*1000).toFixed(0)}g 절감했어요`,sub:"계속 하면 나무 한 그루가 돼요!"};
+  if(trees<3)    return{emoji:"🌳",text:`나무 ${trees.toFixed(1)}그루를 살렸어요!`,sub:"루챠매님의 실천이 숲을 만들고 있어요 🌲"};
+  if(trees<5)    return{emoji:"🌲",text:`나무 ${trees.toFixed(0)}그루! 작은 숲이 생겼어요`,sub:"지속적인 실천으로 지구를 지켜주셔서 감사해요 🌍"};
+  if(trees<10)   return{emoji:"🌲",text:`나무 ${trees.toFixed(0)}그루! 진정한 환경 챔피언이에요`,sub:"이 정도면 주변에 자랑해도 돼요! 대단해요 🏆"};
+  return{emoji:"🏕️",text:`나무 ${trees.toFixed(0)}그루! 숲을 만든 지구 수호자!`,sub:`CO₂ ${co2kg.toFixed(0)}kg — 지구가 당신 덕분에 숨 쉬어요 🌍`};
 }
 
 // ══ 뱃지 ══

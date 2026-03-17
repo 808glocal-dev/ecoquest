@@ -5,9 +5,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
 <title>EcoQuest 🌍</title>
 
-<!-- 포트원 결제 SDK -->
-<script src="https://cdn.iamport.kr/v1/iamport.js"></script>
-
+<!-- html2canvas (증명서 이미지 저장) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<!-- Chart.js (그래프) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <!-- PWA -->
 <link rel="manifest" href="/manifest.json"/>
 <meta name="theme-color" content="#2ECC71"/>
@@ -410,7 +411,7 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
     </div>
     <div style="display:flex;gap:8px;padding:0 12px;margin-bottom:4px">
       <button class="btn btn-g" style="flex:1;padding:12px" onclick="goPage('shop')">🛒 스토어</button>
-      <button class="btn btn-gray" style="flex:1;padding:12px" onclick="toast('출금 기능 준비 중이에요! 💰')">💸 포인트 출금</button>
+      <button class="btn btn-g" style="flex:1;padding:12px" onclick="showCert()">🏆 증명서 발급</button>
     </div>
     <div class="sec"><div class="sec-t">📸 내 인증 기록</div></div>
     <div id="myVerifs" style="padding:0 12px"></div>
@@ -477,9 +478,26 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
       <!-- 통계 -->
       <div id="admin-stats" style="display:none">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px" id="adminStatCards"></div>
+
+        <!-- B2B 데이터 리포트 -->
+        <div style="background:#fff;border-radius:14px;padding:14px;border:1px solid #eee;margin-bottom:10px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <div style="font-size:14px;font-weight:900">📊 B2B 데이터 리포트</div>
+            <button onclick="exportCSV()" style="background:#1a1a2e;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">⬇️ CSV 다운로드</button>
+          </div>
+          <div id="b2bReport"><div style="color:#aaa;font-size:13px">통계 로딩 중...</div></div>
+        </div>
+
+        <!-- 연령대/지역 분포 -->
+        <div style="background:#fff;border-radius:14px;padding:14px;border:1px solid #eee;margin-bottom:10px">
+          <div style="font-size:14px;font-weight:900;margin-bottom:10px">👥 사용자 분포</div>
+          <div id="userDist"></div>
+        </div>
+
+        <!-- 시간대별 활동 -->
         <div style="background:#fff;border-radius:14px;padding:14px;border:1px solid #eee">
-          <div style="font-size:14px;font-weight:900;margin-bottom:10px">📈 최근 7일 현황</div>
-          <div id="adminChart"></div>
+          <div style="font-size:14px;font-weight:900;margin-bottom:10px">⏰ 시간대별 미션 완료</div>
+          <div id="timeDistChart"></div>
         </div>
       </div>
     </div>
@@ -490,8 +508,50 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
     <button class="tb on" data-page="home" onclick="goPage('home')"><span class="ic">🏠</span>홈</button>
     <button class="tb" data-page="chal" onclick="goPage('chal')"><span class="ic">🏆</span>챌린지</button>
     <button class="tb" data-page="map" onclick="goPage('map')"><span class="ic">🌍</span>지도</button>
-    <button class="tb" data-page="shop" onclick="goPage('shop')"><span class="ic">🛒</span>스토어</button>
+    <button class="tb" data-page="activity" onclick="goPage('activity')"><span class="ic">📊</span>내활동</button>
     <button class="tb" data-page="my" onclick="goPage('my')"><span class="ic">👤</span>마이</button>
+  </div>
+</div>
+
+<!-- 온보딩 모달 (첫 가입 시) -->
+<div class="overlay" id="ovOnboard">
+  <div class="modal">
+    <div class="modal-title">🌍 EcoQuest 시작하기!</div>
+    <div class="modal-desc">활동 데이터 분석을 위해 간단한 정보를 알려주세요.<br/>언제든 수정 가능해요!</div>
+    <div class="form-group">
+      <label>나이대</label>
+      <div style="display:flex;gap:6px;flex-wrap:wrap" id="ageSelect">
+        <button class="dep-btn" onclick="selAge('10대',this)">10대</button>
+        <button class="dep-btn" onclick="selAge('20대',this)">20대</button>
+        <button class="dep-btn" onclick="selAge('30대',this)">30대</button>
+        <button class="dep-btn" onclick="selAge('40대',this)">40대</button>
+        <button class="dep-btn" onclick="selAge('50대+',this)">50대+</button>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>지역</label>
+      <select class="sel" id="regionSelect">
+        <option value="">선택해주세요</option>
+        <option>서울</option><option>경기</option><option>인천</option>
+        <option>부산</option><option>대구</option><option>광주</option>
+        <option>대전</option><option>울산</option><option>세종</option>
+        <option>강원</option><option>충북</option><option>충남</option>
+        <option>전북</option><option>전남</option><option>경북</option>
+        <option>경남</option><option>제주</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>관심 환경 분야 (복수 선택)</label>
+      <div style="display:flex;gap:6px;flex-wrap:wrap" id="interestSelect">
+        <button class="dep-btn" onclick="toggleInterest('탄소절감',this)">🌿 탄소절감</button>
+        <button class="dep-btn" onclick="toggleInterest('제로웨이스트',this)">♻️ 제로웨이스트</button>
+        <button class="dep-btn" onclick="toggleInterest('채식',this)">🥗 채식</button>
+        <button class="dep-btn" onclick="toggleInterest('대중교통',this)">🚌 대중교통</button>
+        <button class="dep-btn" onclick="toggleInterest('절수',this)">💧 절수</button>
+        <button class="dep-btn" onclick="toggleInterest('절전',this)">💡 절전</button>
+      </div>
+    </div>
+    <button class="btn btn-g" onclick="saveOnboard()">시작하기! 🌱</button>
   </div>
 </div>
 
@@ -747,6 +807,22 @@ window.saveMission=async(uid,m)=>{
   const p=(d.point||0)+m.point;
   const cnt=(d.missionCount||0)+1;
   const co2=parseFloat(((d.co2||0)+m.co2).toFixed(2));
+  const now=new Date();
+  const hour=now.getHours();
+  const timeSlot=hour<6?"새벽":hour<12?"오전":hour<18?"오후":"저녁";
+  // 미션 로그 저장 (데이터 분석용)
+  try{
+    await window.FB.addDoc(window.FB.collection(window.FB.db,"missionLogs"),{
+      uid, missionId:m.id, missionName:m.name,
+      co2:m.co2, point:m.point,
+      age:d.age||"", region:d.region||"",
+      interests:d.interests||[],
+      timeSlot, hour,
+      dayOfWeek:now.getDay(),
+      date:now.toISOString().split("T")[0],
+      createdAt:window.FB.serverTimestamp()
+    });
+  }catch(e){}
   await window.FB.updateDoc(window.FB.doc(window.FB.db,"users",uid),{doneMissions:done,point:p,missionCount:cnt,co2,lastAt:window.FB.serverTimestamp()});
   window.UDATA={...d,doneMissions:done,point:p,missionCount:cnt,co2};
   try{await window.FB.setDoc(window.FB.doc(window.FB.db,"stats","global"),{totalCo2:window.FB.increment(m.co2)},{merge:true});loadGlobalStats();}catch(e){}
@@ -755,6 +831,11 @@ window.saveMission=async(uid,m)=>{
 };
 
 // 오늘 미션 저장
+// 온보딩 저장
+window.saveOnboardData=async(uid,age,region,interests)=>{
+  await window.FB.updateDoc(window.FB.doc(window.FB.db,"users",uid),{age,region,interests});
+  window.UDATA.age=age;window.UDATA.region=region;window.UDATA.interests=interests;
+};
 window.saveTodayMissions=async(uid,ids)=>{
   await window.FB.updateDoc(window.FB.doc(window.FB.db,"users",uid),{todayMissions:ids});
   window.UDATA.todayMissions=ids;
@@ -979,17 +1060,18 @@ window.joinPub=async(rid)=>{
 
 <script>
 // ══ 데이터 ══
+// 환경부/IPCC 데이터 기반 탄소 절감량
 const MISSIONS=[
-  {id:"m1",emoji:"🧴",name:"텀블러로 카페 이용하기",point:50,co2:0.3,kw:"텀블러, 개인 컵, 머그컵"},
-  {id:"m2",emoji:"🚌",name:"대중교통 이용하기",point:80,co2:1.2,kw:"버스, 지하철, 기차"},
-  {id:"m3",emoji:"🥗",name:"채식 메뉴 선택하기",point:60,co2:0.8,kw:"채식, 샐러드, 야채 요리"},
-  {id:"m4",emoji:"💡",name:"불필요한 전등 끄기",point:30,co2:0.1,kw:"꺼진 전등, 절전"},
-  {id:"m5",emoji:"♻️",name:"분리수거 완벽하게",point:40,co2:0.2,kw:"분리수거통, 재활용"},
-  {id:"m6",emoji:"🛍️",name:"장바구니 사용하기",point:35,co2:0.15,kw:"장바구니, 에코백"},
-  {id:"m7",emoji:"🚿",name:"샤워 5분 이내로",point:45,co2:0.4,kw:"샤워, 타이머, 욕실"},
-  {id:"m8",emoji:"🚲",name:"자전거/도보 이동",point:70,co2:1.0,kw:"자전거, 도보, 헬멧"},
-  {id:"m9",emoji:"🌱",name:"식물 물 주기",point:25,co2:0.05,kw:"화분, 식물"},
-  {id:"m10",emoji:"📱",name:"전자기기 절전 모드",point:30,co2:0.1,kw:"절전 모드, 배터리"},
+  {id:"m1",emoji:"🧴",name:"텀블러로 카페 이용하기",point:50,co2:0.332,resource:"플라스틱 컵 1개(14g) 절약",source:"환경부",kw:"텀블러, 개인 컵, 머그컵"},
+  {id:"m2",emoji:"🚌",name:"대중교통 이용하기",point:80,co2:1.17,resource:"자동차 10km 대체",source:"온실가스종합정보센터",kw:"버스, 지하철, 기차"},
+  {id:"m3",emoji:"🥗",name:"채식 메뉴 선택하기",point:60,co2:0.8,resource:"쇠고기 100g 대체",source:"IPCC",kw:"채식, 샐러드, 야채 요리"},
+  {id:"m4",emoji:"💡",name:"불필요한 전등 끄기",point:30,co2:0.13,resource:"전력 0.3kWh 절약",source:"한국전력",kw:"꺼진 전등, 절전"},
+  {id:"m5",emoji:"♻️",name:"분리수거 완벽하게",point:40,co2:0.21,resource:"플라스틱 200g 재활용",source:"환경부",kw:"분리수거통, 재활용"},
+  {id:"m6",emoji:"🛍️",name:"장바구니 사용하기",point:35,co2:0.15,resource:"비닐봉지 3개 절약",source:"환경부",kw:"장바구니, 에코백"},
+  {id:"m7",emoji:"🚿",name:"샤워 5분 이내로",point:45,co2:0.38,resource:"물 50L 절약",source:"K-water",kw:"샤워, 타이머, 욕실"},
+  {id:"m8",emoji:"🚲",name:"자전거/도보 이동",point:70,co2:1.05,resource:"자동차 9km 대체",source:"온실가스종합정보센터",kw:"자전거, 도보, 헬멧"},
+  {id:"m9",emoji:"🌱",name:"식물 물 주기",point:25,co2:0.05,resource:"도심 녹지 기여",source:"산림청",kw:"화분, 식물"},
+  {id:"m10",emoji:"📱",name:"전자기기 절전 모드",point:30,co2:0.12,resource:"전력 0.28kWh 절약",source:"에너지공단",kw:"절전 모드, 배터리"},
 ];
 
 const CHALLENGES=[
@@ -1074,6 +1156,7 @@ function goPage(name){
   if(tb)tb.classList.add("on");
   window.scrollTo({top:0,behavior:"smooth"});
   if(name==="map")setTimeout(drawMap,100);
+  if(name==="activity")renderActivity();
   if(name==="chal"){const s=document.getElementById("sec-room");if(s&&s.style.display!=="none"){loadMyRooms();loadPubRooms();}}
 }
 document.getElementById("goChal").onclick=()=>goPage("chal");
@@ -1348,6 +1431,242 @@ function renderHomeChalls(){
   }).join("");
 }
 
+// ══ 온보딩 ══
+let _selAge="", _selInterests=[];
+function selAge(v,el){
+  _selAge=v;
+  document.querySelectorAll("#ageSelect .dep-btn").forEach(b=>b.classList.remove("on"));
+  el.classList.add("on");
+}
+function toggleInterest(v,el){
+  const idx=_selInterests.indexOf(v);
+  if(idx>-1){_selInterests.splice(idx,1);el.classList.remove("on");}
+  else{_selInterests.push(v);el.classList.add("on");}
+}
+async function saveOnboard(){
+  const region=document.getElementById("regionSelect").value;
+  if(!_selAge){toast("나이대를 선택해주세요!");return;}
+  if(!region){toast("지역을 선택해주세요!");return;}
+  closeOv("ovOnboard");
+  if(window.ME&&window.saveOnboardData){
+    await window.saveOnboardData(window.ME.uid,_selAge,region,_selInterests);
+    toast("🌱 환영해요! EcoQuest를 시작해봐요!");
+  }
+}
+
+// ══ 탄소 비유 계산 ══
+function getCo2Analogy(co2kg){
+  if(co2kg<=0) return {emoji:"🌱",text:"첫 번째 미션을 완료해봐요!",sub:"퀘스트를 깨면 지구가 건강해져요"};
+  const trees=co2kg/21.4; // 나무 1그루 연간 21.4kg 흡수
+  if(trees>=10) return {emoji:"🌲",text:`나무 ${trees.toFixed(0)}그루를 심은 효과!`,sub:`CO₂ ${co2kg.toFixed(1)}kg 절감 달성`};
+  if(trees>=1) return {emoji:"🌳",text:`나무 ${trees.toFixed(1)}그루를 심은 효과!`,sub:`CO₂ ${co2kg.toFixed(1)}kg 절감 달성`};
+  if(co2kg>=1) return {emoji:"🌿",text:`서울→부산 버스보다 깨끗해요`,sub:`CO₂ ${co2kg.toFixed(1)}kg 절감 중`};
+  return {emoji:"🌱",text:`CO₂ ${(co2kg*1000).toFixed(0)}g 절감했어요`,sub:"계속 하면 나무 한 그루가 돼요!"};
+}
+
+// ══ 뱃지 시스템 ══
+const BADGES=[
+  {id:"first",emoji:"🌱",name:"첫 걸음",desc:"첫 미션 완료!",condition:d=>d.missionCount>=1},
+  {id:"tree1",emoji:"🌳",name:"나무 1그루",desc:"CO₂ 21.4kg 절감",condition:d=>(d.co2||0)>=21.4},
+  {id:"tree5",emoji:"🌲",name:"작은 숲",desc:"CO₂ 107kg 절감 (나무 5그루)",condition:d=>(d.co2||0)>=107},
+  {id:"tree10",emoji:"🏕️",name:"에코 숲",desc:"CO₂ 214kg 절감 (나무 10그루)",condition:d=>(d.co2||0)>=214},
+  {id:"m10",emoji:"⚡",name:"10일 도전",desc:"미션 10개 완료",condition:d=>d.missionCount>=10},
+  {id:"m30",emoji:"🔥",name:"30일 도전",desc:"미션 30개 완료",condition:d=>d.missionCount>=30},
+  {id:"m100",emoji:"💎",name:"에코 마스터",desc:"미션 100개 완료",condition:d=>d.missionCount>=100},
+  {id:"streak7",emoji:"🗓️",name:"일주일 연속",desc:"7일 연속 달성",condition:d=>(d.streak||0)>=7},
+  {id:"tumbler",emoji:"🧴",name:"텀블러 히어로",desc:"텀블러 미션 5회 완료",condition:d=>(d.doneMissions||[]).filter(id=>id==="m1").length>=1},
+  {id:"transport",emoji:"🚌",name:"대중교통 챔피언",desc:"대중교통 미션 5회",condition:d=>(d.doneMissions||[]).filter(id=>id==="m2").length>=1},
+];
+
+// ══ 내활동 탭 렌더링 ══
+function renderActivity(){
+  const d=window.UDATA||{};
+  const co2=d.co2||0;
+  const mission=d.missionCount||0;
+  const trees=(co2/21.4);
+
+  // 상단 수치
+  document.getElementById("actCo2").textContent=co2.toFixed(1)+"kg";
+  document.getElementById("actTree").textContent=trees>=1?trees.toFixed(1):"0";
+  document.getElementById("actMission").textContent=mission;
+
+  // 비유 카드
+  const analogy=getCo2Analogy(co2);
+  document.getElementById("analogyEmoji").textContent=analogy.emoji;
+  document.getElementById("analogyText").textContent=analogy.text;
+  document.getElementById("analogySub").textContent=analogy.sub;
+
+  // 주간 차트
+  renderWeeklyChart();
+
+  // 뱃지
+  const earned=BADGES.filter(b=>b.condition(d));
+  const notEarned=BADGES.filter(b=>!b.condition(d));
+  const badgeEl=document.getElementById("badgeList");
+  badgeEl.innerHTML=[
+    ...earned.map(b=>`
+      <div style="background:#f0fbf4;border-radius:12px;padding:10px;text-align:center;width:calc(33.3% - 7px);border:1.5px solid var(--g1)">
+        <div style="font-size:28px">${b.emoji}</div>
+        <div style="font-size:11px;font-weight:700;color:var(--g2);margin-top:4px">${b.name}</div>
+        <div style="font-size:10px;color:var(--sub)">${b.desc}</div>
+      </div>`),
+    ...notEarned.slice(0,3).map(b=>`
+      <div style="background:#f8f8f8;border-radius:12px;padding:10px;text-align:center;width:calc(33.3% - 7px);border:1px solid var(--bdr);opacity:.5">
+        <div style="font-size:28px;filter:grayscale(1)">${b.emoji}</div>
+        <div style="font-size:11px;font-weight:700;color:var(--sub);margin-top:4px">${b.name}</div>
+        <div style="font-size:10px;color:#bbb">${b.desc}</div>
+      </div>`)
+  ].join("");
+
+  // 미션별 차트
+  const missionStats=MISSIONS.map(m=>{
+    const done=(d.doneMissions||[]).filter(id=>id===m.id).length;
+    return {name:m.name,emoji:m.emoji,done,co2:m.co2};
+  }).filter(m=>m.done>0);
+
+  const chartEl=document.getElementById("missionChart");
+  if(!missionStats.length){
+    chartEl.innerHTML='<div style="text-align:center;padding:20px;color:var(--sub);font-size:13px">미션을 완료하면 여기 나타나요!</div>';
+  } else {
+    chartEl.innerHTML=missionStats.map(m=>`
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <div style="font-size:20px;width:28px">${m.emoji}</div>
+        <div style="flex:1">
+          <div style="font-size:12px;font-weight:700;color:var(--txt);margin-bottom:3px">${m.name}</div>
+          <div style="background:#e8f5e9;border-radius:8px;height:8px;overflow:hidden">
+            <div style="width:${Math.min(100,m.done*20)}%;background:var(--g1);height:100%;border-radius:8px"></div>
+          </div>
+        </div>
+        <div style="font-size:12px;font-weight:700;color:var(--g2)">${m.done}회</div>
+      </div>`).join("");
+  }
+}
+
+// ══ 주간 차트 ══
+let _weeklyChartInst=null;
+async function renderWeeklyChart(){
+  try{
+    const db=window.FB.db;
+    const snap=await window.FB.getDocs(window.FB.collection(db,"missionLogs"));
+    const uid=window.ME?.uid;
+    const logs=snap.docs.map(d=>d.data()).filter(d=>d.uid===uid);
+
+    // 최근 7일 날짜
+    const days=[];
+    const counts=[];
+    const co2s=[];
+    for(let i=6;i>=0;i--){
+      const d=new Date();d.setDate(d.getDate()-i);
+      const key=d.toISOString().split("T")[0];
+      days.push(["일","월","화","수","목","금","토"][d.getDay()]);
+      const dayLogs=logs.filter(l=>l.date===key);
+      counts.push(dayLogs.length);
+      co2s.push(parseFloat(dayLogs.reduce((s,l)=>s+(l.co2||0),0).toFixed(2)));
+    }
+
+    const cv=document.getElementById("weeklyChart");
+    if(!cv||!window.Chart)return;
+    if(_weeklyChartInst)_weeklyChartInst.destroy();
+    _weeklyChartInst=new Chart(cv,{
+      type:"bar",
+      data:{
+        labels:days,
+        datasets:[{
+          label:"미션 수",
+          data:counts,
+          backgroundColor:"rgba(46,204,113,0.7)",
+          borderRadius:6,
+        }]
+      },
+      options:{
+        responsive:true,
+        plugins:{legend:{display:false}},
+        scales:{
+          y:{beginAtZero:true,ticks:{stepSize:1},grid:{color:"rgba(0,0,0,.05)"}},
+          x:{grid:{display:false}}
+        }
+      }
+    });
+  }catch(e){
+    const cv=document.getElementById("weeklyChart");
+    if(cv)cv.style.display="none";
+  }
+}
+
+// ══ 증명서 ══
+function showCert(){
+  const d=window.UDATA||{};
+  const co2=(d.co2||0).toFixed(1);
+  const trees=(d.co2/21.4||0).toFixed(1);
+  const mission=d.missionCount||0;
+  const lv=document.getElementById("sLv").textContent||"Lv.1 씨앗";
+  const name=window.ME?.displayName||"지구지킴이";
+  const date=new Date().toLocaleDateString("ko-KR");
+  const analogy=getCo2Analogy(d.co2||0);
+  const earned=BADGES.filter(b=>b.condition(d));
+
+  document.getElementById("certContent").innerHTML=`
+    <div id="certCard" style="background:linear-gradient(135deg,#0f3d20,#1a6b3a,#2ECC71);border-radius:20px;padding:24px;color:#fff;text-align:center;position:relative;overflow:hidden">
+      <div style="position:absolute;top:-20px;right:-20px;font-size:120px;opacity:.08">🌍</div>
+      <div style="font-size:12px;font-weight:700;color:rgba(255,255,255,.7);letter-spacing:2px;margin-bottom:8px">ECOQUEST OFFICIAL CERTIFICATE</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.6);margin-bottom:16px">환경 활동 공식 증명서</div>
+      <div style="font-size:26px;font-weight:900;margin-bottom:4px">${name}</div>
+      <div style="font-size:13px;color:rgba(255,255,255,.8);margin-bottom:20px">${lv}</div>
+      <div style="display:flex;gap:8px;justify-content:center;margin-bottom:16px">
+        <div style="background:rgba(255,255,255,.15);border-radius:12px;padding:10px 16px">
+          <div style="font-size:22px;font-weight:900">${co2}kg</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.7)">CO₂ 절감</div>
+        </div>
+        <div style="background:rgba(255,255,255,.15);border-radius:12px;padding:10px 16px">
+          <div style="font-size:22px;font-weight:900">🌳${trees}</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.7)">나무 그루</div>
+        </div>
+        <div style="background:rgba(255,255,255,.15);border-radius:12px;padding:10px 16px">
+          <div style="font-size:22px;font-weight:900">${mission}</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.7)">완료 미션</div>
+        </div>
+      </div>
+      <div style="background:rgba(255,255,255,.1);border-radius:12px;padding:10px;margin-bottom:16px">
+        <div style="font-size:24px;margin-bottom:4px">${analogy.emoji}</div>
+        <div style="font-size:13px;font-weight:700">${analogy.text}</div>
+      </div>
+      ${earned.length?`<div style="font-size:12px;color:rgba(255,255,255,.7);margin-bottom:8px">획득 뱃지</div>
+      <div style="display:flex;gap:4px;justify-content:center;flex-wrap:wrap;margin-bottom:16px">
+        ${earned.map(b=>`<span style="background:rgba(255,255,255,.15);border-radius:20px;padding:3px 10px;font-size:12px">${b.emoji} ${b.name}</span>`).join("")}
+      </div>`:""}
+      <div style="border-top:1px solid rgba(255,255,255,.2);padding-top:12px">
+        <div style="font-size:11px;color:rgba(255,255,255,.6)">발행: EcoQuest 🌍 | ${date}</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:4px">탄소 절감량: 환경부·IPCC·국립산림과학원 기준</div>
+      </div>
+    </div>`;
+  openOv("ovCert");
+}
+
+function downloadCert(){
+  const card=document.getElementById("certCard");
+  if(!card||!window.html2canvas){toast("💡 스크린샷으로 저장해주세요!");return;}
+  toast("이미지 생성 중...");
+  html2canvas(card,{scale:2,backgroundColor:null,useCORS:true}).then(canvas=>{
+    const a=document.createElement("a");
+    a.download="EcoQuest_증명서_"+(window.ME?.displayName||"")+"_"+new Date().toLocaleDateString("ko-KR").replace(/\./g,"").replace(/ /g,"")+".png";
+    a.href=canvas.toDataURL("image/png");
+    a.click();
+    toast("✅ 증명서 저장됐어요!");
+  }).catch(()=>toast("💡 스크린샷으로 저장해주세요!"));
+}
+function shareCert(){
+  if(navigator.share){
+    navigator.share({
+      title:"EcoQuest 환경 활동 증명서",
+      text:`나는 EcoQuest에서 CO₂ ${(window.UDATA?.co2||0).toFixed(1)}kg를 절감했어요! 🌍`,
+      url:"https://ecoquest-ochre.vercel.app"
+    });
+  } else {
+    navigator.clipboard.writeText("https://ecoquest-ochre.vercel.app");
+    toast("링크 복사됐어요! 📋");
+  }
+}
+
 // ══ 챌린지 상세 모달 ══
 let _dep=3000,_freq="w3",_weeks=2;
 
@@ -1394,17 +1713,14 @@ function renderChalDetail(c){
     <!-- 예치금 선택 -->
     <div style="font-size:13px;font-weight:700;color:var(--txt);margin-bottom:4px">💰 예치금</div>
     <div style="font-size:11px;color:var(--sub);margin-bottom:8px">시작 전에 돈을 걸면, 종료 시점 달성률에 따라 환급해드려요!</div>
-    <div style="display:flex;gap:6px;margin-bottom:8px;overflow-x:auto;padding-bottom:4px" id="depSel">
-      ${DEP_OPTIONS.map(d=>`<button class="dep-btn${_dep===d?" on":""}" style="flex-shrink:0" onclick="selDep(${d},${c.id})">${d>=10000?(d/10000)+"만원":(d/1000)+"천원"}</button>`).join("")}
-    </div>
-    <div style="font-size:22px;font-weight:900;color:var(--txt);text-align:center;margin:8px 0">${_dep.toLocaleString()}원</div>
+    <div style="background:#f0fbf4;border-radius:10px;padding:10px;text-align:center;margin-bottom:8px;font-size:13px;color:var(--g2)">🌱 EcoQuest 챌린지는 무료로 참여할 수 있어요!</div>
 
-    <!-- 환급 구조 -->
+    <!-- 성공 보상 -->
     <div class="refund-box">
-      <div style="font-size:12px;font-weight:700;color:var(--txt);margin-bottom:8px">환급 구조</div>
-      <div class="refund-row hi"><span class="lbl">100% 성공</span><span class="val">(예상) ${_dep.toLocaleString()} ~ ${(_dep+bonus).toLocaleString()}원</span></div>
-      <div class="refund-row"><span class="lbl">85% 이상 성공</span><span class="val">${_dep.toLocaleString()}원</span></div>
-      <div class="refund-row"><span class="lbl">85% 미만 성공</span><span class="val">달성률만큼 부분 환급</span></div>
+      <div style="font-size:12px;font-weight:700;color:var(--txt);margin-bottom:8px">🏅 완료 보상</div>
+      <div class="refund-row"><span class="lbl">100% 달성</span><span class="val" style="color:var(--g2)">뱃지 + 공식 증명서 발급</span></div>
+      <div class="refund-row"><span class="lbl">미션 완료마다</span><span class="val">탄소 절감량 누적 기록</span></div>
+      <div class="refund-row"><span class="lbl">챌린지 완주</span><span class="val">특별 뱃지 획득</span></div>
     </div>
 
     <!-- 인증 방법 -->
@@ -1424,7 +1740,7 @@ function renderChalDetail(c){
 
     <div style="display:flex;gap:8px">
       <button class="btn btn-gray" style="flex:1" onclick="closeOv('ovChal')">닫기</button>
-      <button class="btn btn-g" style="flex:2" onclick="joinChal('${c.title}',${c.id})">${_dep.toLocaleString()}원으로 시작!</button>
+      <button class="btn btn-g" style="flex:2" onclick="joinChal('${c.title}',${c.id})">🌱 오늘부터 시작!</button>
     </div>`;
 }
 
@@ -1456,58 +1772,20 @@ async function joinChal(title,cid){
     deposit:_dep,
     startDate,endDate
   };
-  // 포트원 결제
-  requestPayment(title, _dep, newEntry, user);
-}
-
-function requestPayment(title, amount, chalEntry, user){
-  const IMP = window.IMP;
-  if(!IMP){toast("결제 모듈 로딩 중이에요. 잠시 후 다시 시도해주세요!");return;}
-  IMP.init("imp44342528");
-
-  IMP.request_pay({
-    pg: "html5_inicis.INIpayTest", // KG이니시스 테스트
-    pay_method: "card",
-    merchant_uid: "ecoquest_" + Date.now(),
-    name: "EcoQuest - " + title + " 예치금",
-    amount: amount,
-    buyer_email: user.email || "",
-    buyer_name: user.displayName || "참여자",
-    buyer_tel: "010-0000-0000",
-    m_redirect_url: window.location.href,
-  }, async function(rsp){
-    if(rsp.success){
-      // 결제 성공 → Firebase 저장
-      try{
-        const active = window.UDATA?.activeChallenges||[];
-        const newActive = [...active, chalEntry];
-        await window.FB.updateDoc(window.FB.doc(window.FB.db,"users",user.uid),{
-          activeChallenges: newActive
-        });
-        window.UDATA.activeChallenges = newActive;
-        // 결제 기록 저장
-        await window.FB.addDoc(window.FB.collection(window.FB.db,"payments"),{
-          uid: user.uid,
-          userName: user.displayName||"",
-          userEmail: user.email||"",
-          impUid: rsp.imp_uid,
-          merchantUid: rsp.merchant_uid,
-          amount: rsp.paid_amount,
-          challengeTitle: title,
-          status: "paid",
-          createdAt: window.FB.serverTimestamp()
-        });
-        renderTodayQuests(user.uid);
-        renderHomeChalls();
-        const freq=chalEntry.freq==="daily"?"매일":chalEntry.freq==="w5"?"주 5일":"주 3일";
-        toast(`🎉 결제 완료! "${title}" ${freq} ${chalEntry.weeks}주 시작!`);
-      }catch(e){
-        toast("저장 실패: "+e.message);
-      }
-    } else {
-      toast("결제 실패: " + rsp.error_msg);
-    }
-  });
+  // 바로 참여 저장
+  try{
+    const newActive=[...active, newEntry];
+    await window.FB.updateDoc(window.FB.doc(window.FB.db,"users",user.uid),{
+      activeChallenges:newActive
+    });
+    window.UDATA.activeChallenges=newActive;
+    renderTodayQuests(user.uid);
+    renderHomeChalls();
+    const freq=newEntry.freq==="daily"?"매일":newEntry.freq==="w5"?"주 5일":"주 3일";
+    toast(`🎉 "${title}" ${freq} ${newEntry.weeks}주 챌린지 시작!`);
+  }catch(e){
+    toast("참여 실패: "+e.message);
+  }
 }
 
 // 방 만들기 변수
@@ -1886,28 +2164,118 @@ async function loadChalStats(){
 // 전체 통계
 async function loadAdminStats(){
   try{
-    const usersSnap=await window.FB.getDocs(window.FB.collection(window.FB.db,"users"));
-    const ordersSnap=await window.FB.getDocs(window.FB.collection(window.FB.db,"orders"));
-    const users=usersSnap.docs.map(d=>d.data());
-    const orders=ordersSnap.docs.map(d=>d.data());
-    const totalRevenue=orders.filter(o=>o.status==="done").reduce((s,o)=>s+(o.price||0),0);
-    const pendingRevenue=orders.filter(o=>o.status==="pending").reduce((s,o)=>s+(o.price||0),0);
+    const db=window.FB.db;
+    const usersSnap=await window.FB.getDocs(window.FB.collection(db,"users"));
+    const logsSnap=await window.FB.getDocs(window.FB.collection(db,"missionLogs"));
+    const users=usersSnap.docs.map(d=>({id:d.id,...d.data()}));
+    const logs=logsSnap.docs.map(d=>d.data());
     const totalMissions=users.reduce((s,u)=>s+(u.missionCount||0),0);
+    const totalCo2=users.reduce((s,u)=>s+(u.co2||0),0);
+    const totalTrees=(totalCo2/21.4).toFixed(1);
+
+    // 요약 카드
     const w=document.getElementById("adminStatCards");
-    w.innerHTML=[
+    if(w) w.innerHTML=[
       {label:"전체 회원",val:users.length+"명",color:"#3498DB"},
-      {label:"전체 주문",val:orders.length+"건",color:"#e67e22"},
-      {label:"완료 주문",val:orders.filter(o=>o.status==="done").length+"건",color:"#2ECC71"},
-      {label:"매출 (완료)",val:(totalRevenue/1000).toFixed(0)+"천P",color:"#9b59b6"},
-      {label:"대기 매출",val:(pendingRevenue/1000).toFixed(0)+"천P",color:"#e74c3c"},
-      {label:"총 미션 수",val:totalMissions+"회",color:"#1abc9c"},
+      {label:"총 미션",val:totalMissions+"회",color:"#2ECC71"},
+      {label:"총 CO₂ 절감",val:totalCo2.toFixed(1)+"kg",color:"#27AE60"},
+      {label:"나무 환산",val:"🌳"+totalTrees+"그루",color:"#1a6b3a"},
     ].map(s=>`
       <div style="background:#fff;border-radius:12px;padding:14px;border:1px solid #eee;text-align:center">
-        <div style="font-size:20px;font-weight:900;color:${s.color}">${s.val}</div>
+        <div style="font-size:18px;font-weight:900;color:${s.color}">${s.val}</div>
         <div style="font-size:11px;color:#aaa;margin-top:2px">${s.label}</div>
       </div>`).join("");
-  }catch(e){}
+
+    // B2B 리포트
+    const b2b=document.getElementById("b2bReport");
+    if(b2b){
+      const missionCo2={};
+      logs.forEach(l=>{missionCo2[l.missionName]=(missionCo2[l.missionName]||0)+l.co2;});
+      b2b.innerHTML=`
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <tr style="background:#f5f5f5">
+            <th style="padding:6px;text-align:left">미션</th>
+            <th style="padding:6px;text-align:right">완료수</th>
+            <th style="padding:6px;text-align:right">CO₂ 절감</th>
+          </tr>
+          ${Object.entries(missionCo2).sort((a,b)=>b[1]-a[1]).map(([name,co2])=>`
+            <tr style="border-bottom:1px solid #f0f0f0">
+              <td style="padding:6px">${name}</td>
+              <td style="padding:6px;text-align:right">${logs.filter(l=>l.missionName===name).length}회</td>
+              <td style="padding:6px;text-align:right;color:var(--g2);font-weight:700">${co2.toFixed(2)}kg</td>
+            </tr>`).join("")}
+        </table>`;
+    }
+
+    // 연령대/지역 분포
+    const dist=document.getElementById("userDist");
+    if(dist){
+      const ageDist={};const regionDist={};
+      users.forEach(u=>{
+        if(u.age)ageDist[u.age]=(ageDist[u.age]||0)+1;
+        if(u.region)regionDist[u.region]=(regionDist[u.region]||0)+1;
+      });
+      const maxAge=Math.max(...Object.values(ageDist),1);
+      const maxReg=Math.max(...Object.values(regionDist),1);
+      dist.innerHTML=`
+        <div style="font-size:12px;font-weight:700;color:#666;margin-bottom:6px">연령대</div>
+        ${Object.entries(ageDist).map(([age,cnt])=>`
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
+            <div style="width:40px;font-size:12px">${age}</div>
+            <div style="flex:1;background:#f0f0f0;border-radius:6px;height:16px;overflow:hidden">
+              <div style="width:${(cnt/maxAge*100).toFixed(0)}%;background:var(--g1);height:100%;border-radius:6px"></div>
+            </div>
+            <div style="font-size:12px;font-weight:700;color:var(--g2);width:30px">${cnt}명</div>
+          </div>`).join("")}
+        <div style="font-size:12px;font-weight:700;color:#666;margin:10px 0 6px">지역</div>
+        ${Object.entries(regionDist).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([reg,cnt])=>`
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
+            <div style="width:40px;font-size:12px">${reg}</div>
+            <div style="flex:1;background:#f0f0f0;border-radius:6px;height:16px;overflow:hidden">
+              <div style="width:${(cnt/maxReg*100).toFixed(0)}%;background:var(--blue);height:100%;border-radius:6px"></div>
+            </div>
+            <div style="font-size:12px;font-weight:700;color:var(--blue);width:30px">${cnt}명</div>
+          </div>`).join("")}`;
+    }
+
+    // 시간대별 분포
+    const timeDist=document.getElementById("timeDistChart");
+    if(timeDist){
+      const slots={"새벽":0,"오전":0,"오후":0,"저녁":0};
+      logs.forEach(l=>{if(l.timeSlot)slots[l.timeSlot]++;});
+      const maxSlot=Math.max(...Object.values(slots),1);
+      timeDist.innerHTML=Object.entries(slots).map(([slot,cnt])=>`
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <div style="width:36px;font-size:12px">${slot}</div>
+          <div style="flex:1;background:#f0f0f0;border-radius:6px;height:20px;overflow:hidden">
+            <div style="width:${(cnt/maxSlot*100).toFixed(0)}%;background:linear-gradient(90deg,#F39C12,#f1c40f);height:100%;border-radius:6px;display:flex;align-items:center;padding-left:6px">
+              <span style="font-size:11px;font-weight:700;color:#7d5100">${cnt}회</span>
+            </div>
+          </div>
+        </div>`).join("");
+    }
+
+  }catch(e){console.log(e);}
 }
+
+// CSV 내보내기
+window.exportCSV=async()=>{
+  try{
+    const db=window.FB.db;
+    const snap=await window.FB.getDocs(window.FB.collection(db,"missionLogs"));
+    const logs=snap.docs.map(d=>d.data());
+    const header="날짜,미션,CO2절감(kg),연령대,지역,시간대
+";
+    const rows=logs.map(l=>`${l.date||""},${l.missionName||""},${l.co2||0},${l.age||""},${l.region||""},${l.timeSlot||""}`).join("
+");
+    const blob=new Blob(["﻿"+header+rows],{type:"text/csv;charset=utf-8"});
+    const a=document.createElement("a");
+    a.href=URL.createObjectURL(blob);
+    a.download="EcoQuest_데이터_"+new Date().toISOString().split("T")[0]+".csv";
+    a.click();
+    toast("✅ CSV 다운로드 완료!");
+  }catch(e){toast("내보내기 실패: "+e.message);}
+};
 
 // URL 해시로 관리자 접근
 window.addEventListener("hashchange",()=>{
@@ -1923,7 +2291,7 @@ window.toggleMSel=toggleMSel;window.confirmMissions=confirmMissions;
 window.openAI=openAI;window.doAnalyze=doAnalyze;window.doComplete=doComplete;window.renderTodayQuests=renderTodayQuests;window.renderHomeChalls=renderHomeChalls;window.joinChal=joinChal;
 window.openChal=openChal;window.selDep=selDep;window.joinChal=joinChal;
 window.setDep=setDep;window.setRPub=setRPub;window.openCreateRoom=openCreateRoom;
-window.openBuy=openBuy;window.doBuy=doBuy;window.closeOv=closeOv;window.toast=toast;window.requestPayment=requestPayment;window.openAdmin=openAdmin;window.closeAdmin=closeAdmin;window.setAdminTab=setAdminTab;window.filterAdminOrders=filterAdminOrders;window.completeOrder=completeOrder;window.searchAdminUsers=searchAdminUsers;window.givePoint=givePoint;window.takePoint=takePoint;
+window.openBuy=openBuy;window.doBuy=doBuy;window.closeOv=closeOv;window.toast=toast;window.requestPayment=requestPayment;window.openAdmin=openAdmin;window.selAge=selAge;window.toggleInterest=toggleInterest;window.saveOnboard=saveOnboard;window.renderActivity=renderActivity;window.showCert=showCert;window.downloadCert=downloadCert;window.shareCert=shareCert;window.closeAdmin=closeAdmin;window.setAdminTab=setAdminTab;window.filterAdminOrders=filterAdminOrders;window.completeOrder=completeOrder;window.searchAdminUsers=searchAdminUsers;window.givePoint=givePoint;window.takePoint=takePoint;
 </script>
 <script>
 if('serviceWorker' in navigator){

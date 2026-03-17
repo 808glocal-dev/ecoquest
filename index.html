@@ -372,6 +372,9 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
       <button class="btn btn-g" style="flex:1;padding:12px" onclick="goPage('shop')">🛒 스토어</button>
       <button class="btn btn-g" style="flex:1;padding:12px" onclick="showCert()">🏆 증명서 발급</button>
     </div>
+    <div style="padding:0 12px;margin-bottom:4px">
+      <button class="btn btn-gray" style="padding:10px" onclick="openOv('ovOnboard')">✏️ 나이대/지역 정보 수정</button>
+    </div>
     <div class="sec"><div class="sec-t">📸 내 인증 기록</div></div>
     <div id="myVerifs" style="padding:0 12px"></div>
     <div class="sec"><div class="sec-t">📦 내 주문</div></div>
@@ -475,17 +478,31 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
 <div class="overlay" id="ovOnboard">
   <div class="modal">
     <div class="modal-title">🌍 EcoQuest 시작하기!</div>
-    <div class="modal-desc">활동 데이터 분석을 위해 간단한 정보를 알려주세요.</div>
+    <div class="modal-desc">맞춤 미션 추천을 위해 정보를 알려주세요.<br/><span style="font-size:11px;color:#aaa">입력하신 정보는 환경 연구 및 서비스 개선에 활용돼요</span></div>
+
+    <!-- 성별 -->
+    <div class="form-group">
+      <label>성별</label>
+      <div style="display:flex;gap:6px" id="genderSelect">
+        <button class="dep-btn" style="flex:1" onclick="selOnboard('gender','남성',this,'genderSelect')">남성</button>
+        <button class="dep-btn" style="flex:1" onclick="selOnboard('gender','여성',this,'genderSelect')">여성</button>
+        <button class="dep-btn" style="flex:1" onclick="selOnboard('gender','기타',this,'genderSelect')">기타</button>
+      </div>
+    </div>
+
+    <!-- 나이대 -->
     <div class="form-group">
       <label>나이대</label>
       <div style="display:flex;gap:6px;flex-wrap:wrap" id="ageSelect">
-        <button class="dep-btn" onclick="selAge('10대',this)">10대</button>
-        <button class="dep-btn" onclick="selAge('20대',this)">20대</button>
-        <button class="dep-btn" onclick="selAge('30대',this)">30대</button>
-        <button class="dep-btn" onclick="selAge('40대',this)">40대</button>
-        <button class="dep-btn" onclick="selAge('50대+',this)">50대+</button>
+        <button class="dep-btn" onclick="selOnboard('age','10대',this,'ageSelect')">10대</button>
+        <button class="dep-btn" onclick="selOnboard('age','20대',this,'ageSelect')">20대</button>
+        <button class="dep-btn" onclick="selOnboard('age','30대',this,'ageSelect')">30대</button>
+        <button class="dep-btn" onclick="selOnboard('age','40대',this,'ageSelect')">40대</button>
+        <button class="dep-btn" onclick="selOnboard('age','50대+',this,'ageSelect')">50대+</button>
       </div>
     </div>
+
+    <!-- 지역 -->
     <div class="form-group">
       <label>지역</label>
       <select class="sel" id="regionSelect">
@@ -498,8 +515,52 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
         <option>경남</option><option>제주</option>
       </select>
     </div>
+
+    <!-- 직업 -->
     <div class="form-group">
-      <label>관심 환경 분야</label>
+      <label>직업</label>
+      <div style="display:flex;gap:6px;flex-wrap:wrap" id="jobSelect">
+        <button class="dep-btn" onclick="selOnboard('job','학생',this,'jobSelect')">🎓 학생</button>
+        <button class="dep-btn" onclick="selOnboard('job','직장인',this,'jobSelect')">💼 직장인</button>
+        <button class="dep-btn" onclick="selOnboard('job','자영업',this,'jobSelect')">🏪 자영업</button>
+        <button class="dep-btn" onclick="selOnboard('job','주부',this,'jobSelect')">🏠 주부</button>
+        <button class="dep-btn" onclick="selOnboard('job','기타',this,'jobSelect')">기타</button>
+      </div>
+    </div>
+
+    <!-- 자동차 보유 -->
+    <div class="form-group">
+      <label>자동차 보유</label>
+      <div style="display:flex;gap:6px" id="carSelect">
+        <button class="dep-btn" style="flex:1" onclick="selOnboard('hasCar','있음',this,'carSelect')">🚗 있음</button>
+        <button class="dep-btn" style="flex:1" onclick="selOnboard('hasCar','없음',this,'carSelect')">🚶 없음</button>
+      </div>
+    </div>
+
+    <!-- 가구 형태 -->
+    <div class="form-group">
+      <label>가구 형태</label>
+      <div style="display:flex;gap:6px;flex-wrap:wrap" id="householdSelect">
+        <button class="dep-btn" onclick="selOnboard('household','1인',this,'householdSelect')">1인</button>
+        <button class="dep-btn" onclick="selOnboard('household','2인',this,'householdSelect')">2인</button>
+        <button class="dep-btn" onclick="selOnboard('household','3~4인',this,'householdSelect')">3~4인</button>
+        <button class="dep-btn" onclick="selOnboard('household','5인+',this,'householdSelect')">5인+</button>
+      </div>
+    </div>
+
+    <!-- 환경 관심도 -->
+    <div class="form-group">
+      <label>평소 환경에 관심 정도</label>
+      <div style="display:flex;gap:6px" id="ecoLevelSelect">
+        <button class="dep-btn" style="flex:1" onclick="selOnboard('ecoLevel','관심없음',this,'ecoLevelSelect')">😐 별로</button>
+        <button class="dep-btn" style="flex:1" onclick="selOnboard('ecoLevel','보통',this,'ecoLevelSelect')">🌱 보통</button>
+        <button class="dep-btn" style="flex:1" onclick="selOnboard('ecoLevel','관심많음',this,'ecoLevelSelect')">🌍 관심많음</button>
+      </div>
+    </div>
+
+    <!-- 관심 환경 분야 -->
+    <div class="form-group">
+      <label>관심 환경 분야 (복수 선택)</label>
       <div style="display:flex;gap:6px;flex-wrap:wrap" id="interestSelect">
         <button class="dep-btn" onclick="toggleInterest('탄소절감',this)">🌿 탄소절감</button>
         <button class="dep-btn" onclick="toggleInterest('제로웨이스트',this)">♻️ 제로웨이스트</button>
@@ -507,8 +568,11 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
         <button class="dep-btn" onclick="toggleInterest('대중교통',this)">🚌 대중교통</button>
         <button class="dep-btn" onclick="toggleInterest('절수',this)">💧 절수</button>
         <button class="dep-btn" onclick="toggleInterest('절전',this)">💡 절전</button>
+        <button class="dep-btn" onclick="toggleInterest('친환경소비',this)">🛒 친환경소비</button>
+        <button class="dep-btn" onclick="toggleInterest('업사이클링',this)">🎨 업사이클링</button>
       </div>
     </div>
+
     <button class="btn btn-g" onclick="saveOnboard()">시작하기! 🌱</button>
   </div>
 </div>
@@ -729,6 +793,7 @@ async function loadUser(uid){
     window.UDATA={point:0,missionCount:0,streak:0,doneMissions:[],co2:0,todayMissions:[],activeChallenges:[]};
     try{await window.FB.setDoc(window.FB.doc(window.FB.db,"stats","global"),{totalUsers:window.FB.increment(1),todayUsers:window.FB.increment(1),totalCo2:0},{merge:true});loadGlobalStats();}catch(e){}
     toast("🎉 EcoQuest에 오신 걸 환영해요! 미션을 완료해서 포인트를 모아봐요 🌱");
+    setTimeout(()=>{if(typeof openOv==="function")openOv("ovOnboard");},1000);
   }else{
     window.UDATA=snap.data();
     if(window.UDATA.activeChallenges){
@@ -800,9 +865,10 @@ window.saveMission=async(uid,m)=>{
   return true;
 };
 
-window.saveOnboardData=async(uid,age,region,interests)=>{
-  await window.FB.updateDoc(window.FB.doc(window.FB.db,"users",uid),{age,region,interests});
-  window.UDATA.age=age;window.UDATA.region=region;window.UDATA.interests=interests;
+window.saveOnboardData=async(uid,age,region,interests,extra={})=>{
+  const data={age,region,interests,...extra};
+  await window.FB.updateDoc(window.FB.doc(window.FB.db,"users",uid),data);
+  Object.assign(window.UDATA,data);
 };
 window.saveTodayMissions=async(uid,ids)=>{
   await window.FB.updateDoc(window.FB.doc(window.FB.db,"users",uid),{todayMissions:ids});
@@ -1324,28 +1390,45 @@ function renderOfficialChallenges(){
 window.renderOfficialChallenges=renderOfficialChallenges;
 
 // ══ 온보딩 ══
-let _selAge="",_selInterests=[];
-function selAge(v,el){
-  _selAge=v;
-  document.querySelectorAll("#ageSelect .dep-btn").forEach(b=>b.classList.remove("on"));
+let _onboardData={age:"",gender:"",job:"",hasCar:"",household:"",ecoLevel:""},_selInterests=[];
+
+function selOnboard(field,val,el,groupId){
+  _onboardData[field]=val;
+  document.querySelectorAll("#"+groupId+" .dep-btn").forEach(b=>b.classList.remove("on"));
   el.classList.add("on");
 }
+// 하위호환
+function selAge(v,el){selOnboard("age",v,el,"ageSelect");}
+
 function toggleInterest(v,el){
   const idx=_selInterests.indexOf(v);
   if(idx>-1){_selInterests.splice(idx,1);el.classList.remove("on");}
   else{_selInterests.push(v);el.classList.add("on");}
 }
+
 async function saveOnboard(){
   const region=document.getElementById("regionSelect").value;
-  if(!_selAge){toast("나이대를 선택해주세요!");return;}
+  if(!_onboardData.age){toast("나이대를 선택해주세요!");return;}
   if(!region){toast("지역을 선택해주세요!");return;}
   closeOv("ovOnboard");
   if(window.ME&&window.saveOnboardData){
-    await window.saveOnboardData(window.ME.uid,_selAge,region,_selInterests);
-    toast("🌱 환영해요! EcoQuest를 시작해봐요!");
+    await window.saveOnboardData(
+      window.ME.uid,
+      _onboardData.age,
+      region,
+      _selInterests,
+      {
+        gender:_onboardData.gender,
+        job:_onboardData.job,
+        hasCar:_onboardData.hasCar,
+        household:_onboardData.household,
+        ecoLevel:_onboardData.ecoLevel,
+      }
+    );
+    toast("🌱 정보 저장 완료! EcoQuest를 시작해봐요!");
   }
 }
-window.selAge=selAge;window.toggleInterest=toggleInterest;window.saveOnboard=saveOnboard;
+window.selAge=selAge;window.selOnboard=selOnboard;window.toggleInterest=toggleInterest;window.saveOnboard=saveOnboard;
 
 // ══ 탄소 비유 ══
 function getCo2Analogy(co2kg){
@@ -1853,28 +1936,31 @@ async function loadAdminStats(){
       </div>`).join("");
 
     // B2B 리포트
-    const ageMap={},regionMap={},interestMap={},timeMap={};
+    const ageMap={},genderMap={},regionMap={},jobMap={},carMap={},householdMap={},ecoLevelMap={},interestMap={},timeMap={};
     users.forEach(u=>{
       if(u.age)ageMap[u.age]=(ageMap[u.age]||0)+1;
+      if(u.gender)genderMap[u.gender]=(genderMap[u.gender]||0)+1;
       if(u.region)regionMap[u.region]=(regionMap[u.region]||0)+1;
+      if(u.job)jobMap[u.job]=(jobMap[u.job]||0)+1;
+      if(u.hasCar)carMap[u.hasCar]=(carMap[u.hasCar]||0)+1;
+      if(u.household)householdMap[u.household]=(householdMap[u.household]||0)+1;
+      if(u.ecoLevel)ecoLevelMap[u.ecoLevel]=(ecoLevelMap[u.ecoLevel]||0)+1;
       (u.interests||[]).forEach(i=>{interestMap[i]=(interestMap[i]||0)+1;});
     });
     logs.forEach(l=>{if(l.timeSlot)timeMap[l.timeSlot]=(timeMap[l.timeSlot]||0)+1;});
 
+    const fmt=(map)=>Object.entries(map).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`${k}(${v}명)`).join(" · ")||"데이터 없음";
     const b2b=document.getElementById("b2bReport");
     if(b2b)b2b.innerHTML=`
-      <div style="font-size:12px;margin-bottom:8px">
-        <b>나이대 분포:</b> ${Object.entries(ageMap).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`${k}(${v}명)`).join(" · ")||"데이터 없음"}
-      </div>
-      <div style="font-size:12px;margin-bottom:8px">
-        <b>지역 분포:</b> ${Object.entries(regionMap).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([k,v])=>`${k}(${v}명)`).join(" · ")||"데이터 없음"}
-      </div>
-      <div style="font-size:12px;margin-bottom:8px">
-        <b>관심분야:</b> ${Object.entries(interestMap).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`${k}(${v}명)`).join(" · ")||"데이터 없음"}
-      </div>
-      <div style="font-size:12px">
-        <b>활동 시간대:</b> ${Object.entries(timeMap).map(([k,v])=>`${k}(${v}건)`).join(" · ")||"데이터 없음"}
-      </div>`;
+      <div style="font-size:12px;margin-bottom:6px"><b>성별:</b> ${fmt(genderMap)}</div>
+      <div style="font-size:12px;margin-bottom:6px"><b>나이대:</b> ${fmt(ageMap)}</div>
+      <div style="font-size:12px;margin-bottom:6px"><b>지역 TOP5:</b> ${Object.entries(regionMap).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([k,v])=>`${k}(${v}명)`).join(" · ")||"데이터 없음"}</div>
+      <div style="font-size:12px;margin-bottom:6px"><b>직업:</b> ${fmt(jobMap)}</div>
+      <div style="font-size:12px;margin-bottom:6px"><b>자동차 보유:</b> ${fmt(carMap)}</div>
+      <div style="font-size:12px;margin-bottom:6px"><b>가구 형태:</b> ${fmt(householdMap)}</div>
+      <div style="font-size:12px;margin-bottom:6px"><b>환경 관심도:</b> ${fmt(ecoLevelMap)}</div>
+      <div style="font-size:12px;margin-bottom:6px"><b>관심분야:</b> ${fmt(interestMap)}</div>
+      <div style="font-size:12px"><b>활동 시간대:</b> ${Object.entries(timeMap).map(([k,v])=>`${k}(${v}건)`).join(" · ")||"데이터 없음"}</div>`;
 
     // 시간대 차트
     const timeEl=document.getElementById("timeDistChart");
@@ -1913,10 +1999,11 @@ window.setAdminTab=setAdminTab;
 window.exportCSV=()=>{
   const d=window._adminData;
   if(!d){toast("통계 탭에서 먼저 로딩해주세요!");return;}
-  const rows=[["UID","미션수","포인트","CO2절감","나이대","지역","관심분야"]];
+  const rows=[["UID","미션수","포인트","CO2절감","성별","나이대","지역","직업","자동차","가구형태","환경관심도","관심분야"]];
   d.users.forEach(u=>rows.push([
     u.id||"",u.missionCount||0,u.point||0,(u.co2||0).toFixed(2),
-    u.age||"",u.region||"",(u.interests||[]).join("|")
+    u.gender||"",u.age||"",u.region||"",u.job||"",u.hasCar||"",u.household||"",u.ecoLevel||"",
+    (u.interests||[]).join("|")
   ]));
   const csv=rows.map(r=>r.join(",")).join("\n");
   const blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8"});

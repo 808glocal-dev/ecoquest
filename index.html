@@ -749,7 +749,7 @@ onAuthStateChanged(auth,async user=>{
   if(user){
     window.ME=user;
     document.getElementById("loginScreen").style.display="none";
-    document.getElementById("app").style.display="block";
+    // 앱은 일단 숨김 — 온보딩 완료 후 showApp()에서 표시
     const n=user.displayName?.split(" ")[0]||"지구지킴이";
     document.getElementById("uName").textContent=n;
     document.getElementById("sName").textContent="🌱 "+n;
@@ -792,8 +792,8 @@ async function loadUser(uid){
     await window.FB.setDoc(ref,{point:0,missionCount:0,streak:0,doneMissions:[],co2:0,todayMissions:[],activeChallenges:[],createdAt:window.FB.serverTimestamp()});
     window.UDATA={point:0,missionCount:0,streak:0,doneMissions:[],co2:0,todayMissions:[],activeChallenges:[]};
     try{await window.FB.setDoc(window.FB.doc(window.FB.db,"stats","global"),{totalUsers:window.FB.increment(1),todayUsers:window.FB.increment(1),totalCo2:0},{merge:true});loadGlobalStats();}catch(e){}
-    toast("🎉 EcoQuest에 오신 걸 환영해요! 미션을 완료해서 포인트를 모아봐요 🌱");
-    setTimeout(()=>{if(typeof openOv==="function")openOv("ovOnboard");},1000);
+    // 신규유저: 온보딩 먼저 표시, 앱은 숨김
+    setTimeout(()=>{if(typeof openOv==="function")openOv("ovOnboard");},300);
   }else{
     window.UDATA=snap.data();
     if(window.UDATA.activeChallenges){
@@ -803,6 +803,11 @@ async function loadUser(uid){
         seen.add(ac.challengeId);return true;
       });
     }
+    // 기존유저인데 정보 미입력 → 온보딩 표시
+    if(!window.UDATA.age){
+      setTimeout(()=>{if(typeof openOv==="function")openOv("ovOnboard");},300);
+      return; // showApp은 saveOnboard에서 호출
+    }
   }
   updateUI();
   window.renderTodayQuests&&window.renderTodayQuests(uid);
@@ -810,8 +815,15 @@ async function loadUser(uid){
   loadMyOrders(uid);
   loadMyVerifs(uid);
   setTimeout(()=>{if(window.loadFeed)window.loadFeed();},300);
+  // 정보 다 있는 유저는 바로 앱 표시
+  if(window.UDATA.age){showApp();}
 }
 window.loadUser=loadUser;
+
+function showApp(){
+  document.getElementById("app").style.display="block";
+}
+window.showApp=showApp;
 
 function lv(n){
   if(n>=100)return"Lv.10 지구수호자";if(n>=70)return"Lv.9 에코마스터";
@@ -1453,7 +1465,9 @@ async function saveOnboard(){
         ecoLevel:_onboardData.ecoLevel,
       }
     );
-    toast("🌱 정보 저장 완료! EcoQuest를 시작해봐요!");
+    toast("🌱 정보 저장 완료! EcoQuest 시작해요!");
+    // 온보딩 완료 → 앱 표시
+    if(typeof showApp==="function")showApp();
   }
 }
 window.selAge=selAge;window.selOnboard=selOnboard;window.toggleInterest=toggleInterest;window.saveOnboard=saveOnboard;

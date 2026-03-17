@@ -674,7 +674,7 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
 <!-- Firebase SDK -->
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
-import{getAuth,GoogleAuthProvider,signInWithPopup,signOut,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
+import{getAuth,GoogleAuthProvider,signInWithPopup,signInWithRedirect,getRedirectResult,signOut,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
 import{getFirestore,doc,getDoc,setDoc,updateDoc,addDoc,getDocs,collection,query,where,orderBy,increment,serverTimestamp,arrayUnion}from"https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
 const cfg={apiKey:"AIzaSyAMpLdwkyXS1usudjbkI7BcyjvbY8VZzxY",authDomain:"ecoquest-c6380.firebaseapp.com",projectId:"ecoquest-c6380",storageBucket:"ecoquest-c6380.firebasestorage.app",messagingSenderId:"403119608388",appId:"1:403119608388:web:6ab39c611d0df9a81ea211"};
@@ -688,8 +688,31 @@ window.FB={db,doc,getDoc,setDoc,updateDoc,addDoc,getDocs,collection,query,where,
 window.ADMIN="808glocal@gmail.com";
 
 document.getElementById("btnLogin").onclick=async()=>{
-  try{await signInWithPopup(auth,pv);}catch(e){toast("로그인 실패: "+e.message);}
+  try{
+    // 모바일/Vercel에서 팝업 차단 시 redirect 사용
+    const isMobile=/iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    if(isMobile){
+      await signInWithRedirect(auth,pv);
+    } else {
+      try{
+        await signInWithPopup(auth,pv);
+      }catch(e){
+        if(e.code==="auth/popup-blocked"||e.code==="auth/popup-closed-by-user"){
+          await signInWithRedirect(auth,pv);
+        } else {
+          toast("로그인 실패: "+e.message);
+        }
+      }
+    }
+  }catch(e){toast("로그인 실패: "+e.message);}
 };
+
+// 리디렉트 후 결과 처리
+getRedirectResult(auth).then(result=>{
+  if(result?.user) console.log("리디렉트 로그인 성공:", result.user.displayName);
+}).catch(e=>{
+  if(e.code!=="auth/no-auth-event") console.log("리디렉트 결과 오류:", e.message);
+});
 document.getElementById("btnLogout").onclick=async()=>{
   await signOut(auth);toast("로그아웃 됐어요 👋");
 };

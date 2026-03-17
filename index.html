@@ -223,6 +223,18 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
 
   <!-- 홈 -->
   <div class="page on" id="page-home">
+    <!-- 1. EcoQuest 현황 (최상단) -->
+    <div class="earth-banner" style="margin-top:12px">
+      <div class="eb-title">🌍 EcoQuest 현황</div>
+      <div class="eb-stats">
+        <div class="ebs"><div class="ebs-n" id="bToday">0</div><div class="ebs-l">오늘 참여자</div></div>
+        <div class="ebs"><div class="ebs-n" id="bTotal">0</div><div class="ebs-l">누적 참여자</div></div>
+        <div class="ebs"><div class="ebs-n" id="bCo2">0t</div><div class="ebs-l">CO₂ 절감</div></div>
+        <div class="ebs"><div class="ebs-n" id="bCountry">132</div><div class="ebs-l">참여 국가</div></div>
+      </div>
+    </div>
+
+    <!-- 2. 내 카드 -->
     <div class="stat-card">
       <div class="stat-row">
         <div class="stat-name" id="sName">🌱 지구지킴이</div>
@@ -239,8 +251,13 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
         <div class="xp-bar"><div class="xp-fill" id="xpFill" style="width:0%"></div></div>
       </div>
     </div>
-    <!-- 서울시 공공데이터 배너 -->
-    <div id="seoulDataBanner" style="margin:12px 12px 0;border-radius:16px;overflow:hidden">
+
+    <!-- 3. 오늘의 미션 -->
+    <div class="sec"><div class="sec-t">⚡ 오늘의 미션 <span style="background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:6px;">🤖 AI인증</span></div></div>
+    <div class="mscroll" id="missionScroll"></div>
+
+    <!-- 2. 서울시 공공데이터 배너 -->
+    <div id="seoulDataBanner" style="margin:4px 12px 0;border-radius:16px;overflow:hidden">
       <!-- 대기질 카드 -->
       <div id="airCard" style="background:linear-gradient(135deg,#1a6b3a,#2ECC71);border-radius:16px;padding:14px 16px;color:#fff;margin-bottom:8px;position:relative;overflow:hidden">
         <div style="position:absolute;right:-8px;top:-8px;font-size:60px;opacity:.15">🌫️</div>
@@ -276,7 +293,7 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
         </div>
         <div style="font-size:9px;color:rgba(255,255,255,.5);margin-top:6px">출처: 서울특별시 열린데이터광장</div>
       </div>
-      <!-- 인천 대중교통 카드 (인천 선택 시만 표시) -->
+      <!-- 인천 대중교통 카드 -->
       <div id="incheonTransCard" style="display:none;background:linear-gradient(135deg,#6a1b9a,#9c27b0);border-radius:16px;padding:14px 16px;color:#fff;margin-bottom:8px;position:relative;overflow:hidden">
         <div style="position:absolute;right:-8px;top:-8px;font-size:60px;opacity:.15">🚌</div>
         <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.7);margin-bottom:6px">🚌 인천 대중교통 현황 (인천 데이터포털)</div>
@@ -291,22 +308,14 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
       </div>
     </div>
 
-    <div class="sec"><div class="sec-t">⚡ 오늘의 미션 <span style="background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:6px;">🤖 AI인증</span></div></div>
-    <div class="mscroll" id="missionScroll"></div>
-    <div class="earth-banner">
-      <div class="eb-title">🌍 EcoQuest 현황</div>
-      <div class="eb-stats">
-        <div class="ebs"><div class="ebs-n" id="bToday">0</div><div class="ebs-l">오늘 참여자</div></div>
-        <div class="ebs"><div class="ebs-n" id="bTotal">0</div><div class="ebs-l">누적 참여자</div></div>
-        <div class="ebs"><div class="ebs-n" id="bCo2">0t</div><div class="ebs-l">CO₂ 절감</div></div>
-        <div class="ebs"><div class="ebs-n" id="bCountry">132</div><div class="ebs-l">참여 국가</div></div>
-      </div>
-    </div>
+    <!-- 4. 참여 중인 챌린지 -->
     <div class="sec">
       <div class="sec-t">🏆 참여 중인 챌린지</div>
       <div class="sec-m" id="goChal">전체보기 ›</div>
     </div>
     <div id="homeChallList" style="padding:0 12px"></div>
+
+    <!-- 5. 인증 피드 -->
     <div class="sec">
       <div class="sec-t">📸 인증 피드</div>
       <div class="sec-m" onclick="window.loadFeed&&window.loadFeed()">새로고침</div>

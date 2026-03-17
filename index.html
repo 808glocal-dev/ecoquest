@@ -885,30 +885,37 @@ document.getElementById("btnLogin").onclick=async()=>{
   }
 };
 
+// 리다이렉트 결과 먼저 처리 — 모바일 로그인 복귀 시
+let _redirectHandled = false;
 getRedirectResult(auth).then(result=>{
+  _redirectHandled = true;
   if(result?.user){
     console.log("리디렉트 로그인 성공:",result.user.displayName);
+    // onAuthStateChanged가 자동으로 처리함
   } else {
-    // 리다이렉트 결과 없음 = 로그인 안 된 상태 → onAuthStateChanged에서 처리
+    // 리다이렉트 결과 없음 → 타임아웃 시작
+    _startLoginTimeout();
   }
 }).catch(e=>{
+  _redirectHandled = true;
   console.log("리디렉트 오류:",e.code,e.message);
-  document.getElementById("loading").style.display="none";
-  document.getElementById("loginScreen").style.display="flex";
+  _startLoginTimeout();
 });
+
+function _startLoginTimeout(){
+  // 리다이렉트 복귀가 아닌 경우에만 타임아웃 적용
+  setTimeout(()=>{
+    const loading=document.getElementById("loading");
+    if(loading&&loading.style.display!=="none"){
+      loading.style.display="none";
+      document.getElementById("loginScreen").style.display="flex";
+    }
+  },5000); // 5초로 늘림
+}
 
 document.getElementById("btnLogout").onclick=async()=>{
   await signOut(auth);toast("로그아웃 됐어요 👋");
 };
-
-// 타임아웃: 모바일에서 Firebase 응답 늦을 때 대비 (3초)
-setTimeout(()=>{
-  const loading=document.getElementById("loading");
-  if(loading&&loading.style.display!=="none"){
-    loading.style.display="none";
-    document.getElementById("loginScreen").style.display="flex";
-  }
-},3000);
 
 onAuthStateChanged(auth,async user=>{
   document.getElementById("loading").style.display="none";

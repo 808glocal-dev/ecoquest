@@ -862,25 +862,37 @@ window.FB={db,doc,getDoc,setDoc,updateDoc,addDoc,getDocs,deleteDoc,collection,qu
 window.ADMIN="808glocal@gmail.com";
 
 document.getElementById("btnLogin").onclick=async()=>{
-  try{
-    const isMobile=/iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    if(isMobile){
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  if(isMobile){
+    // 모바일: 리다이렉트 방식
+    try{
       await signInWithRedirect(auth,pv);
-    }else{
-      try{await signInWithPopup(auth,pv);}
-      catch(e){
-        if(e.code==="auth/popup-blocked"||e.code==="auth/popup-closed-by-user"){
-          await signInWithRedirect(auth,pv);
-        }else{toast("로그인 실패: "+e.message);}
+    }catch(e){
+      toast("로그인 실패: "+e.message);
+    }
+  } else {
+    // 데스크탑: 팝업 방식
+    try{
+      await signInWithPopup(auth,pv);
+    }catch(e){
+      if(e.code==="auth/popup-blocked"||e.code==="auth/popup-closed-by-user"){
+        // 팝업 차단시 리다이렉트로 폴백
+        await signInWithRedirect(auth,pv);
+      }else{
+        toast("로그인 실패: "+e.message);
       }
     }
-  }catch(e){toast("로그인 실패: "+e.message);}
+  }
 };
 
 getRedirectResult(auth).then(result=>{
-  if(result?.user)console.log("리디렉트 로그인 성공:",result.user.displayName);
+  if(result?.user){
+    console.log("리디렉트 로그인 성공:",result.user.displayName);
+  } else {
+    // 리다이렉트 결과 없음 = 로그인 안 된 상태 → onAuthStateChanged에서 처리
+  }
 }).catch(e=>{
-  console.log("리디렉트 결과:",e.code,e.message);
+  console.log("리디렉트 오류:",e.code,e.message);
   document.getElementById("loading").style.display="none";
   document.getElementById("loginScreen").style.display="flex";
 });
@@ -889,13 +901,14 @@ document.getElementById("btnLogout").onclick=async()=>{
   await signOut(auth);toast("로그아웃 됐어요 👋");
 };
 
+// 타임아웃: 모바일에서 Firebase 응답 늦을 때 대비 (3초)
 setTimeout(()=>{
   const loading=document.getElementById("loading");
   if(loading&&loading.style.display!=="none"){
     loading.style.display="none";
     document.getElementById("loginScreen").style.display="flex";
   }
-},5000);
+},3000);
 
 onAuthStateChanged(auth,async user=>{
   document.getElementById("loading").style.display="none";

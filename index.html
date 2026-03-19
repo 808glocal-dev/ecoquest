@@ -719,6 +719,16 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
         <option value="2">대중교통 이용하기</option>
         <option value="3">채식 한 끼 먹기</option>
         <option value="4">분리수거 하기</option>
+        <option value="5">자전거/도보 이동</option>
+        <option value="6">줍깅 (쓰레기 줍기)</option>
+        <option value="7">배달앱 일회용품 안 받기</option>
+        <option value="8">용기내 챌린지</option>
+        <option value="9">멀티탭 전원 끄기</option>
+        <option value="10">음식 남김 없이 먹기</option>
+        <option value="11">리필스테이션 이용</option>
+        <option value="12">비건/채식 식당 방문</option>
+        <option value="13">빨대 없이 음료 마시기</option>
+        <option value="14">베란다 텃밭/식물 근황</option>
       </select>
     </div>
     <div class="form-group">
@@ -1287,15 +1297,32 @@ const MISSIONS=[
   {id:"m8",emoji:"🚲",name:"자전거/도보 이동",point:70,co2:1.05,kw:"자전거, 도보, 헬멧"},
   {id:"m9",emoji:"🌱",name:"식물 물 주기",point:25,co2:0.05,kw:"화분, 식물"},
   {id:"m10",emoji:"📱",name:"전자기기 절전 모드",point:30,co2:0.12,kw:"절전 모드, 배터리"},
+  {id:"m11",emoji:"🚯",name:"줍깅 (쓰레기 줍기)",point:80,co2:0.5,kw:"쓰레기봉투, 집게, 줍깅, 플로깅"},
+  {id:"m12",emoji:"🛵",name:"배달앱 일회용품 안 받기",point:40,co2:0.3,kw:"배달앱 주문화면, 일회용품 제외, 수저 안 받기"},
+  {id:"m13",emoji:"🫙",name:"용기내 챌린지",point:50,co2:0.25,kw:"개인 용기, 다회용기, 포장 용기"},
+  {id:"m14",emoji:"🔌",name:"멀티탭 전원 끄기",point:30,co2:0.12,kw:"멀티탭, 전원 off, 대기전력"},
+  {id:"m15",emoji:"🍽️",name:"음식 남김 없이 먹기",point:35,co2:0.6,kw:"빈 그릇, 음식 다 먹기, 클린 플레이트"},
+  {id:"m16",emoji:"🪣",name:"리필스테이션 이용",point:60,co2:0.8,kw:"리필스테이션, 리필 용기, 세제 리필"},
+  {id:"m17",emoji:"🌿",name:"비건/채식 식당 방문",point:70,co2:1.2,kw:"채식 식당, 비건 식당, 메뉴판"},
+  {id:"m18",emoji:"🥤",name:"빨대 없이 음료 마시기",point:25,co2:0.05,kw:"빨대 없는 컵, 노 스트로우, 음료"},
+  {id:"m19",emoji:"🪴",name:"베란다 텃밭/식물 근황",point:30,co2:0.1,kw:"베란다 텃밭, 식물, 화분, 새싹"},
 ];
 
 const CHALLENGES=[
-  {id:1,emoji:"🧴",title:"텀블러 사용하기",desc:"카페에서 텀블러나 개인 컵을 사용해요! AI가 인증샷을 확인해요.",tag:"🌿 환경",baseParticipants:1284,hot:true,missionId:"m1"},
-  {id:2,emoji:"🚌",title:"대중교통 이용하기",desc:"자가용 대신 버스, 지하철을 이용해요! 탄소 배출을 줄여요.",tag:"🚌 교통",baseParticipants:892,hot:true,missionId:"m2"},
-  {id:3,emoji:"🥗",title:"채식 한 끼 먹기",desc:"하루 한 끼 채식 메뉴를 선택해요! 지구를 위한 식단이에요.",tag:"🥗 식품",baseParticipants:547,hot:false,missionId:"m3"},
-  {id:4,emoji:"♻️",title:"분리수거 하기",desc:"쓰레기를 올바르게 분리수거해요! 자원을 순환시켜요.",tag:"🗑️ 제로웨이스트",baseParticipants:328,hot:false,missionId:"m5"},
-  {id:5,emoji:"🚲",title:"자전거/도보 이동",desc:"가까운 거리는 자전거나 걸어서 이동해요!",tag:"🌿 환경",baseParticipants:215,hot:false,missionId:"m8"},
-  {id:6,emoji:"🚿",title:"절수 샤워하기",desc:"샤워 시간을 5분 이내로 줄여봐요!",tag:"💧 절수",baseParticipants:183,hot:false,missionId:"m7"},
+  {id:1,emoji:"🧴",title:"텀블러 사용하기",desc:"카페에서 텀블러나 개인 컵을 사용해요! AI가 인증샷을 확인해요.",tag:"🌿 환경",baseParticipants:1284,hot:true,missionId:"m1",freqOptions:["daily","w5","w3"]},
+  {id:2,emoji:"🚌",title:"대중교통 이용하기",desc:"자가용 대신 버스, 지하철을 이용해요! 탄소 배출을 줄여요.",tag:"🚌 교통",baseParticipants:892,hot:true,missionId:"m2",freqOptions:["daily","w5","w3"]},
+  {id:3,emoji:"🥗",title:"채식 한 끼 먹기",desc:"하루 한 끼 채식 메뉴를 선택해요! 지구를 위한 식단이에요.",tag:"🥗 식품",baseParticipants:547,hot:false,missionId:"m3",freqOptions:["daily","w5","w3"]},
+  {id:4,emoji:"♻️",title:"분리수거 하기",desc:"쓰레기를 올바르게 분리수거해요! 자원을 순환시켜요.",tag:"🗑️ 제로웨이스트",baseParticipants:328,hot:false,missionId:"m5",freqOptions:["w3","w1"]},
+  {id:5,emoji:"🚲",title:"자전거/도보 이동",desc:"가까운 거리는 자전거나 걸어서 이동해요!",tag:"🌿 환경",baseParticipants:215,hot:false,missionId:"m8",freqOptions:["daily","w5","w3"]},
+  {id:6,emoji:"🚯",title:"줍깅 (쓰레기 줍기)",desc:"산책하면서 쓰레기를 줍는 줍깅! 봉투와 집게로 인증해요.",tag:"🌍 환경활동",baseParticipants:142,hot:true,missionId:"m11",freqOptions:["w1"]},
+  {id:7,emoji:"🛵",title:"배달앱 일회용품 안 받기",desc:"배달 주문 시 일회용 수저·포크 옵션을 해제해요!",tag:"♻️ 제로웨이스트",baseParticipants:389,hot:true,missionId:"m12",freqOptions:["w3","w1"]},
+  {id:8,emoji:"🫙",title:"용기내 챌린지",desc:"포장/배달 시 개인 다회용기를 사용해요!",tag:"♻️ 제로웨이스트",baseParticipants:201,hot:false,missionId:"m13",freqOptions:["w3","w1"]},
+  {id:9,emoji:"🔌",title:"멀티탭 전원 끄기",desc:"안 쓰는 멀티탭 전원을 끄고 대기전력을 줄여요!",tag:"💡 절전",baseParticipants:312,hot:false,missionId:"m14",freqOptions:["daily","w3"]},
+  {id:10,emoji:"🍽️",title:"음식 남김 없이 먹기",desc:"음식을 남기지 않고 다 먹어요! 빈 그릇으로 인증해요.",tag:"🥗 식품",baseParticipants:445,hot:false,missionId:"m15",freqOptions:["daily","w5","w3"]},
+  {id:11,emoji:"🪣",title:"리필스테이션 이용",desc:"세제·샴푸를 리필스테이션에서 리필해요! 플라스틱 용기를 줄여요.",tag:"♻️ 제로웨이스트",baseParticipants:87,hot:false,missionId:"m16",freqOptions:["w1"]},
+  {id:12,emoji:"🌿",title:"비건/채식 식당 방문",desc:"채식·비건 전문 식당을 방문해요! 메뉴판과 함께 인증해요.",tag:"🥗 식품",baseParticipants:163,hot:false,missionId:"m17",freqOptions:["w3","w1"]},
+  {id:13,emoji:"🥤",title:"빨대 없이 음료 마시기",desc:"플라스틱 빨대 없이 음료를 마셔요! 작은 습관이 바다를 살려요.",tag:"🌊 해양",baseParticipants:521,hot:false,missionId:"m18",freqOptions:["daily","w5"]},
+  {id:14,emoji:"🪴",title:"베란다 텃밭/식물 근황",desc:"식물을 키우며 도심 녹지를 만들어요! 오늘의 식물 근황을 찍어요.",tag:"🌿 환경",baseParticipants:276,hot:false,missionId:"m19",freqOptions:["w3","w1"]},
 ];
 
 
@@ -1309,7 +1336,7 @@ const COUNTRIES=[
   {name:"이탈리아",flag:"🇮🇹",x:.50,y:.28,u:960},{name:"스페인",flag:"🇪🇸",x:.45,y:.29,u:890},
   {name:"태국",flag:"🇹🇭",x:.74,y:.43,u:870},{name:"베트남",flag:"🇻🇳",x:.76,y:.44,u:940},
 ];
-const FREQ_OPTIONS=[{id:"daily",label:"매일"},{id:"w5",label:"주 5일"},{id:"w3",label:"주 3일"}];
+const FREQ_OPTIONS=[{id:"daily",label:"매일"},{id:"w5",label:"주 5일"},{id:"w3",label:"주 3일"},{id:"w1",label:"주 1일"}];
 const WEEK_OPTIONS=[{id:1,label:"1주",days:7},{id:2,label:"2주",days:14},{id:4,label:"4주",days:28}];
 
 const BOOKS=[
@@ -1374,7 +1401,7 @@ function renderTodayQuests(uid){
     const el=document.createElement("div");
     el.className="mc"+(doneToday?" done":"");
     el.innerHTML=`
-      <div style="position:absolute;top:6px;right:6px;font-size:9px;font-weight:700;background:var(--g1);color:#fff;padding:1px 5px;border-radius:6px">${ac.freq==="daily"?"매일":ac.freq==="w5"?"주5일":"주3일"}</div>
+      <div style="position:absolute;top:6px;right:6px;font-size:9px;font-weight:700;background:var(--g1);color:#fff;padding:1px 5px;border-radius:6px">${ac.freq==="daily"?"매일":ac.freq==="w5"?"주5일":ac.freq==="w3"?"주3일":"주1일"}</div>
       <div class="mc-emoji">${m.emoji}</div>
       <div class="mc-name">${m.name}</div>
       <div style="font-size:10px;color:var(--sub);margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${ac.challengeTitle}</div>
@@ -1405,7 +1432,7 @@ function renderHomeChalls(){
   w.innerHTML=active.map(ac=>{
     const chal=CHALLENGES.find(c=>c.id===ac.challengeId);
     if(!chal)return"";
-    const freqLabel=ac.freq==="daily"?"매일":ac.freq==="w5"?"주 5일":"주 3일";
+    const freqLabel=ac.freq==="daily"?"매일":ac.freq==="w5"?"주 5일":ac.freq==="w3"?"주 3일":"주 1일";
     return`<div style="background:#fff;border-radius:12px;padding:12px 14px;margin-bottom:8px;border:1.5px solid var(--g1);display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="openChal(${chal.id})">
       <div style="display:flex;align-items:center;gap:10px">
         <span style="font-size:24px">${chal.emoji}</span>
@@ -1490,6 +1517,15 @@ async function doAnalyze(){
     m8:{t:"자전거/도보 완료!",txt:"걸어서 이동하셨네요! 탄소 0의 이동이에요.",s:89},
     m9:{t:"식물 물 주기 완료!",txt:"식물을 잘 가꾸고 계시네요! 도심 녹지에 기여해요.",s:80},
     m10:{t:"절전 모드 완료!",txt:"전자기기 절전 모드 설정 확인됐어요!",s:82},
+    m11:{t:"줍깅 완료!",txt:"쓰레기를 줍고 오셨군요! 동네가 깨끗해졌어요. 진정한 환경 히어로예요!",s:94},
+    m12:{t:"일회용품 거절 인증!",txt:"배달 주문 시 일회용품을 안 받으셨네요! 작은 클릭이 지구를 바꿔요.",s:88},
+    m13:{t:"용기내 챌린지 완료!",txt:"개인 용기를 사용하셨네요! 플라스틱 용기 하나를 줄이셨어요.",s:87},
+    m14:{t:"멀티탭 절전 완료!",txt:"멀티탭 전원을 끄셨네요! 대기전력 절감으로 탄소를 줄이셨어요.",s:83},
+    m15:{t:"클린 플레이트 완료!",txt:"음식을 남기지 않고 다 드셨네요! 음식물 쓰레기 제로예요.",s:90},
+    m16:{t:"리필스테이션 인증!",txt:"리필스테이션을 이용하셨네요! 플라스틱 용기 하나를 아꼈어요.",s:91},
+    m17:{t:"채식 식당 방문 완료!",txt:"채식·비건 식당을 방문하셨군요! 축산업 탄소 감축에 기여하셨어요.",s:89},
+    m18:{t:"노 스트로우 완료!",txt:"빨대 없이 음료를 드셨네요! 플라스틱 빨대 하나를 줄이셨어요.",s:86},
+    m19:{t:"식물 근황 인증!",txt:"베란다 식물이 잘 자라고 있군요! 도심 녹지 조성에 기여하셨어요.",s:84},
   };
   const d=demos[_curM.id]||{t:"미션 인증 완료!",txt:"환경 미션을 잘 수행하셨어요! 지구가 건강해졌어요.",s:85};
   res.className="ai-res ok";
@@ -1754,14 +1790,14 @@ window.shareCert=shareCert;
 let _dep=3000,_freq="w3",_weeks=2;
 function openChal(id){
   const c=CHALLENGES.find(x=>x.id===id);if(!c)return;
-  _dep=3000;_freq="w3";_weeks=2;
+  _dep=3000;_freq=c.freqOptions?c.freqOptions[0]:"w3";_weeks=2;
   renderChalDetail(c);
   openOv("ovChal");
 }
 window.openChal=openChal;
 
 function renderChalDetail(c){
-  const reqDays=_freq==="daily"?_weeks*7:_freq==="w5"?_weeks*5:_weeks*3;
+  const reqDays=_freq==="daily"?_weeks*7:_freq==="w5"?_weeks*5:_freq==="w3"?_weeks*3:_weeks*1;
   const pts=c.baseParticipants+Math.floor(Math.random()*50);
   document.getElementById("chalDetail").innerHTML=`
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
@@ -1775,14 +1811,14 @@ function renderChalDetail(c){
     <div style="font-size:13px;color:var(--sub);margin-bottom:16px;line-height:1.6">${c.desc}</div>
     <div style="font-size:13px;font-weight:700;color:var(--txt);margin-bottom:8px">📅 인증 빈도</div>
     <div style="display:flex;gap:6px;margin-bottom:14px">
-      ${FREQ_OPTIONS.map(f=>`<button class="dep-btn${_freq===f.id?" on":""}" style="flex:1" onclick="selFreq('${f.id}',${c.id})">${f.label}</button>`).join("")}
+      ${FREQ_OPTIONS.filter(f=>c.freqOptions?c.freqOptions.includes(f.id):true).map(f=>`<button class="dep-btn${_freq===f.id?" on":""}" style="flex:1" onclick="selFreq('${f.id}',${c.id})">${f.label}</button>`).join("")}
     </div>
     <div style="font-size:13px;font-weight:700;color:var(--txt);margin-bottom:8px">🗓️ 챌린지 기간</div>
     <div style="display:flex;gap:6px;margin-bottom:14px">
       ${WEEK_OPTIONS.map(w=>`<button class="dep-btn${_weeks===w.id?" on":""}" style="flex:1" onclick="selWeeks(${w.id},${c.id})">${w.label}</button>`).join("")}
     </div>
     <div style="background:#f0fbf4;border-radius:12px;padding:10px 12px;margin-bottom:14px;font-size:12px;color:var(--g2);border:1px solid var(--bdr)">
-      ${_freq==="daily"?"매일":_freq==="w5"?"주 5일":"주 3일"}, ${_weeks}주 동안 · 총 <b>${reqDays}회</b> 인증 필요
+      ${_freq==="daily"?"매일":_freq==="w5"?"주 5일":_freq==="w3"?"주 3일":"주 1일"}, ${_weeks}주 동안 · 총 <b>${reqDays}회</b> 인증 필요
     </div>
     <div style="background:#f0fbf4;border-radius:10px;padding:10px;text-align:center;margin-bottom:12px;font-size:13px;color:var(--g2)">🌱 EcoQuest 챌린지는 무료로 참여할 수 있어요!</div>
     <div class="refund-box">
@@ -1821,7 +1857,7 @@ async function joinChal(title,cid){
     window.UDATA.activeChallenges=newActive;
     renderTodayQuests(user.uid);
     renderHomeChalls();
-    const freqLbl=_freq==="daily"?"매일":_freq==="w5"?"주 5일":"주 3일";
+    const freqLbl=_freq==="daily"?"매일":_freq==="w5"?"주 5일":_freq==="w3"?"주 3일":"주 1일";
     toast(`🎉 "${title}" ${freqLbl} ${_weeks}주 챌린지 시작!`);
   }catch(e){toast("참여 실패: "+e.message);}
 }

@@ -904,6 +904,7 @@ async function loadUser(uid){
       return;
     }
   }
+  await checkFailedChallenges(uid);
   updateUI();
   window.renderTodayQuests&&window.renderTodayQuests(uid);
   window.renderHomeChalls&&window.renderHomeChalls();
@@ -1015,50 +1016,50 @@ window.loadFeed=async()=>{
   w.innerHTML='<div style="text-align:center;padding:16px;color:var(--sub);font-size:12px">로딩 중...</div>';
   try{
     const snap=await window.FB.getDocs(window.FB.collection(window.FB.db,"verifications"));
-    const items=snap.docs.map(d=>({id:d.id,...d.data()})).filter(d=>d.isPublic).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0)).slice(0,30);
+    const items=snap.docs.map(d=>({id:d.id,...d.data()})).filter(d=>d.isPublic).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
     if(!items.length){
       w.innerHTML='<div style="text-align:center;padding:20px;color:var(--sub);font-size:13px">아직 공개 인증샷이 없어요!<br/>첫 번째 인증샷을 올려봐요 🌱</div>';
       return;
     }
-
-    // uid 중복 제거 후 닉네임 일괄 조회
     const uids=[...new Set(items.map(v=>v.uid).filter(Boolean))];
     const nicknameMap={};
     await Promise.all(uids.map(async uid=>{
       try{
         const usnap=await window.FB.getDoc(window.FB.doc(window.FB.db,"users",uid));
-        if(usnap.exists()){
-          const d=usnap.data();
-          nicknameMap[uid]=d.nickname||d.userName||"익명";
-        }
+        if(usnap.exists()){const d=usnap.data();nicknameMap[uid]=d.nickname||d.userName||"익명";}
       }catch(e){}
     }));
-
-    // 3열 그리드
-    w.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px">
-      ${items.map(v=>`
-        <div onclick="openFeedDetail('${v.id}')" style="position:relative;aspect-ratio:1;background:#f0f0f0;cursor:pointer;border-radius:4px;overflow:hidden">
-          ${v.thumb
-            ?`<img src="${v.thumb}" style="width:100%;height:100%;object-fit:cover"/>`
-            :`<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:32px;background:linear-gradient(135deg,#f0fbf4,#e8f5e9)">${v.missionEmoji}</div>`
-          }
-          <div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.55));padding:4px 5px">
-            <div style="font-size:9px;color:#fff;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${v.missionEmoji} ${v.missionName}</div>
-          </div>
-          ${v.comment?`<div style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,.5);border-radius:6px;padding:1px 5px;font-size:9px;color:#fff">💬</div>`:''}
-        </div>`).join("")}
-    </div>`;
-
-    // 닉네임 맵 포함해서 저장 (기존 기록도 닉네임으로 덮어씌움)
+    window._allFeedItems=items;
+    window._feedNicknameMap=nicknameMap;
+    window._feedPage=0;
     window._feedItems={};
-    items.forEach(v=>{
-      window._feedItems[v.id]={
-        ...v,
-        userName: nicknameMap[v.uid]||v.userName||"익명"
-      };
-    });
+    renderFeedGrid(w);
   }catch(e){w.innerHTML='<div style="text-align:center;padding:16px;color:var(--sub);font-size:12px">불러오기 실패</div>';}
 };
+
+function renderFeedGrid(w){
+  if(!w)w=document.getElementById("feedList");if(!w)return;
+  const all=window._allFeedItems||[];
+  const page=window._feedPage||0;
+  const shown=all.slice(0,(page+1)*9);
+  const hasMore=all.length>shown.length;
+  shown.forEach(v=>{
+    window._feedItems[v.id]={...v,userName:(window._feedNicknameMap||{})[v.uid]||v.userName||"익명"};
+  });
+  w.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px">
+    ${shown.map(v=>`
+      <div onclick="openFeedDetail('${v.id}')" style="position:relative;aspect-ratio:1;background:#f0f0f0;cursor:pointer;border-radius:4px;overflow:hidden">
+        ${v.thumb?`<img src="${v.thumb}" style="width:100%;height:100%;object-fit:cover"/>`:`<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:32px;background:linear-gradient(135deg,#f0fbf4,#e8f5e9)">${v.missionEmoji}</div>`}
+        <div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.55));padding:4px 5px">
+          <div style="font-size:9px;color:#fff;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${v.missionEmoji} ${v.missionName}</div>
+        </div>
+        ${v.comment?`<div style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,.5);border-radius:6px;padding:1px 5px;font-size:9px;color:#fff">💬</div>`:''}
+      </div>`).join("")}
+  </div>
+  ${hasMore?`<button onclick="loadMoreFeed()" style="width:100%;margin-top:10px;padding:10px;background:#f0fbf4;border:1.5px solid var(--bdr);border-radius:12px;font-size:13px;font-weight:700;color:var(--g2);cursor:pointer;font-family:inherit">더보기 (${all.length-shown.length}개 더) ↓</button>`:''}`;
+}
+window.renderFeedGrid=renderFeedGrid;
+window.loadMoreFeed=()=>{window._feedPage=(window._feedPage||0)+1;renderFeedGrid();};
 
 function openFeedDetail(id){
   const v=window._feedItems?.[id];
@@ -1375,9 +1376,10 @@ window.setCTab=setCTab;
 function renderTodayQuests(uid){
   const wrap=document.getElementById("missionScroll");
   wrap.innerHTML="";
+  const validMissionIds=CHALLENGES.map(c=>c.missionId);
   const active=(window.UDATA?.activeChallenges||[]).filter(ac=>{
     const today=new Date().toISOString().split("T")[0];
-    return !ac.endDate||ac.endDate>=today;
+    return (!ac.endDate||ac.endDate>=today)&&validMissionIds.includes(ac.missionId);
   });
   if(!active.length){
     wrap.innerHTML=`<div style="width:100%;padding:8px 4px">
@@ -1421,7 +1423,8 @@ window.renderTodayQuests=renderTodayQuests;
 
 function renderHomeChalls(){
   const w=document.getElementById("homeChallList");
-  const active=window.UDATA?.activeChallenges||[];
+  const validMissionIds=CHALLENGES.map(c=>c.missionId);
+  const active=(window.UDATA?.activeChallenges||[]).filter(ac=>validMissionIds.includes(ac.missionId));
   if(!active.length){
     w.innerHTML=`<div style="text-align:center;padding:20px;color:var(--sub);font-size:13px">
       참여 중인 챌린지가 없어요!<br/>
@@ -1433,15 +1436,28 @@ function renderHomeChalls(){
     const chal=CHALLENGES.find(c=>c.id===ac.challengeId);
     if(!chal)return"";
     const freqLabel=ac.freq==="daily"?"매일":ac.freq==="w5"?"주 5일":ac.freq==="w3"?"주 3일":"주 1일";
-    return`<div style="background:#fff;border-radius:12px;padding:12px 14px;margin-bottom:8px;border:1.5px solid var(--g1);display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="openChal(${chal.id})">
-      <div style="display:flex;align-items:center;gap:10px">
-        <span style="font-size:24px">${chal.emoji}</span>
-        <div>
-          <div style="font-size:13px;font-weight:700;color:var(--txt)">${chal.title}</div>
-          <div style="font-size:11px;color:var(--sub);margin-top:2px">${freqLabel} · ${ac.weeks}주</div>
+    const totalNeeded=ac.freq==="daily"?ac.weeks*7:ac.freq==="w5"?ac.weeks*5:ac.freq==="w3"?ac.weeks*3:ac.weeks*1;
+    const completed=(window.UDATA?.completedDates||{})[ac.challengeId]||0;
+    const pct=Math.min(100,Math.floor(completed/totalNeeded*100));
+    const daysLeft=ac.endDate?Math.max(0,Math.ceil((new Date(ac.endDate)-new Date())/(86400000))):"?";
+    return`<div style="background:#fff;border-radius:12px;padding:12px 14px;margin-bottom:8px;border:1.5px solid var(--g1)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;cursor:pointer" onclick="openChal(${chal.id})">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:24px">${chal.emoji}</span>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--txt)">${chal.title}</div>
+            <div style="font-size:11px;color:var(--sub);margin-top:2px">${freqLabel} · ${ac.weeks}주 · ${daysLeft}일 남음</div>
+          </div>
         </div>
+        <span style="background:#e8f5e9;color:var(--g2);font-size:11px;font-weight:700;padding:3px 8px;border-radius:10px">${completed}/${totalNeeded}</span>
       </div>
-      <span style="background:#e8f5e9;color:var(--g2);font-size:11px;font-weight:700;padding:3px 8px;border-radius:10px">참여중</span>
+      <div style="background:#e0f2e7;border-radius:6px;height:6px;overflow:hidden;margin-bottom:8px">
+        <div style="width:${pct}%;background:linear-gradient(90deg,var(--g1),var(--acc));height:100%;border-radius:6px;transition:width .5s"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:11px;color:var(--sub)">${pct}% 달성</span>
+        <button onclick="event.stopPropagation();cancelChal(${ac.challengeId})" style="background:#fff0f0;color:var(--red);border:none;border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">취소</button>
+      </div>
     </div>`;
   }).join("");
 }
@@ -1563,6 +1579,25 @@ async function doComplete(){
       cd[_curChalId]=(cd[_curChalId]||0)+1;
       window.UDATA.verifiedDates=vd;window.UDATA.completedDates=cd;
       await window.FB.updateDoc(window.FB.doc(window.FB.db,"users",_curUid),{verifiedDates:vd,completedDates:cd});
+      // 완주 보너스 체크
+      const ac=(window.UDATA.activeChallenges||[]).find(a=>a.challengeId===_curChalId);
+      if(ac){
+        const totalN=ac.freq==="daily"?ac.weeks*7:ac.freq==="w5"?ac.weeks*5:ac.freq==="w3"?ac.weeks*3:ac.weeks*1;
+        const doneN=(window.UDATA.completedDates||{})[_curChalId]||0;
+        const alreadyBonus=(window.UDATA.chalBonusGranted||{})[_curChalId];
+        if(doneN>=totalN&&!alreadyBonus){
+          const earnedPts=doneN*_curM.point;
+          const bonus=Math.round(earnedPts*0.03);
+          if(bonus>0){
+            const newP=(window.UDATA.point||0)+bonus;
+            await window.FB.updateDoc(window.FB.doc(window.FB.db,"users",_curUid),{point:newP,[`chalBonusGranted.${_curChalId}`]:true});
+            window.UDATA.point=newP;
+            window.UDATA.chalBonusGranted={...(window.UDATA.chalBonusGranted||{}),[_curChalId]:true};
+            updateUI();
+            setTimeout(()=>toast(`🏆 챌린지 완주! 보너스 +${bonus}P 지급!`),600);
+          }
+        }
+      }
     }
     const comment=document.getElementById("verifComment")?.value?.trim()||"";
     if(_b64)await window.saveVerification(_curUid,_curM,_b64,_verifPub,comment);
@@ -1578,21 +1613,31 @@ async function doComplete(){
 }
 window.doComplete=doComplete;
 
-function renderOfficialChallenges(){
+async function renderOfficialChallenges(){
   const grid=document.getElementById("officialGrid");
   grid.innerHTML=CHALLENGES.map(c=>`
     <div class="cg-card" onclick="openChal(${c.id})">
       <div class="cg-img">
         ${c.emoji}
         <span class="official-tag">공식챌린지</span>
-        <span class="cg-cnt">👥 ${c.baseParticipants.toLocaleString()}명</span>
+        <span class="cg-cnt" id="chal-cnt-${c.id}">👥 ${c.baseParticipants.toLocaleString()}명</span>
         ${c.hot?'<span class="hot-badge">HOT</span>':""}
       </div>
       <div class="cg-body">
         <div class="cg-title">${c.title}</div>
-        <div class="cg-meta">주 3일~ · AI인증</div>
+        <div class="cg-meta">${c.freqOptions?.[0]==="daily"?"매일":c.freqOptions?.[0]==="w1"?"주 1회":"주 3일~"} · AI인증</div>
       </div>
     </div>`).join("");
+  try{
+    const snap=await window.FB.getDoc(window.FB.doc(window.FB.db,"stats","challenges"));
+    if(snap.exists()){
+      const counts=snap.data();
+      CHALLENGES.forEach(c=>{
+        const el=document.getElementById(`chal-cnt-${c.id}`);
+        if(el){const total=(counts[`c${c.id}`]||0)+c.baseParticipants;el.textContent=`👥 ${total.toLocaleString()}명`;}
+      });
+    }
+  }catch(e){}
 }
 window.renderOfficialChallenges=renderOfficialChallenges;
 
@@ -1858,7 +1903,9 @@ async function joinChal(title,cid){
     renderTodayQuests(user.uid);
     renderHomeChalls();
     const freqLbl=_freq==="daily"?"매일":_freq==="w5"?"주 5일":_freq==="w3"?"주 3일":"주 1일";
+    try{await window.FB.setDoc(window.FB.doc(window.FB.db,"stats","challenges"),{[`c${cid}`]:window.FB.increment(1)},{merge:true});}catch(e){}
     toast(`🎉 "${title}" ${freqLbl} ${_weeks}주 챌린지 시작!`);
+    renderOfficialChallenges();
   }catch(e){toast("참여 실패: "+e.message);}
 }
 window.joinChal=joinChal;
@@ -2392,6 +2439,62 @@ window.exportCSV=()=>{
   a.click();
   toast("✅ CSV 다운로드 완료!");
 };
+
+// ── 챌린지 취소 ──
+window.cancelChal=async(challengeId)=>{
+  const ac=(window.UDATA?.activeChallenges||[]).find(a=>a.challengeId===challengeId);
+  if(!ac||!window.ME)return;
+  const m=MISSIONS.find(x=>x.id===ac.missionId);
+  const completed=(window.UDATA?.completedDates||{})[challengeId]||0;
+  const earnedPts=m?completed*m.point:0;
+  const penalty=Math.round(earnedPts*0.2);
+  const msg=penalty>0
+    ?`챌린지를 취소할까요?\n지금까지 획득한 포인트의 20% (-${penalty}P)가 차감돼요.`
+    :"챌린지를 취소할까요?";
+  if(!confirm(msg))return;
+  const newActive=(window.UDATA.activeChallenges||[]).filter(a=>a.challengeId!==challengeId);
+  const newPoint=Math.max(0,(window.UDATA.point||0)-penalty);
+  try{
+    await window.FB.updateDoc(window.FB.doc(window.FB.db,"users",window.ME.uid),{activeChallenges:newActive,point:newPoint});
+    window.UDATA.activeChallenges=newActive;
+    window.UDATA.point=newPoint;
+    updateUI();renderHomeChalls();renderTodayQuests(window.ME.uid);
+    toast(penalty>0?`챌린지 취소됐어요. -${penalty}P 차감.`:"챌린지 취소됐어요!");
+  }catch(e){toast("취소 실패: "+e.message);}
+};
+
+// ── 실패 챌린지 자동 감지 (앱 로드 시) ──
+async function checkFailedChallenges(uid){
+  const today=new Date().toISOString().split("T")[0];
+  const active=window.UDATA?.activeChallenges||[];
+  const failed=active.filter(ac=>ac.endDate&&ac.endDate<today);
+  if(!failed.length)return;
+  const remaining=active.filter(ac=>!ac.endDate||ac.endDate>=today);
+  let totalPenalty=0;
+  const failedNames=[];
+  failed.forEach(ac=>{
+    const m=MISSIONS.find(x=>x.id===ac.missionId);if(!m)return;
+    const totalNeeded=ac.freq==="daily"?ac.weeks*7:ac.freq==="w5"?ac.weeks*5:ac.freq==="w3"?ac.weeks*3:ac.weeks*1;
+    const done=(window.UDATA.completedDates||{})[ac.challengeId]||0;
+    if(done<totalNeeded){
+      const penalty=Math.round(done*m.point*0.2);
+      totalPenalty+=penalty;
+      failedNames.push(ac.challengeTitle||"챌린지");
+    }
+  });
+  const newPoint=Math.max(0,(window.UDATA.point||0)-totalPenalty);
+  try{
+    await window.FB.updateDoc(window.FB.doc(window.FB.db,"users",uid),{activeChallenges:remaining,point:newPoint});
+    window.UDATA.activeChallenges=remaining;
+    window.UDATA.point=newPoint;
+    updateUI();
+    if(failedNames.length){
+      const names=failedNames.slice(0,2).join(", ")+(failedNames.length>2?` 외 ${failedNames.length-2}개`:"");
+      toast(`⚠️ "${names}" 완주 실패. -${totalPenalty}P 차감됐어요.`);
+    }
+  }catch(e){}
+}
+window.checkFailedChallenges=checkFailedChallenges;
 
 function openOv(id){document.getElementById(id).classList.add("on");}
 function closeOv(id){document.getElementById(id).classList.remove("on");}

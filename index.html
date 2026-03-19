@@ -182,7 +182,6 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
 .admin-tab.on{background:#1a1a2e;color:#fff;border-color:#1a1a2e}
 .admin-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f0f0f0}
 .admin-row:last-child{border:none}
-/* 내활동 탭 스타일 */
 .act-top{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:12px}
 .act-card{background:#fff;border-radius:14px;padding:12px;text-align:center;border:1px solid var(--bdr);box-shadow:0 2px 8px rgba(0,0,0,.04)}
 .act-num{font-size:20px;font-weight:900;color:var(--g2)}
@@ -193,10 +192,8 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
 </head>
 <body>
 
-<!-- 로딩 -->
 <div id="loading"><div class="spin">🌍</div><p style="margin-top:12px;color:var(--sub);font-size:13px">잠시만요...</p></div>
 
-<!-- 로그인 -->
 <div id="loginScreen">
   <div class="login-earth">🌍</div>
   <div class="login-title">EcoQuest</div>
@@ -208,7 +205,6 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
   <p style="color:rgba(255,255,255,.5);font-size:11px;margin-top:20px;text-align:center">로그인하면 미션 기록이 저장되고<br/>전 세계 참여자와 함께할 수 있어요 🌱</p>
 </div>
 
-<!-- 앱 -->
 <div id="app">
   <div class="hdr">
     <div class="hdr-row">
@@ -222,20 +218,16 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
     </div>
   </div>
 
-  <!-- 홈 -->
   <div class="page on" id="page-home">
-    <!-- 1. EcoQuest 현황 (최상단) -->
     <div class="earth-banner" style="margin-top:12px">
       <div class="eb-title">🌍 EcoQuest 현황</div>
       <div class="eb-stats">
         <div class="ebs"><div class="ebs-n" id="bToday">0</div><div class="ebs-l">오늘 참여자</div></div>
         <div class="ebs"><div class="ebs-n" id="bTotal">0</div><div class="ebs-l">누적 참여자</div></div>
         <div class="ebs"><div class="ebs-n" id="bCo2">0t</div><div class="ebs-l">CO₂ 절감</div></div>
-
       </div>
     </div>
 
-    <!-- 2. 내 카드 -->
     <div class="stat-card">
       <div class="stat-row">
         <div class="stat-name" id="sName">🌱 지구지킴이</div>
@@ -253,18 +245,15 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
       </div>
     </div>
 
-    <!-- 3. 오늘의 미션 -->
     <div class="sec"><div class="sec-t">⚡ 오늘의 미션 <span style="background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:6px;">🤖 AI인증</span></div></div>
     <div class="mscroll" id="missionScroll"></div>
 
-    <!-- 4. 참여 중인 챌린지 -->
     <div class="sec">
       <div class="sec-t">🏆 참여 중인 챌린지</div>
       <div class="sec-m" id="goChal">전체보기 ›</div>
     </div>
     <div id="homeChallList" style="padding:0 12px"></div>
 
-    <!-- 5. 서울/인천 공공데이터 -->
     <div id="seoulDataBanner" style="margin:4px 12px 0;border-radius:16px;overflow:hidden">
       <div id="airCard" style="background:linear-gradient(135deg,#1a6b3a,#2ECC71);border-radius:16px;padding:14px 16px;color:#fff;margin-bottom:8px;position:relative;overflow:hidden">
         <div style="position:absolute;right:-8px;top:-8px;font-size:60px;opacity:.15">🌫️</div>
@@ -312,7 +301,6 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
       </div>
     </div>
 
-    <!-- 6. 인증 피드 -->
     <div class="sec">
       <div class="sec-t">📸 인증 피드</div>
       <div class="sec-m" onclick="window.loadFeed&&window.loadFeed()">새로고침</div>
@@ -320,7 +308,6 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
     <div id="feedList" style="padding:0 12px 12px"></div>
   </div>
 
-  <!-- 챌린지 -->
   <div class="page" id="page-chal">
     <div class="ctabs">
       <button class="ctab on" id="ctab-official" onclick="setCTab('official')">🏅 공식 챌린지</button>
@@ -353,9 +340,7 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
     </div>
   </div>
 
-  <!-- 지도 -->
   <div class="page" id="page-map">
-    <!-- 상단 요약 -->
     <div style="margin:12px;background:linear-gradient(135deg,#0f3d20,#1a6b3a);border-radius:16px;padding:16px;color:#fff;text-align:center">
       <div style="font-size:14px;font-weight:700;color:rgba(255,255,255,.8);margin-bottom:4px">🌍 EcoQuest 숲</div>
       <div style="font-size:13px;color:rgba(255,255,255,.7);margin-bottom:12px">우리가 함께 만든 탄소 절감 기록</div>
@@ -375,21 +360,15 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
       </div>
     </div>
 
-    <!-- 나무 숲 시각화 -->
     <div style="margin:0 12px 12px;background:linear-gradient(180deg,#87CEEB 0%,#87CEEB 45%,#90EE90 45%,#228B22 100%);border-radius:16px;padding:20px 16px 16px;position:relative;overflow:hidden;min-height:220px">
-      <!-- 하늘 구름 -->
       <div style="position:absolute;top:10px;left:20px;font-size:28px;opacity:.7;animation:float 4s ease-in-out infinite">☁️</div>
       <div style="position:absolute;top:6px;right:30px;font-size:20px;opacity:.6;animation:float 6s ease-in-out infinite">☁️</div>
       <div style="position:absolute;top:18px;left:50%;font-size:16px;opacity:.5;animation:float 5s ease-in-out infinite">☁️</div>
-      <!-- 태양 -->
       <div style="position:absolute;top:8px;right:16px;font-size:32px">☀️</div>
-      <!-- 나무들 -->
       <div id="forestGrid" style="display:flex;flex-wrap:wrap;gap:4px;justify-content:center;align-items:flex-end;min-height:120px;padding-top:40px"></div>
-      <!-- 땅 텍스트 -->
       <div style="text-align:center;font-size:11px;color:#fff;margin-top:8px;font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,.4)" id="forestMsg">나무를 심는 중...</div>
     </div>
 
-    <!-- 성장 단계 안내 -->
     <div style="margin:0 12px 12px;background:#fff;border-radius:14px;padding:14px;border:1px solid var(--bdr)">
       <div style="font-size:13px;font-weight:900;color:var(--txt);margin-bottom:10px">🌱 나무 성장 단계</div>
       <div style="display:flex;justify-content:space-between;text-align:center">
@@ -405,7 +384,6 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
       </div>
     </div>
 
-    <!-- 내 나무 -->
     <div style="margin:0 12px 12px;background:linear-gradient(135deg,#f0fbf4,#e8f5e9);border-radius:14px;padding:14px;border:1.5px solid var(--g1)">
       <div style="font-size:13px;font-weight:900;color:var(--txt);margin-bottom:8px">🌳 내가 심은 나무</div>
       <div style="display:flex;align-items:center;gap:12px">
@@ -420,26 +398,15 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
       </div>
     </div>
 
-    <!-- 상위 기여자 -->
     <div class="sec"><div class="sec-t">🏆 TOP 기여자</div></div>
     <div id="topContrib" style="padding:0 12px 20px"></div>
   </div>
 
-  <!-- 내활동 탭 -->
   <div class="page" id="page-activity">
     <div class="act-top">
-      <div class="act-card">
-        <div class="act-num" id="actCo2">0kg</div>
-        <div class="act-lbl">CO₂ 절감</div>
-      </div>
-      <div class="act-card">
-        <div class="act-num" id="actTree">0</div>
-        <div class="act-lbl">나무 그루</div>
-      </div>
-      <div class="act-card">
-        <div class="act-num" id="actMission">0</div>
-        <div class="act-lbl">완료 미션</div>
-      </div>
+      <div class="act-card"><div class="act-num" id="actCo2">0kg</div><div class="act-lbl">CO₂ 절감</div></div>
+      <div class="act-card"><div class="act-num" id="actTree">0</div><div class="act-lbl">나무 그루</div></div>
+      <div class="act-card"><div class="act-num" id="actMission">0</div><div class="act-lbl">완료 미션</div></div>
     </div>
     <div class="analogy-card">
       <div style="font-size:36px;margin-bottom:8px" id="analogyEmoji">🌱</div>
@@ -458,7 +425,6 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
     <div id="missionChart" style="padding:0 12px 20px"></div>
   </div>
 
-  <!-- 샵 -->
   <div class="page" id="page-shop">
     <div style="background:#f0fbf4;margin:12px;border-radius:12px;padding:10px 14px;border:1px solid var(--bdr)">
       <span style="font-size:12px;color:var(--sub)">내 포인트: </span>
@@ -468,7 +434,6 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
     <div id="bookList"></div>
   </div>
 
-  <!-- 마이 -->
   <div class="page" id="page-my">
     <div class="stat-card" style="margin-top:12px">
       <div class="stat-row">
@@ -497,7 +462,6 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
     </div>
   </div>
 
-  <!-- 관리자 전체 페이지 -->
   <div id="adminPage" style="display:none;position:fixed;inset:0;background:#f5f5f5;z-index:500;overflow-y:auto;padding-bottom:60px;max-width:480px;left:50%;transform:translateX(-50%)">
     <div style="background:linear-gradient(135deg,#1a1a2e,#16213e);padding:16px;position:sticky;top:0;z-index:10;box-shadow:0 2px 10px rgba(0,0,0,.3)">
       <div style="display:flex;align-items:center;justify-content:space-between">
@@ -508,17 +472,13 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
         <button onclick="closeAdmin()" style="background:rgba(255,255,255,.15);border:none;border-radius:10px;padding:6px 14px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">← 앱으로</button>
       </div>
     </div>
-
     <div style="padding:12px">
-      <!-- 탭 -->
       <div style="display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px">
         <button class="admin-tab on" onclick="setAdminTab('orders',this)">📦 주문</button>
         <button class="admin-tab" onclick="setAdminTab('users',this)">👥 회원</button>
         <button class="admin-tab" onclick="setAdminTab('missions',this)">🏃 미션</button>
         <button class="admin-tab" onclick="setAdminTab('stats',this)">📊 통계</button>
       </div>
-
-      <!-- 주문 관리 -->
       <div id="admin-orders">
         <div style="display:flex;gap:8px;margin-bottom:10px">
           <select id="orderFilter" onchange="filterAdminOrders()" style="flex:1;border:1px solid #ddd;border-radius:10px;padding:8px 10px;font-size:13px;font-family:inherit;background:#fff">
@@ -530,8 +490,6 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
         </div>
         <div id="adminOrderList"><div style="text-align:center;padding:20px;color:#aaa">로딩 중...</div></div>
       </div>
-
-      <!-- 회원 관리 -->
       <div id="admin-users" style="display:none">
         <div style="display:flex;gap:8px;margin-bottom:10px">
           <input id="userSearchInp" placeholder="이름 검색" style="flex:1;border:1px solid #ddd;border-radius:10px;padding:8px 10px;font-size:13px;font-family:inherit;background:#fff"/>
@@ -540,20 +498,14 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
         <button onclick="loadAllUsers()" style="width:100%;background:#f0f0f0;border:none;border-radius:10px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:10px;color:#333">전체 회원 불러오기</button>
         <div id="adminUserList"><div style="text-align:center;padding:20px;color:#aaa">위 버튼을 눌러주세요</div></div>
       </div>
-
-      <!-- 미션 로그 -->
       <div id="admin-missions" style="display:none">
         <button onclick="loadMissionLogs()" style="width:100%;background:var(--g1);color:#fff;border:none;border-radius:10px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:10px">미션 로그 불러오기</button>
         <div id="adminMissionList"><div style="text-align:center;padding:20px;color:#aaa">로딩 중...</div></div>
       </div>
-
-      <!-- 통계 -->
       <div id="admin-stats" style="display:none">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px" id="adminStatCards">
           <div style="text-align:center;padding:20px;color:#aaa;grid-column:span 2">로딩 중...</div>
         </div>
-
-        <!-- B2B 데이터 리포트 -->
         <div style="background:#fff;border-radius:14px;padding:14px;border:1px solid #eee;margin-bottom:10px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
             <div style="font-size:14px;font-weight:900">📊 B2B 데이터 리포트</div>
@@ -561,14 +513,10 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
           </div>
           <div id="b2bReport"><div style="color:#aaa;font-size:13px">통계 탭 클릭 후 로딩</div></div>
         </div>
-
-        <!-- 나이대/지역 분포 -->
         <div style="background:#fff;border-radius:14px;padding:14px;border:1px solid #eee;margin-bottom:10px">
           <div style="font-size:14px;font-weight:900;margin-bottom:10px">👥 사용자 분포</div>
           <canvas id="adminChart" height="140"></canvas>
         </div>
-
-        <!-- 시간대별 활동 -->
         <div style="background:#fff;border-radius:14px;padding:14px;border:1px solid #eee">
           <div style="font-size:14px;font-weight:900;margin-bottom:10px">⏰ 시간대별 미션</div>
           <div id="timeDistChart"></div>
@@ -577,7 +525,6 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
     </div>
   </div>
 
-  <!-- 하단 탭 바 -->
   <div class="tab-bar">
     <button class="tb on" data-page="home" onclick="goPage('home')"><span class="ic">🏠</span>홈</button>
     <button class="tb" data-page="chal" onclick="goPage('chal')"><span class="ic">🏆</span>챌린지</button>
@@ -592,14 +539,10 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
   <div class="modal">
     <div class="modal-title">🌍 EcoQuest 시작하기!</div>
     <div class="modal-desc">맞춤 미션 추천을 위해 정보를 알려주세요.<br/><span style="font-size:11px;color:#aaa">입력하신 정보는 환경 연구 및 서비스 개선에 활용돼요</span></div>
-
-    <!-- 닉네임 -->
     <div class="form-group">
       <label>닉네임 <span style="color:var(--red)">*</span></label>
       <input class="inp" id="nicknameInp" placeholder="예) 지구지킴이루챠매" maxlength="12"/>
     </div>
-
-    <!-- 성별 -->
     <div class="form-group">
       <label>성별</label>
       <div style="display:flex;gap:6px" id="genderSelect">
@@ -608,8 +551,6 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
         <button class="dep-btn" style="flex:1" onclick="selOnboard('gender','기타',this,'genderSelect')">기타</button>
       </div>
     </div>
-
-    <!-- 나이대 -->
     <div class="form-group">
       <label>나이대</label>
       <div style="display:flex;gap:6px;flex-wrap:wrap" id="ageSelect">
@@ -620,8 +561,6 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
         <button class="dep-btn" onclick="selOnboard('age','50대+',this,'ageSelect')">50대+</button>
       </div>
     </div>
-
-    <!-- 지역 -->
     <div class="form-group">
       <label>지역</label>
       <select class="sel" id="regionSelect">
@@ -663,8 +602,6 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
         </optgroup>
       </select>
     </div>
-
-    <!-- 직업 -->
     <div class="form-group">
       <label>직업</label>
       <div style="display:flex;gap:6px;flex-wrap:wrap" id="jobSelect">
@@ -675,8 +612,6 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
         <button class="dep-btn" onclick="selOnboard('job','기타',this,'jobSelect')">기타</button>
       </div>
     </div>
-
-    <!-- 자동차 보유 -->
     <div class="form-group">
       <label>자동차 보유</label>
       <div style="display:flex;gap:6px" id="carSelect">
@@ -684,8 +619,6 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
         <button class="dep-btn" style="flex:1" onclick="selOnboard('hasCar','없음',this,'carSelect')">🚶 없음</button>
       </div>
     </div>
-
-    <!-- 가구 형태 -->
     <div class="form-group">
       <label>가구 형태</label>
       <div style="display:flex;gap:6px;flex-wrap:wrap" id="householdSelect">
@@ -695,8 +628,6 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
         <button class="dep-btn" onclick="selOnboard('household','5인+',this,'householdSelect')">5인+</button>
       </div>
     </div>
-
-    <!-- 환경 관심도 -->
     <div class="form-group">
       <label>평소 환경에 관심 정도</label>
       <div style="display:flex;gap:6px" id="ecoLevelSelect">
@@ -705,8 +636,6 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
         <button class="dep-btn" style="flex:1" onclick="selOnboard('ecoLevel','관심많음',this,'ecoLevelSelect')">🌍 관심많음</button>
       </div>
     </div>
-
-    <!-- 관심 환경 분야 -->
     <div class="form-group">
       <label>관심 환경 분야 (복수 선택)</label>
       <div style="display:flex;gap:6px;flex-wrap:wrap" id="interestSelect">
@@ -720,7 +649,6 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
         <button class="dep-btn" onclick="toggleInterest('업사이클링',this)">🎨 업사이클링</button>
       </div>
     </div>
-
     <button class="btn btn-g" onclick="saveOnboard()">시작하기! 🌱</button>
   </div>
 </div>
@@ -768,7 +696,6 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
   </div>
 </div>
 
-<!-- 챌린지 상세 모달 -->
 <div class="overlay" id="ovChal">
   <div class="modal">
     <div class="handle" onclick="closeOv('ovChal')"></div>
@@ -776,7 +703,6 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
   </div>
 </div>
 
-<!-- 방 만들기 모달 -->
 <div class="overlay" id="ovRoom">
   <div class="modal">
     <div class="handle" onclick="closeOv('ovRoom')"></div>
@@ -819,7 +745,6 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
   </div>
 </div>
 
-<!-- 책 구매 모달 -->
 <div class="overlay" id="ovBuy">
   <div class="modal">
     <div class="handle" onclick="closeOv('ovBuy')"></div>
@@ -828,7 +753,6 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
   </div>
 </div>
 
-<!-- 피드 상세 모달 -->
 <div class="overlay" id="ovFeedDetail">
   <div class="modal">
     <div class="handle" onclick="closeOv('ovFeedDetail')"></div>
@@ -837,7 +761,6 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
   </div>
 </div>
 
-<!-- 증명서 모달 -->
 <div class="overlay" id="ovCert">
   <div class="modal">
     <div class="handle" onclick="closeOv('ovCert')"></div>
@@ -874,22 +797,18 @@ document.getElementById("btnLogin").onclick=async()=>{
     if(e.code==="auth/popup-blocked"||e.code==="auth/popup-closed-by-user"){
       toast("팝업이 차단됐어요. 브라우저에서 팝업을 허용해주세요!");
     }else if(e.code==="auth/cancelled-popup-request"){
-      // 무시
     }else{
       toast("로그인 실패: "+e.message);
     }
   }
 };
 
-// 리다이렉트 결과 먼저 처리 — 모바일 로그인 복귀 시
 let _redirectHandled = false;
 getRedirectResult(auth).then(result=>{
   _redirectHandled = true;
   if(result?.user){
     console.log("리디렉트 로그인 성공:",result.user.displayName);
-    // onAuthStateChanged가 자동으로 처리함
   } else {
-    // 리다이렉트 결과 없음 → 타임아웃 시작
     _startLoginTimeout();
   }
 }).catch(e=>{
@@ -899,14 +818,13 @@ getRedirectResult(auth).then(result=>{
 });
 
 function _startLoginTimeout(){
-  // 리다이렉트 복귀가 아닌 경우에만 타임아웃 적용
   setTimeout(()=>{
     const loading=document.getElementById("loading");
     if(loading&&loading.style.display!=="none"){
       loading.style.display="none";
       document.getElementById("loginScreen").style.display="flex";
     }
-  },5000); // 5초로 늘림
+  },5000);
 }
 
 document.getElementById("btnLogout").onclick=async()=>{
@@ -918,7 +836,6 @@ onAuthStateChanged(auth,async user=>{
   if(user){
     window.ME=user;
     document.getElementById("loginScreen").style.display="none";
-    // 앱은 일단 숨김 — 온보딩 완료 후 showApp()에서 표시
     const n=user.displayName?.split(" ")[0]||"지구지킴이";
     document.getElementById("uName").textContent=n;
     document.getElementById("sName").textContent="🌱 "+n;
@@ -930,7 +847,6 @@ onAuthStateChanged(auth,async user=>{
     renderBooks();
     renderOfficialChallenges();
     drawMap();
-    // 공공데이터는 showApp() 내부에서 호출됨
   }else{
     window.ME=null;
     document.getElementById("loginScreen").style.display="flex";
@@ -946,11 +862,11 @@ async function loadGlobalStats(){
       const t=d.totalUsers||0,td=d.todayUsers||0,co2=Math.round((d.totalCo2||0)*100)/100;
       document.getElementById("bToday").textContent=td.toLocaleString();
       document.getElementById("bTotal").textContent=t.toLocaleString();
-      document.getElementById("mapTotal").textContent=t>0?t.toLocaleString():"24,810";
+      document.getElementById("mapTotal")&&(document.getElementById("mapTotal").textContent=t>0?t.toLocaleString():"24,810");
       const co2r=Math.round(co2*100)/100;
       const c=co2r>=1000?(co2r/1000).toFixed(1)+"t":co2r.toFixed(1)+"kg";
       document.getElementById("bCo2").textContent=c;
-      document.getElementById("mapCo2").textContent=c;
+      document.getElementById("mapCo2")&&(document.getElementById("mapCo2").textContent=c);
     }
   }catch(e){}
 }
@@ -963,7 +879,6 @@ async function loadUser(uid){
     await window.FB.setDoc(ref,{point:0,missionCount:0,streak:0,doneMissions:[],co2:0,todayMissions:[],activeChallenges:[],createdAt:window.FB.serverTimestamp()});
     window.UDATA={point:0,missionCount:0,streak:0,doneMissions:[],co2:0,todayMissions:[],activeChallenges:[]};
     try{await window.FB.setDoc(window.FB.doc(window.FB.db,"stats","global"),{totalUsers:window.FB.increment(1),todayUsers:window.FB.increment(1),totalCo2:0},{merge:true});loadGlobalStats();}catch(e){}
-    // 신규유저: 온보딩 먼저 표시, 앱은 숨김
     setTimeout(()=>{if(typeof openOv==="function")openOv("ovOnboard");},300);
   }else{
     window.UDATA=snap.data();
@@ -974,10 +889,9 @@ async function loadUser(uid){
         seen.add(ac.challengeId);return true;
       });
     }
-    // 기존유저인데 정보 미입력 → 온보딩 표시
     if(!window.UDATA.age){
       setTimeout(()=>{if(typeof openOv==="function")openOv("ovOnboard");},300);
-      return; // showApp은 saveOnboard에서 호출
+      return;
     }
   }
   updateUI();
@@ -986,14 +900,12 @@ async function loadUser(uid){
   loadMyOrders(uid);
   loadMyVerifs(uid);
   setTimeout(()=>{if(window.loadFeed)window.loadFeed();},300);
-  // 정보 다 있는 유저는 바로 앱 표시
   if(window.UDATA.age){showApp();}
 }
 window.loadUser=loadUser;
 
 function showApp(){
   document.getElementById("app").style.display="block";
-  // 앱 표시 후 공공데이터 로드
   setTimeout(()=>{
     if(typeof loadSeoulAir==="function") loadSeoulAir();
     if(typeof loadSeoulBike==="function") loadSeoulBike();
@@ -1013,7 +925,6 @@ function lv(n){
 
 function updateUI(){
   const d=window.UDATA||{};
-  // 닉네임 반영
   if(d.nickname){
     document.getElementById("uName").textContent=d.nickname;
     document.getElementById("sName").textContent="🌱 "+d.nickname;
@@ -1071,11 +982,12 @@ window.saveTodayMissions=async(uid,ids)=>{
   window.UDATA.todayMissions=ids;
 };
 
+// ★ 변경 1: userName 저장 시 닉네임 우선
 window.saveVerification=async(uid,m,b64,isPublic,comment)=>{
   try{
     const thumb=await compressImage(b64,200);
     await window.FB.addDoc(window.FB.collection(window.FB.db,"verifications"),{
-      uid,userName:window.ME?.displayName||"익명",userPhoto:window.ME?.photoURL||"",
+      uid,userName:window.UDATA?.nickname||window.ME?.displayName||"익명",userPhoto:window.ME?.photoURL||"",
       missionId:m.id,missionName:m.name,missionEmoji:m.emoji,isPublic,thumb,
       comment:comment||"",
       createdAt:window.FB.serverTimestamp()
@@ -1084,6 +996,7 @@ window.saveVerification=async(uid,m,b64,isPublic,comment)=>{
   }catch(e){console.log("인증 저장 오류",e);return false;}
 };
 
+// ★ 변경 2: loadFeed - uid별 닉네임 맵 조회 후 덮어씌우기 (기존 기록 포함 전부)
 // 피드 선택 상태
 let _feedSelected = null;
 
@@ -1097,6 +1010,20 @@ window.loadFeed=async()=>{
       w.innerHTML='<div style="text-align:center;padding:20px;color:var(--sub);font-size:13px">아직 공개 인증샷이 없어요!<br/>첫 번째 인증샷을 올려봐요 🌱</div>';
       return;
     }
+
+    // uid 중복 제거 후 닉네임 일괄 조회
+    const uids=[...new Set(items.map(v=>v.uid).filter(Boolean))];
+    const nicknameMap={};
+    await Promise.all(uids.map(async uid=>{
+      try{
+        const usnap=await window.FB.getDoc(window.FB.doc(window.FB.db,"users",uid));
+        if(usnap.exists()){
+          const d=usnap.data();
+          nicknameMap[uid]=d.nickname||d.userName||"익명";
+        }
+      }catch(e){}
+    }));
+
     // 3열 그리드
     w.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px">
       ${items.map(v=>`
@@ -1112,18 +1039,22 @@ window.loadFeed=async()=>{
         </div>`).join("")}
     </div>`;
 
-    // 상세 모달 데이터 저장
-    window._feedItems = {};
-    items.forEach(v=>{ window._feedItems[v.id]=v; });
+    // 닉네임 맵 포함해서 저장 (기존 기록도 닉네임으로 덮어씌움)
+    window._feedItems={};
+    items.forEach(v=>{
+      window._feedItems[v.id]={
+        ...v,
+        userName: nicknameMap[v.uid]||v.userName||"익명"
+      };
+    });
   }catch(e){w.innerHTML='<div style="text-align:center;padding:16px;color:var(--sub);font-size:12px">불러오기 실패</div>';}
 };
 
-// 피드 상세 모달
 function openFeedDetail(id){
-  const v = window._feedItems?.[id];
-  if(!v) return;
-  const detail = document.getElementById("feedDetailContent");
-  if(!detail) return;
+  const v=window._feedItems?.[id];
+  if(!v)return;
+  const detail=document.getElementById("feedDetailContent");
+  if(!detail)return;
   detail.innerHTML=`
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
       <div style="width:36px;height:36px;border-radius:50%;overflow:hidden;background:linear-gradient(135deg,var(--g1),var(--g2));display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">
@@ -1152,21 +1083,17 @@ window.loadMyVerifs=async(uid)=>{
     if(!items.length){w.innerHTML='<div style="text-align:center;padding:16px;color:var(--sub);font-size:12px">아직 인증 기록이 없어요!</div>';return;}
     w.innerHTML=items.map(v=>`
       <div style="background:#fff;border-radius:14px;padding:12px;margin-bottom:10px;border:1px solid var(--bdr);display:flex;gap:10px;align-items:flex-start">
-        <!-- 썸네일 -->
         <div style="width:64px;height:64px;border-radius:10px;overflow:hidden;flex-shrink:0;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:24px">
           ${v.thumb?`<img src="${v.thumb}" style="width:100%;height:100%;object-fit:cover"/>`:`${v.missionEmoji}`}
         </div>
-        <!-- 정보 -->
         <div style="flex:1;min-width:0">
           <div style="font-size:13px;font-weight:700;color:var(--txt)">${v.missionEmoji} ${v.missionName}</div>
           <div style="font-size:11px;color:var(--sub);margin-top:2px">${timeAgo(v.createdAt?.seconds)}</div>
           <div style="display:flex;gap:6px;margin-top:6px;align-items:center">
-            <!-- 공개/비공개 토글 -->
             <button onclick="toggleVerifPub('${v.id}',${!v.isPublic},'${uid}')"
               style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:10px;border:none;cursor:pointer;font-family:inherit;background:${v.isPublic?'#e8f5e9':'#f0f0f0'};color:${v.isPublic?'var(--g2)':'var(--sub)'}">
               ${v.isPublic?'🌍 공개':'🔒 비공개'}
             </button>
-            <!-- 삭제 -->
             <button onclick="deleteVerif('${v.id}','${uid}')"
               style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:10px;border:none;cursor:pointer;font-family:inherit;background:#fff0f0;color:var(--red)">
               🗑️ 삭제
@@ -1177,7 +1104,6 @@ window.loadMyVerifs=async(uid)=>{
   }catch(e){}
 };
 
-// 인증 공개/비공개 토글
 window.toggleVerifPub=async(id,newPub,uid)=>{
   try{
     await window.FB.updateDoc(window.FB.doc(window.FB.db,"verifications",id),{isPublic:newPub});
@@ -1187,7 +1113,6 @@ window.toggleVerifPub=async(id,newPub,uid)=>{
   }catch(e){toast("변경 실패: "+e.message);}
 };
 
-// 인증 삭제
 window.deleteVerif=async(id,uid)=>{
   if(!confirm("이 인증 기록을 삭제할까요?"))return;
   try{
@@ -1223,8 +1148,6 @@ async function loadMyOrders(uid){
   }catch(e){}
 }
 window.loadMyOrders=loadMyOrders;
-
-// loadAdminOrders는 아래 일반 스크립트에서 정의
 
 window.doCreateRoom=async()=>{
   const name=document.getElementById("rNameInp").value.trim();
@@ -1322,7 +1245,6 @@ window.joinPub=async(rid)=>{
 </script>
 
 <script>
-// ══ 토스트 (핵심 수정!) ══
 function toast(msg){
   const t=document.getElementById("toast");
   t.textContent=msg;t.classList.add("on");
@@ -1331,7 +1253,6 @@ function toast(msg){
 }
 window.toast=toast;
 
-// ══ 이미지 압축 ══
 function compressImage(b64,maxW){
   return new Promise(res=>{
     const img=new Image();
@@ -1347,7 +1268,6 @@ function compressImage(b64,maxW){
 }
 window.compressImage=compressImage;
 
-// ══ 시간 표시 ══
 function timeAgo(sec){
   if(!sec)return"방금";
   const d=Math.floor(Date.now()/1000-sec);
@@ -1356,7 +1276,6 @@ function timeAgo(sec){
 }
 window.timeAgo=timeAgo;
 
-// ══ 데이터 ══
 const MISSIONS=[
   {id:"m1",emoji:"🧴",name:"텀블러로 카페 이용하기",point:50,co2:0.332,kw:"텀블러, 개인 컵, 머그컵"},
   {id:"m2",emoji:"🚌",name:"대중교통 이용하기",point:80,co2:1.17,kw:"버스, 지하철, 기차"},
@@ -1379,6 +1298,17 @@ const CHALLENGES=[
   {id:6,emoji:"🚿",title:"절수 샤워하기",desc:"샤워 시간을 5분 이내로 줄여봐요!",tag:"💧 절수",baseParticipants:183,hot:false,missionId:"m7"},
 ];
 
+
+const COUNTRIES=[
+  {name:"한국",flag:"🇰🇷",x:.78,y:.33,u:3240},{name:"일본",flag:"🇯🇵",x:.82,y:.32,u:2180},
+  {name:"미국",flag:"🇺🇸",x:.18,y:.31,u:4520},{name:"브라질",flag:"🇧🇷",x:.28,y:.61,u:1830},
+  {name:"독일",flag:"🇩🇪",x:.49,y:.24,u:1650},{name:"영국",flag:"🇬🇧",x:.46,y:.22,u:1420},
+  {name:"인도",flag:"🇮🇳",x:.69,y:.39,u:2940},{name:"중국",flag:"🇨🇳",x:.74,y:.31,u:3810},
+  {name:"호주",flag:"🇦🇺",x:.82,y:.66,u:980},{name:"캐나다",flag:"🇨🇦",x:.17,y:.22,u:1120},
+  {name:"인도네시아",flag:"🇮🇩",x:.79,y:.53,u:1560},{name:"프랑스",flag:"🇫🇷",x:.47,y:.26,u:1380},
+  {name:"이탈리아",flag:"🇮🇹",x:.50,y:.28,u:960},{name:"스페인",flag:"🇪🇸",x:.45,y:.29,u:890},
+  {name:"태국",flag:"🇹🇭",x:.74,y:.43,u:870},{name:"베트남",flag:"🇻🇳",x:.76,y:.44,u:940},
+];
 const FREQ_OPTIONS=[{id:"daily",label:"매일"},{id:"w5",label:"주 5일"},{id:"w3",label:"주 3일"}];
 const WEEK_OPTIONS=[{id:1,label:"1주",days:7},{id:2,label:"2주",days:14},{id:4,label:"4주",days:28}];
 
@@ -1391,18 +1321,6 @@ const BOOKS=[
   {id:"b7",emoji:"📦",title:"라니 시리즈 전권 세트",author:"출판사마저",desc:"전권 묶음 특별 선물세트",price:50000,tag:"🎁 세트"},
 ];
 
-const COUNTRIES=[
-  {name:"한국",flag:"🇰🇷",x:.78,y:.33,u:3240},{name:"일본",flag:"🇯🇵",x:.82,y:.32,u:2180},
-  {name:"미국",flag:"🇺🇸",x:.18,y:.31,u:4520},{name:"브라질",flag:"🇧🇷",x:.28,y:.61,u:1830},
-  {name:"독일",flag:"🇩🇪",x:.49,y:.24,u:1650},{name:"영국",flag:"🇬🇧",x:.46,y:.22,u:1420},
-  {name:"인도",flag:"🇮🇳",x:.69,y:.39,u:2940},{name:"중국",flag:"🇨🇳",x:.74,y:.31,u:3810},
-  {name:"호주",flag:"🇦🇺",x:.82,y:.66,u:980},{name:"캐나다",flag:"🇨🇦",x:.17,y:.22,u:1120},
-  {name:"인도네시아",flag:"🇮🇩",x:.79,y:.53,u:1560},{name:"프랑스",flag:"🇫🇷",x:.47,y:.26,u:1380},
-  {name:"이탈리아",flag:"🇮🇹",x:.50,y:.28,u:960},{name:"스페인",flag:"🇪🇸",x:.45,y:.29,u:890},
-  {name:"태국",flag:"🇹🇭",x:.74,y:.43,u:870},{name:"베트남",flag:"🇻🇳",x:.76,y:.44,u:940},
-];
-
-// ══ 탭 전환 ══
 function goPage(name){
   document.querySelectorAll(".page").forEach(p=>p.classList.remove("on"));
   document.querySelectorAll(".tb").forEach(b=>b.classList.remove("on"));
@@ -1427,7 +1345,6 @@ function setCTab(t){
 }
 window.setCTab=setCTab;
 
-// ══ 오늘의 미션 렌더링 ══
 function renderTodayQuests(uid){
   const wrap=document.getElementById("missionScroll");
   wrap.innerHTML="";
@@ -1475,7 +1392,6 @@ function renderTodayQuests(uid){
 }
 window.renderTodayQuests=renderTodayQuests;
 
-// ══ 홈 챌린지 목록 ══
 function renderHomeChalls(){
   const w=document.getElementById("homeChallList");
   const active=window.UDATA?.activeChallenges||[];
@@ -1504,7 +1420,6 @@ function renderHomeChalls(){
 }
 window.renderHomeChalls=renderHomeChalls;
 
-// ══ AI 인증 ══
 const API_KEY="";
 let _curM=null,_curUid=null,_b64=null,_passed=false,_curChalId=null,_verifPub=true;
 
@@ -1562,8 +1477,6 @@ async function doAnalyze(){
   document.getElementById("aiResTxt").textContent="잠시만 기다려주세요!";
   document.getElementById("scoreRow").style.display="none";
   document.getElementById("scanOv").classList.add("on");
-
-  // API KEY 없으면 데모 모드
   await new Promise(r=>setTimeout(r,2000));
   document.getElementById("scanOv").classList.remove("on");
   const demos={
@@ -1615,7 +1528,7 @@ async function doComplete(){
       window.UDATA.verifiedDates=vd;window.UDATA.completedDates=cd;
       await window.FB.updateDoc(window.FB.doc(window.FB.db,"users",_curUid),{verifiedDates:vd,completedDates:cd});
     }
-    const comment = document.getElementById("verifComment")?.value?.trim()||"";
+    const comment=document.getElementById("verifComment")?.value?.trim()||"";
     if(_b64)await window.saveVerification(_curUid,_curM,_b64,_verifPub,comment);
     closeOv("ovAI");
     const ci=document.getElementById("verifComment");if(ci)ci.value="";
@@ -1629,7 +1542,6 @@ async function doComplete(){
 }
 window.doComplete=doComplete;
 
-// ══ 공식 챌린지 ══
 function renderOfficialChallenges(){
   const grid=document.getElementById("officialGrid");
   grid.innerHTML=CHALLENGES.map(c=>`
@@ -1648,7 +1560,6 @@ function renderOfficialChallenges(){
 }
 window.renderOfficialChallenges=renderOfficialChallenges;
 
-// ══ 온보딩 ══
 let _onboardData={age:"",gender:"",job:"",hasCar:"",household:"",ecoLevel:""},_selInterests=[];
 
 function selOnboard(field,val,el,groupId){
@@ -1656,7 +1567,6 @@ function selOnboard(field,val,el,groupId){
   document.querySelectorAll("#"+groupId+" .dep-btn").forEach(b=>b.classList.remove("on"));
   el.classList.add("on");
 }
-// 하위호환
 function selAge(v,el){selOnboard("age",v,el,"ageSelect");}
 
 function toggleInterest(v,el){
@@ -1673,22 +1583,11 @@ async function saveOnboard(){
   if(!region){toast("지역을 선택해주세요!");return;}
   closeOv("ovOnboard");
   if(window.ME&&window.saveOnboardData){
-    await window.saveOnboardData(
-      window.ME.uid,
-      _onboardData.age,
-      region,
-      _selInterests,
-      {
-        nickname,
-        gender:_onboardData.gender,
-        job:_onboardData.job,
-        hasCar:_onboardData.hasCar,
-        household:_onboardData.household,
-        ecoLevel:_onboardData.ecoLevel,
-      }
-    );
-    // 닉네임을 헤더/홈 카드에 반영
-    const n = nickname;
+    await window.saveOnboardData(window.ME.uid,_onboardData.age,region,_selInterests,{
+      nickname,gender:_onboardData.gender,job:_onboardData.job,
+      hasCar:_onboardData.hasCar,household:_onboardData.household,ecoLevel:_onboardData.ecoLevel,
+    });
+    const n=nickname;
     document.getElementById("uName").textContent=n;
     document.getElementById("sName").textContent="🌱 "+n;
     document.getElementById("myName").textContent="🌱 "+n;
@@ -1698,72 +1597,29 @@ async function saveOnboard(){
 }
 window.selAge=selAge;window.selOnboard=selOnboard;window.toggleInterest=toggleInterest;window.saveOnboard=saveOnboard;
 
-// 기존 정보 채워서 온보딩 열기
 function openOnboardEdit(){
-  const d = window.UDATA||{};
-
-  // 기존 데이터로 _onboardData 초기화
-  _onboardData = {
-    age: d.age||"",
-    gender: d.gender||"",
-    job: d.job||"",
-    hasCar: d.hasCar||"",
-    household: d.household||"",
-    ecoLevel: d.ecoLevel||"",
-  };
-  _selInterests = [...(d.interests||[])];
-
-  // 모달 열기
+  const d=window.UDATA||{};
+  _onboardData={age:d.age||"",gender:d.gender||"",job:d.job||"",hasCar:d.hasCar||"",household:d.household||"",ecoLevel:d.ecoLevel||""};
+  _selInterests=[...(d.interests||[])];
   openOv("ovOnboard");
-
-  // 버튼 상태 복원 (약간의 딜레이로 DOM 렌더 후)
   setTimeout(()=>{
-    // 성별
-    document.querySelectorAll("#genderSelect .dep-btn").forEach(b=>{
-      b.classList.toggle("on", b.textContent.trim()===_onboardData.gender);
-    });
-    // 나이대
-    document.querySelectorAll("#ageSelect .dep-btn").forEach(b=>{
-      b.classList.toggle("on", b.textContent.trim()===_onboardData.age);
-    });
-    // 지역
-    const rSel = document.getElementById("regionSelect");
-    if(rSel && d.region) rSel.value = d.region;
-    // 직업
-    document.querySelectorAll("#jobSelect .dep-btn").forEach(b=>{
-      b.classList.toggle("on", b.textContent.includes(_onboardData.job) && _onboardData.job);
-    });
-    // 자동차
-    document.querySelectorAll("#carSelect .dep-btn").forEach(b=>{
-      b.classList.toggle("on", b.textContent.includes(_onboardData.hasCar) && _onboardData.hasCar);
-    });
-    // 가구형태
-    document.querySelectorAll("#householdSelect .dep-btn").forEach(b=>{
-      b.classList.toggle("on", b.textContent.trim()===_onboardData.household);
-    });
-    // 환경관심도
-    document.querySelectorAll("#ecoLevelSelect .dep-btn").forEach(b=>{
-      b.classList.toggle("on", b.textContent.includes(_onboardData.ecoLevel) && _onboardData.ecoLevel);
-    });
-    // 관심분야
-    document.querySelectorAll("#interestSelect .dep-btn").forEach(b=>{
-      const txt = b.textContent.trim();
-      const matched = _selInterests.some(i => txt.includes(i));
-      b.classList.toggle("on", matched);
-    });
-
-    // 닉네임 복원
-    const nickInp = document.getElementById("nicknameInp");
-    if(nickInp) nickInp.value = d.nickname || "";
-
-    // 버튼 텍스트 변경
-    const saveBtn = document.querySelector("#ovOnboard .btn-g");
-    if(saveBtn) saveBtn.textContent = d.age ? "저장하기! ✅" : "시작하기! 🌱";
-  }, 100);
+    document.querySelectorAll("#genderSelect .dep-btn").forEach(b=>{b.classList.toggle("on",b.textContent.trim()===_onboardData.gender);});
+    document.querySelectorAll("#ageSelect .dep-btn").forEach(b=>{b.classList.toggle("on",b.textContent.trim()===_onboardData.age);});
+    const rSel=document.getElementById("regionSelect");
+    if(rSel&&d.region)rSel.value=d.region;
+    document.querySelectorAll("#jobSelect .dep-btn").forEach(b=>{b.classList.toggle("on",b.textContent.includes(_onboardData.job)&&_onboardData.job);});
+    document.querySelectorAll("#carSelect .dep-btn").forEach(b=>{b.classList.toggle("on",b.textContent.includes(_onboardData.hasCar)&&_onboardData.hasCar);});
+    document.querySelectorAll("#householdSelect .dep-btn").forEach(b=>{b.classList.toggle("on",b.textContent.trim()===_onboardData.household);});
+    document.querySelectorAll("#ecoLevelSelect .dep-btn").forEach(b=>{b.classList.toggle("on",b.textContent.includes(_onboardData.ecoLevel)&&_onboardData.ecoLevel);});
+    document.querySelectorAll("#interestSelect .dep-btn").forEach(b=>{const txt=b.textContent.trim();b.classList.toggle("on",_selInterests.some(i=>txt.includes(i)));});
+    const nickInp=document.getElementById("nicknameInp");
+    if(nickInp)nickInp.value=d.nickname||"";
+    const saveBtn=document.querySelector("#ovOnboard .btn-g");
+    if(saveBtn)saveBtn.textContent=d.age?"저장하기! ✅":"시작하기! 🌱";
+  },100);
 }
-window.openOnboardEdit = openOnboardEdit;
+window.openOnboardEdit=openOnboardEdit;
 
-// ══ 탄소 비유 ══
 function getCo2Analogy(co2kg){
   if(co2kg<=0)   return{emoji:"🌱",text:"첫 미션을 완료하면 나무가 자라요!",sub:"지금 바로 환경 실천을 시작해봐요 🌍"};
   if(co2kg<1)    return{emoji:"🌱",text:`CO₂ ${(co2kg*1000).toFixed(0)}g, 첫 걸음을 뗐어요!`,sub:"작은 실천이 지구를 바꿔요. 계속해봐요!"};
@@ -1777,7 +1633,6 @@ function getCo2Analogy(co2kg){
   return{emoji:"🏕️",text:`나무 ${trees.toFixed(0)}그루! 숲을 만든 지구 수호자!`,sub:`CO₂ ${co2kg.toFixed(0)}kg — 지구가 당신 덕분에 숨 쉬어요 🌍`};
 }
 
-// ══ 뱃지 ══
 const BADGES=[
   {id:"first",emoji:"🌱",name:"첫 걸음",desc:"첫 미션 완료!",condition:d=>d.missionCount>=1},
   {id:"tree1",emoji:"🌳",name:"나무 1그루",desc:"CO₂ 21.4kg 절감",condition:d=>(d.co2||0)>=21.4},
@@ -1790,7 +1645,6 @@ const BADGES=[
   {id:"transport",emoji:"🚌",name:"대중교통 챔피언",desc:"대중교통 미션 완료",condition:d=>(d.doneMissions||[]).includes("m2")},
 ];
 
-// ══ 내활동 렌더링 ══
 function renderActivity(){
   const d=window.UDATA||{};
   const co2=d.co2||0;
@@ -1808,39 +1662,13 @@ function renderActivity(){
   const notEarned=BADGES.filter(b=>!b.condition(d));
   const badgeEl=document.getElementById("badgeList");
   badgeEl.innerHTML=[
-    ...earned.map(b=>`
-      <div style="background:#f0fbf4;border-radius:12px;padding:10px;text-align:center;width:calc(33.3% - 6px);border:1.5px solid var(--g1)">
-        <div style="font-size:28px">${b.emoji}</div>
-        <div style="font-size:11px;font-weight:700;color:var(--g2);margin-top:4px">${b.name}</div>
-        <div style="font-size:10px;color:var(--sub)">${b.desc}</div>
-      </div>`),
-    ...notEarned.slice(0,6-earned.length).map(b=>`
-      <div style="background:#f8f8f8;border-radius:12px;padding:10px;text-align:center;width:calc(33.3% - 6px);border:1px solid var(--bdr);opacity:.4">
-        <div style="font-size:28px;filter:grayscale(1)">${b.emoji}</div>
-        <div style="font-size:11px;font-weight:700;color:var(--sub);margin-top:4px">${b.name}</div>
-        <div style="font-size:10px;color:#bbb">${b.desc}</div>
-      </div>`)
+    ...earned.map(b=>`<div style="background:#f0fbf4;border-radius:12px;padding:10px;text-align:center;width:calc(33.3% - 6px);border:1.5px solid var(--g1)"><div style="font-size:28px">${b.emoji}</div><div style="font-size:11px;font-weight:700;color:var(--g2);margin-top:4px">${b.name}</div><div style="font-size:10px;color:var(--sub)">${b.desc}</div></div>`),
+    ...notEarned.slice(0,6-earned.length).map(b=>`<div style="background:#f8f8f8;border-radius:12px;padding:10px;text-align:center;width:calc(33.3% - 6px);border:1px solid var(--bdr);opacity:.4"><div style="font-size:28px;filter:grayscale(1)">${b.emoji}</div><div style="font-size:11px;font-weight:700;color:var(--sub);margin-top:4px">${b.name}</div><div style="font-size:10px;color:#bbb">${b.desc}</div></div>`)
   ].join("");
-  const missionStats=MISSIONS.map(m=>{
-    const done=(d.doneMissions||[]).filter(id=>id===m.id).length;
-    return{name:m.name,emoji:m.emoji,done};
-  }).filter(m=>m.done>0);
+  const missionStats=MISSIONS.map(m=>{const done=(d.doneMissions||[]).filter(id=>id===m.id).length;return{name:m.name,emoji:m.emoji,done};}).filter(m=>m.done>0);
   const chartEl=document.getElementById("missionChart");
-  if(!missionStats.length){
-    chartEl.innerHTML='<div style="text-align:center;padding:20px;color:var(--sub);font-size:13px">미션을 완료하면 여기 나타나요!</div>';
-  }else{
-    chartEl.innerHTML=missionStats.map(m=>`
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-        <div style="font-size:20px;width:28px">${m.emoji}</div>
-        <div style="flex:1">
-          <div style="font-size:12px;font-weight:700;color:var(--txt);margin-bottom:3px">${m.name}</div>
-          <div style="background:#e8f5e9;border-radius:8px;height:8px;overflow:hidden">
-            <div style="width:${Math.min(100,m.done*20)}%;background:var(--g1);height:100%;border-radius:8px"></div>
-          </div>
-        </div>
-        <div style="font-size:12px;font-weight:700;color:var(--g2)">${m.done}회</div>
-      </div>`).join("");
-  }
+  if(!missionStats.length){chartEl.innerHTML='<div style="text-align:center;padding:20px;color:var(--sub);font-size:13px">미션을 완료하면 여기 나타나요!</div>';}
+  else{chartEl.innerHTML=missionStats.map(m=>`<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><div style="font-size:20px;width:28px">${m.emoji}</div><div style="flex:1"><div style="font-size:12px;font-weight:700;color:var(--txt);margin-bottom:3px">${m.name}</div><div style="background:#e8f5e9;border-radius:8px;height:8px;overflow:hidden"><div style="width:${Math.min(100,m.done*20)}%;background:var(--g1);height:100%;border-radius:8px"></div></div></div><div style="font-size:12px;font-weight:700;color:var(--g2)">${m.done}회</div></div>`).join("");}
 }
 window.renderActivity=renderActivity;
 
@@ -1861,22 +1689,17 @@ async function renderWeeklyChart(){
     const cv=document.getElementById("weeklyChart");
     if(!cv||!window.Chart)return;
     if(_weeklyChartInst)_weeklyChartInst.destroy();
-    _weeklyChartInst=new Chart(cv,{
-      type:"bar",
-      data:{labels:days,datasets:[{label:"미션 수",data:counts,backgroundColor:"rgba(46,204,113,0.7)",borderRadius:6}]},
-      options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1},grid:{color:"rgba(0,0,0,.05)"}},x:{grid:{display:false}}}}
-    });
+    _weeklyChartInst=new Chart(cv,{type:"bar",data:{labels:days,datasets:[{label:"미션 수",data:counts,backgroundColor:"rgba(46,204,113,0.7)",borderRadius:6}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1},grid:{color:"rgba(0,0,0,.05)"}},x:{grid:{display:false}}}}});
   }catch(e){}
 }
 
-// ══ 증명서 ══
 function showCert(){
   const d=window.UDATA||{};
   const co2=(d.co2||0).toFixed(1);
   const trees=(d.co2/21.4||0).toFixed(1);
   const mission=d.missionCount||0;
   const lvTxt=document.getElementById("sLv").textContent||"Lv.1 씨앗";
-  const name=window.ME?.displayName||"지구지킴이";
+  const name=d.nickname||window.ME?.displayName||"지구지킴이";
   const date=new Date().toLocaleDateString("ko-KR");
   const analogy=getCo2Analogy(d.co2||0);
   const earned=BADGES.filter(b=>b.condition(d));
@@ -1887,18 +1710,9 @@ function showCert(){
       <div style="font-size:26px;font-weight:900;margin-bottom:4px">${name}</div>
       <div style="font-size:13px;color:rgba(255,255,255,.8);margin-bottom:20px">${lvTxt}</div>
       <div style="display:flex;gap:8px;justify-content:center;margin-bottom:16px">
-        <div style="background:rgba(255,255,255,.15);border-radius:12px;padding:10px 16px">
-          <div style="font-size:22px;font-weight:900">${co2}kg</div>
-          <div style="font-size:10px;color:rgba(255,255,255,.7)">CO₂ 절감</div>
-        </div>
-        <div style="background:rgba(255,255,255,.15);border-radius:12px;padding:10px 16px">
-          <div style="font-size:22px;font-weight:900">🌳${trees}</div>
-          <div style="font-size:10px;color:rgba(255,255,255,.7)">나무 그루</div>
-        </div>
-        <div style="background:rgba(255,255,255,.15);border-radius:12px;padding:10px 16px">
-          <div style="font-size:22px;font-weight:900">${mission}</div>
-          <div style="font-size:10px;color:rgba(255,255,255,.7)">완료 미션</div>
-        </div>
+        <div style="background:rgba(255,255,255,.15);border-radius:12px;padding:10px 16px"><div style="font-size:22px;font-weight:900">${co2}kg</div><div style="font-size:10px;color:rgba(255,255,255,.7)">CO₂ 절감</div></div>
+        <div style="background:rgba(255,255,255,.15);border-radius:12px;padding:10px 16px"><div style="font-size:22px;font-weight:900">🌳${trees}</div><div style="font-size:10px;color:rgba(255,255,255,.7)">나무 그루</div></div>
+        <div style="background:rgba(255,255,255,.15);border-radius:12px;padding:10px 16px"><div style="font-size:22px;font-weight:900">${mission}</div><div style="font-size:10px;color:rgba(255,255,255,.7)">완료 미션</div></div>
       </div>
       <div style="background:rgba(255,255,255,.1);border-radius:12px;padding:10px;margin-bottom:16px">
         <div style="font-size:24px;margin-bottom:4px">${analogy.emoji}</div>
@@ -1937,7 +1751,6 @@ function shareCert(){
 }
 window.shareCert=shareCert;
 
-// ══ 챌린지 상세 모달 ══
 let _dep=3000,_freq="w3",_weeks=2;
 function openChal(id){
   const c=CHALLENGES.find(x=>x.id===id);if(!c)return;
@@ -2014,7 +1827,6 @@ async function joinChal(title,cid){
 }
 window.joinChal=joinChal;
 
-// ══ 방 만들기 ══
 window._rDep=3000;window._rPub=true;
 function setDep(v,el){window._rDep=v;document.querySelectorAll("#rDepSel .dep-btn").forEach(b=>b.classList.remove("on"));el.classList.add("on");}
 function setRPub(v){
@@ -2025,7 +1837,6 @@ function setRPub(v){
 function openCreateRoom(){openOv("ovRoom");}
 window.setDep=setDep;window.setRPub=setRPub;window.openCreateRoom=openCreateRoom;
 
-// ══ 책 렌더링 ══
 function renderBooks(){
   const el=document.getElementById("bookList");if(!el)return;
   const p=window.UDATA?.point||0;
@@ -2074,540 +1885,312 @@ window.openBuy=openBuy;
 async function doBuy(id){
   const b=BOOKS.find(x=>x.id===id);if(!b||!window.ME)return;
   const ok=await window.saveOrder(window.ME.uid,b);
-  if(ok){
-    closeOv("ovBuy");
-    renderBooks();
-    toast("✅ 구매 완료! 이메일로 배송 안내가 갈 거예요 📚");
-  }
+  if(ok){closeOv("ovBuy");renderBooks();toast("✅ 구매 완료! 이메일로 배송 안내가 갈 거예요 📚");}
 }
 window.doBuy=doBuy;
 
-// ══ 서울시 공공데이터 API ══
-// ※ 서울 열린데이터광장 API 키: data.seoul.go.kr 에서 무료 발급
-const SEOUL_API_KEY = "4e557a69756c6f6339327062476e47"; // 서울 열린데이터광장
-const AIRKOREA_API_KEY = "816691d4995b6168c9acb837f583da46eaf671f948d9fec61b48468cafe4648b"; // data.go.kr 한국환경공단 API (인천 등 서울 외 지역용) // 실제 키로 교체 필요
+const SEOUL_API_KEY="4e557a69756c6f6339327062476e47";
+const AIRKOREA_API_KEY="816691d4995b6168c9acb837f583da46eaf671f948d9fec61b48468cafe4648b";
 
-// 대기질 등급 → 색/이모지/설명
-function airGrade(val, type){
+function airGrade(val,type){
   if(type==="pm25"){
-    if(val<=15) return{grade:"좋음",color:"#2ECC71",emoji:"😊",bg:"linear-gradient(135deg,#1a6b3a,#2ECC71)"};
-    if(val<=35) return{grade:"보통",color:"#F39C12",emoji:"🙂",bg:"linear-gradient(135deg,#b8860b,#F39C12)"};
-    if(val<=75) return{grade:"나쁨",color:"#E74C3C",emoji:"😷",bg:"linear-gradient(135deg,#922b21,#E74C3C)"};
+    if(val<=15)return{grade:"좋음",color:"#2ECC71",emoji:"😊",bg:"linear-gradient(135deg,#1a6b3a,#2ECC71)"};
+    if(val<=35)return{grade:"보통",color:"#F39C12",emoji:"🙂",bg:"linear-gradient(135deg,#b8860b,#F39C12)"};
+    if(val<=75)return{grade:"나쁨",color:"#E74C3C",emoji:"😷",bg:"linear-gradient(135deg,#922b21,#E74C3C)"};
     return{grade:"매우나쁨",color:"#8E44AD",emoji:"⛔",bg:"linear-gradient(135deg,#6c3483,#8E44AD)"};
   }
   if(type==="pm10"){
-    if(val<=30) return{grade:"좋음",color:"#2ECC71",emoji:"😊",bg:"linear-gradient(135deg,#1a6b3a,#2ECC71)"};
-    if(val<=80) return{grade:"보통",color:"#F39C12",emoji:"🙂",bg:"linear-gradient(135deg,#b8860b,#F39C12)"};
-    if(val<=150) return{grade:"나쁨",color:"#E74C3C",emoji:"😷",bg:"linear-gradient(135deg,#922b21,#E74C3C)"};
+    if(val<=30)return{grade:"좋음",color:"#2ECC71",emoji:"😊",bg:"linear-gradient(135deg,#1a6b3a,#2ECC71)"};
+    if(val<=80)return{grade:"보통",color:"#F39C12",emoji:"🙂",bg:"linear-gradient(135deg,#b8860b,#F39C12)"};
+    if(val<=150)return{grade:"나쁨",color:"#E74C3C",emoji:"😷",bg:"linear-gradient(135deg,#922b21,#E74C3C)"};
     return{grade:"매우나쁨",color:"#8E44AD",emoji:"⛔",bg:"linear-gradient(135deg,#6c3483,#8E44AD)"};
   }
   return{grade:"보통",color:"#F39C12",emoji:"🙂",bg:"linear-gradient(135deg,#b8860b,#F39C12)"};
 }
 
-// 지역별 측정소 매핑 (서울 열린데이터광장 기준)
-const REGION_STATION = {
-  "서울": null, // 전체 평균
-  "강남": "강남구", "강동": "강동구", "강북": "강북구", "강서": "강서구",
-  "관악": "관악구", "광진": "광진구", "구로": "구로구", "금천": "금천구",
-  "노원": "노원구", "도봉": "도봉구", "동대문": "동대문구", "동작": "동작구",
-  "마포": "마포구", "서대문": "서대문구", "서초": "서초구", "성동": "성동구",
-  "성북": "성북구", "송파": "송파구", "양천": "양천구", "영등포": "영등포구",
-  "용산": "용산구", "은평": "은평구", "종로": "종로구", "중구": "중구",
-  "중랑": "중랑구",
-  // 서울 외 지역은 서울 전체 평균 사용
-  "경기": null, "인천": null, "부산": null, "대구": null, "광주": null,
-  "대전": null, "울산": null, "세종": null, "강원": null, "충북": null,
-  "충남": null, "전북": null, "전남": null, "경북": null, "경남": null, "제주": null,
-};
-
-// 서울 구 목록
-const SEOUL_GU = ["강남","강동","강북","강서","관악","광진","구로","금천","노원","도봉","동대문","동작","마포","서대문","서초","성동","성북","송파","양천","영등포","용산","은평","종로","중구","중랑"];
-
-// 전국 지역 → AirKorea 시도명 매핑
-const AIRKOREA_SIDO = {
-  // 인천
-  "인천":"인천","부평":"인천","남동":"인천","연수":"인천",
-  "서구":"인천","계양":"인천","미추홀":"인천","동구":"인천","강화":"인천","옹진":"인천",
-  // 경기
-  "수원":"경기","성남":"경기","고양":"경기","용인":"경기","부천":"경기",
-  "안산":"경기","안양":"경기","남양주":"경기","화성":"경기","평택":"경기",
-  "의정부":"경기","시흥":"경기","파주":"경기","광명":"경기","김포":"경기",
-  "군포":"경기","하남":"경기","오산":"경기","이천":"경기","안성":"경기",
-  "의왕":"경기","양주":"경기","구리":"경기","포천":"경기","여주":"경기",
-  "양평":"경기","동두천":"경기","과천":"경기","가평":"경기","연천":"경기",
-  // 광역시/도
-  "부산":"부산","대구":"대구","광주":"광주","대전":"대전","울산":"울산","세종":"세종",
-  "강원":"강원","충북":"충북","충남":"충남","전북":"전북","전남":"전남",
-  "경북":"경북","경남":"경남","제주":"제주",
-};
+const REGION_STATION={"서울":null,"강남":"강남구","강동":"강동구","강북":"강북구","강서":"강서구","관악":"관악구","광진":"광진구","구로":"구로구","금천":"금천구","노원":"노원구","도봉":"도봉구","동대문":"동대문구","동작":"동작구","마포":"마포구","서대문":"서대문구","서초":"서초구","성동":"성동구","성북":"성북구","송파":"송파구","양천":"양천구","영등포":"영등포구","용산":"용산구","은평":"은평구","종로":"종로구","중구":"중구","중랑":"중랑구","경기":null,"인천":null,"부산":null,"대구":null,"광주":null,"대전":null,"울산":null,"세종":null,"강원":null,"충북":null,"충남":null,"전북":null,"전남":null,"경북":null,"경남":null,"제주":null};
+const SEOUL_GU=["강남","강동","강북","강서","관악","광진","구로","금천","노원","도봉","동대문","동작","마포","서대문","서초","성동","성북","송파","양천","영등포","용산","은평","종로","중구","중랑"];
+const AIRKOREA_SIDO={"인천":"인천","부평":"인천","남동":"인천","연수":"인천","서구":"인천","계양":"인천","미추홀":"인천","동구":"인천","강화":"인천","옹진":"인천","수원":"경기","성남":"경기","고양":"경기","용인":"경기","부천":"경기","안산":"경기","안양":"경기","남양주":"경기","화성":"경기","평택":"경기","의정부":"경기","시흥":"경기","파주":"경기","광명":"경기","김포":"경기","군포":"경기","하남":"경기","오산":"경기","이천":"경기","안성":"경기","의왕":"경기","양주":"경기","구리":"경기","포천":"경기","여주":"경기","양평":"경기","동두천":"경기","과천":"경기","가평":"경기","연천":"경기","부산":"부산","대구":"대구","광주":"광주","대전":"대전","울산":"울산","세종":"세종","강원":"강원","충북":"충북","충남":"충남","전북":"전북","전남":"전남","경북":"경북","경남":"경남","제주":"제주"};
 
 async function loadSeoulAir(){
-  const card = document.getElementById("airCard");
-  const statusEl = document.getElementById("airStatus");
-  const detailEl = document.getElementById("airDetail");
-  const missionEl = document.getElementById("airMission");
-  const missionText = document.getElementById("airMissionText");
-  if(!card) return;
-
-  const userRegion = window.UDATA?.region || "";
-  const regionLabel = userRegion || "서울 전체";
-  const isSeoul = SEOUL_GU.includes(userRegion) || userRegion === "서울";
-  const sidoName = AIRKOREA_SIDO[userRegion] || null;
-
-  // 서울 외 지역은 AirKorea API 사용
-  if(!isSeoul && sidoName){
-    await loadAirKorea(sidoName, regionLabel, card, statusEl, detailEl, missionEl, missionText);
-    return;
-  }
-
-  const station = REGION_STATION[userRegion] || null;
-
+  const card=document.getElementById("airCard");
+  const statusEl=document.getElementById("airStatus");
+  const detailEl=document.getElementById("airDetail");
+  const missionEl=document.getElementById("airMission");
+  const missionText=document.getElementById("airMissionText");
+  if(!card)return;
+  const userRegion=window.UDATA?.region||"";
+  const regionLabel=userRegion||"서울 전체";
+  const isSeoul=SEOUL_GU.includes(userRegion)||userRegion==="서울";
+  const sidoName=AIRKOREA_SIDO[userRegion]||null;
+  if(!isSeoul&&sidoName){await loadAirKorea(sidoName,regionLabel,card,statusEl,detailEl,missionEl,missionText);return;}
+  const station=REGION_STATION[userRegion]||null;
   try{
-    const url = `https://openapi.seoul.go.kr:8088/${SEOUL_API_KEY}/json/RealtimeCityAir/1/25/`;
-    const res = await fetch(url);
-    const data = await res.json();
-    let rows = data?.RealtimeCityAir?.row || [];
-
-    if(!rows.length) throw new Error("데이터 없음");
-
-    // 지역 필터링 — 해당 구 데이터만 추출
-    let filtered = station
-      ? rows.filter(r => r.MSRSTE_NM && r.MSRSTE_NM.includes(station.replace("구","")))
-      : rows;
-    if(!filtered.length) filtered = rows; // 못 찾으면 전체 평균
-
-    const avg25 = Math.round(filtered.reduce((s,r)=>s+(r.PM25||0),0)/filtered.length);
-    const avg10 = Math.round(filtered.reduce((s,r)=>s+(r.PM10||0),0)/filtered.length);
-    const g = airGrade(avg25,"pm25");
-
-    card.style.background = g.bg;
-    statusEl.innerHTML = `${g.emoji} PM2.5 ${avg25}㎍/m³ · <b>${g.grade}</b>`;
-    detailEl.innerHTML = `PM10 ${avg10}㎍/m³<br/>📍 ${regionLabel} 기준`;
-
-    missionEl.style.display = "block";
-    if(avg25 > 35){
-      missionText.textContent = `${regionLabel} 대기질 ${g.grade}! 자동차 대신 대중교통으로 미세먼지 줄여봐요 🚌`;
-      window._airBad = true;
-    } else {
-      missionText.textContent = `${regionLabel} 공기 ${g.grade}! 자전거·도보 미션에 딱 좋은 날이에요 🚲`;
-      window._airBad = false;
-    }
-    window._airData = {pm25:avg25, pm10:avg10, grade:g.grade, region:regionLabel};
-
-    // 타이틀에 지역 표시
-    const titleEl = document.getElementById("airCardTitle");
-    const srcEl = document.getElementById("airCardSrc");
-    if(titleEl) titleEl.textContent = `📡 ${regionLabel} 실시간 대기질`;
-    if(srcEl) srcEl.textContent = "출처: 서울특별시 열린데이터광장";
-
+    const url=`https://openapi.seoul.go.kr:8088/${SEOUL_API_KEY}/json/RealtimeCityAir/1/25/`;
+    const res=await fetch(url);
+    const data=await res.json();
+    let rows=data?.RealtimeCityAir?.row||[];
+    if(!rows.length)throw new Error("데이터 없음");
+    let filtered=station?rows.filter(r=>r.MSRSTE_NM&&r.MSRSTE_NM.includes(station.replace("구",""))):rows;
+    if(!filtered.length)filtered=rows;
+    const avg25=Math.round(filtered.reduce((s,r)=>s+(r.PM25||0),0)/filtered.length);
+    const avg10=Math.round(filtered.reduce((s,r)=>s+(r.PM10||0),0)/filtered.length);
+    const g=airGrade(avg25,"pm25");
+    card.style.background=g.bg;
+    statusEl.innerHTML=`${g.emoji} PM2.5 ${avg25}㎍/m³ · <b>${g.grade}</b>`;
+    detailEl.innerHTML=`PM10 ${avg10}㎍/m³<br/>📍 ${regionLabel} 기준`;
+    missionEl.style.display="block";
+    if(avg25>35){missionText.textContent=`${regionLabel} 대기질 ${g.grade}! 자동차 대신 대중교통으로 미세먼지 줄여봐요 🚌`;window._airBad=true;}
+    else{missionText.textContent=`${regionLabel} 공기 ${g.grade}! 자전거·도보 미션에 딱 좋은 날이에요 🚲`;window._airBad=false;}
+    window._airData={pm25:avg25,pm10:avg10,grade:g.grade,region:regionLabel};
+    const titleEl=document.getElementById("airCardTitle");
+    const srcEl=document.getElementById("airCardSrc");
+    if(titleEl)titleEl.textContent=`📡 ${regionLabel} 실시간 대기질`;
+    if(srcEl)srcEl.textContent="출처: 서울특별시 열린데이터광장";
   }catch(e){
-    card.style.background = "linear-gradient(135deg,#b8860b,#F39C12)";
-    statusEl.textContent = "🙂 PM2.5 23㎍/m³ · 보통";
-    detailEl.innerHTML = `PM10 45㎍/m³<br/>📍 ${regionLabel} 기준`;
-    missionEl.style.display = "block";
-    missionText.textContent = "오늘 공기 보통이에요! 가까운 거리는 자전거로 이동해봐요 🚲";
-    window._airData = {pm25:23, pm10:45, grade:"보통", region:regionLabel};
-    const titleEl2 = document.getElementById("airCardTitle");
-    const srcEl2 = document.getElementById("airCardSrc");
-    if(titleEl2) titleEl2.textContent = `📡 ${regionLabel} 실시간 대기질`;
-    if(srcEl2) srcEl2.textContent = "출처: 서울특별시 열린데이터광장";
+    card.style.background="linear-gradient(135deg,#b8860b,#F39C12)";
+    statusEl.textContent="🙂 PM2.5 23㎍/m³ · 보통";
+    detailEl.innerHTML=`PM10 45㎍/m³<br/>📍 ${regionLabel} 기준`;
+    missionEl.style.display="block";
+    missionText.textContent="오늘 공기 보통이에요! 가까운 거리는 자전거로 이동해봐요 🚲";
+    window._airData={pm25:23,pm10:45,grade:"보통",region:regionLabel};
+    const titleEl2=document.getElementById("airCardTitle");
+    const srcEl2=document.getElementById("airCardSrc");
+    if(titleEl2)titleEl2.textContent=`📡 ${regionLabel} 실시간 대기질`;
+    if(srcEl2)srcEl2.textContent="출처: 서울특별시 열린데이터광장";
   }
 }
-window.loadSeoulAir = loadSeoulAir;
+window.loadSeoulAir=loadSeoulAir;
 
-// ══ 한국환경공단 AirKorea API (인천 등 서울 외 지역) ══
-async function loadAirKorea(city, regionLabel, card, statusEl, detailEl, missionEl, missionText){
+async function loadAirKorea(city,regionLabel,card,statusEl,detailEl,missionEl,missionText){
   try{
-    // data.go.kr 한국환경공단 대기오염정보 API
-    const url = `https://apis.data.go.kr/B552584/ArpltnInforInqireSvc/getCtprvnRltmMesureDnsty?serviceKey=${AIRKOREA_API_KEY}&returnType=json&numOfRows=10&pageNo=1&sidoName=${encodeURIComponent(city)}&ver=1.0`;
-    const res = await fetch(url);
-    const data = await res.json();
-    const items = data?.response?.body?.items || [];
-
-    if(!items.length) throw new Error("데이터 없음");
-
-    const pm25 = Math.round(items.reduce((s,r)=>s+(parseInt(r.pm25Value)||0),0)/items.length);
-    const pm10 = Math.round(items.reduce((s,r)=>s+(parseInt(r.pm10Value)||0),0)/items.length);
-    const g = airGrade(pm25,"pm25");
-
-    card.style.background = g.bg;
-    statusEl.innerHTML = `${g.emoji} PM2.5 ${pm25}㎍/m³ · <b>${g.grade}</b>`;
-    detailEl.innerHTML = `PM10 ${pm10}㎍/m³<br/>📍 ${regionLabel} 기준`;
-    missionEl.style.display = "block";
-
-    if(pm25 > 35){
-      missionText.textContent = `${regionLabel} 대기질 ${g.grade}! 자동차 대신 대중교통으로 미세먼지 줄여봐요 🚌`;
-      window._airBad = true;
-    } else {
-      missionText.textContent = `${regionLabel} 공기 ${g.grade}! 자전거·도보 미션에 딱 좋은 날이에요 🚲`;
-      window._airBad = false;
-    }
-    window._airData = {pm25, pm10, grade:g.grade, region:regionLabel};
-
-    const titleEl = document.getElementById("airCardTitle");
-    const srcEl = document.getElementById("airCardSrc");
-    if(titleEl) titleEl.textContent = `📡 ${regionLabel} 실시간 대기질`;
-    if(srcEl) srcEl.textContent = "출처: 한국환경공단 에어코리아";
-
+    const url=`https://apis.data.go.kr/B552584/ArpltnInforInqireSvc/getCtprvnRltmMesureDnsty?serviceKey=${AIRKOREA_API_KEY}&returnType=json&numOfRows=10&pageNo=1&sidoName=${encodeURIComponent(city)}&ver=1.0`;
+    const res=await fetch(url);
+    const data=await res.json();
+    const items=data?.response?.body?.items||[];
+    if(!items.length)throw new Error("데이터 없음");
+    const pm25=Math.round(items.reduce((s,r)=>s+(parseInt(r.pm25Value)||0),0)/items.length);
+    const pm10=Math.round(items.reduce((s,r)=>s+(parseInt(r.pm10Value)||0),0)/items.length);
+    const g=airGrade(pm25,"pm25");
+    card.style.background=g.bg;
+    statusEl.innerHTML=`${g.emoji} PM2.5 ${pm25}㎍/m³ · <b>${g.grade}</b>`;
+    detailEl.innerHTML=`PM10 ${pm10}㎍/m³<br/>📍 ${regionLabel} 기준`;
+    missionEl.style.display="block";
+    if(pm25>35){missionText.textContent=`${regionLabel} 대기질 ${g.grade}! 자동차 대신 대중교통으로 미세먼지 줄여봐요 🚌`;window._airBad=true;}
+    else{missionText.textContent=`${regionLabel} 공기 ${g.grade}! 자전거·도보 미션에 딱 좋은 날이에요 🚲`;window._airBad=false;}
+    window._airData={pm25,pm10,grade:g.grade,region:regionLabel};
+    const titleEl=document.getElementById("airCardTitle");
+    const srcEl=document.getElementById("airCardSrc");
+    if(titleEl)titleEl.textContent=`📡 ${regionLabel} 실시간 대기질`;
+    if(srcEl)srcEl.textContent="출처: 한국환경공단 에어코리아";
   }catch(e){
-    // API 키 없으면 샘플
-    card.style.background = "linear-gradient(135deg,#b8860b,#F39C12)";
-    statusEl.textContent = "🙂 PM2.5 20㎍/m³ · 보통";
-    detailEl.innerHTML = `PM10 38㎍/m³<br/>📍 ${regionLabel} 기준`;
-    missionEl.style.display = "block";
-    missionText.textContent = `${regionLabel} 공기 보통이에요! 자전거 미션에 좋은 날이에요 🚲`;
-    window._airData = {pm25:20, pm10:38, grade:"보통", region:regionLabel};
-
-    const titleEl = document.getElementById("airCardTitle");
-    const srcEl = document.getElementById("airCardSrc");
-    if(titleEl) titleEl.textContent = `📡 ${regionLabel} 실시간 대기질`;
-    if(srcEl) srcEl.textContent = "출처: 한국환경공단 에어코리아";
+    card.style.background="linear-gradient(135deg,#b8860b,#F39C12)";
+    statusEl.textContent="🙂 PM2.5 20㎍/m³ · 보통";
+    detailEl.innerHTML=`PM10 38㎍/m³<br/>📍 ${regionLabel} 기준`;
+    missionEl.style.display="block";
+    missionText.textContent=`${regionLabel} 공기 보통이에요! 자전거 미션에 좋은 날이에요 🚲`;
+    window._airData={pm25:20,pm10:38,grade:"보통",region:regionLabel};
+    const titleEl=document.getElementById("airCardTitle");
+    const srcEl=document.getElementById("airCardSrc");
+    if(titleEl)titleEl.textContent=`📡 ${regionLabel} 실시간 대기질`;
+    if(srcEl)srcEl.textContent="출처: 한국환경공단 에어코리아";
   }
 }
 
-// 구별 따릉이 샘플 데이터 (API 실패 시)
-const BIKE_SAMPLE = {
-  "강남":["강남역 1번출구","역삼역","선릉역"],
-  "강동":["천호역","강동역","길동생태공원"],
-  "강북":["수유역","미아사거리역","강북구청"],
-  "강서":["김포공항역","화곡역","강서구청"],
-  "관악":["서울대입구역","낙성대역","봉천역"],
-  "광진":["건대입구역","구의역","광진구청"],
-  "구로":["구로디지털단지역","신도림역","구로역"],
-  "금천":["가산디지털단지역","독산역","금천구청"],
-  "노원":["노원역","중계역","태릉입구역"],
-  "도봉":["도봉산역","방학역","도봉구청"],
-  "동대문":["청량리역","회기역","동대문역사문화공원"],
-  "동작":["노량진역","사당역","이수역"],
-  "마포":["홍대입구역","합정역","상수역"],
-  "서대문":["신촌역","이대역","서대문구청"],
-  "서초":["교대역","방배역","서초구청"],
-  "성동":["왕십리역","행당역","성동구청"],
-  "성북":["길음역","성신여대입구역","한성대입구역"],
-  "송파":["잠실역","석촌역","올림픽공원"],
-  "양천":["목동역","오목교역","양천구청"],
-  "영등포":["영등포역","당산역","여의도역"],
-  "용산":["이태원역","삼각지역","용산역"],
-  "은평":["연신내역","불광역","은평구청"],
-  "종로":["광화문역","종로3가","경복궁역"],
-  "중구":["시청역","을지로입구","명동역"],
-  "중랑":["면목역","상봉역","중랑구청"],
-};
+const BIKE_SAMPLE={"강남":["강남역 1번출구","역삼역","선릉역"],"강동":["천호역","강동역","길동생태공원"],"강북":["수유역","미아사거리역","강북구청"],"강서":["김포공항역","화곡역","강서구청"],"관악":["서울대입구역","낙성대역","봉천역"],"광진":["건대입구역","구의역","광진구청"],"구로":["구로디지털단지역","신도림역","구로역"],"금천":["가산디지털단지역","독산역","금천구청"],"노원":["노원역","중계역","태릉입구역"],"도봉":["도봉산역","방학역","도봉구청"],"동대문":["청량리역","회기역","동대문역사문화공원"],"동작":["노량진역","사당역","이수역"],"마포":["홍대입구역","합정역","상수역"],"서대문":["신촌역","이대역","서대문구청"],"서초":["교대역","방배역","서초구청"],"성동":["왕십리역","행당역","성동구청"],"성북":["길음역","성신여대입구역","한성대입구역"],"송파":["잠실역","석촌역","올림픽공원"],"양천":["목동역","오목교역","양천구청"],"영등포":["영등포역","당산역","여의도역"],"용산":["이태원역","삼각지역","용산역"],"은평":["연신내역","불광역","은평구청"],"종로":["광화문역","종로3가","경복궁역"],"중구":["시청역","을지로입구","명동역"],"중랑":["면목역","상봉역","중랑구청"]};
 
 async function loadSeoulBike(){
-  const statusEl = document.getElementById("bikeStatus");
-  const bikeListEl = document.getElementById("bikeList");
-  const missionEl = document.getElementById("bikeMission");
-  const missionText = document.getElementById("bikeMissionText");
-  if(!statusEl) return;
-
-  const userRegion = window.UDATA?.region || "";
-  const isSeoul = SEOUL_GU.includes(userRegion) || userRegion === "서울";
-  const regionLabel = userRegion || "서울";
-
-  // 서울 아닌 지역은 따릉이 카드 숨기기
-  const bikeCard = document.getElementById("bikeCard");
-  if(!isSeoul){
-    if(bikeCard) bikeCard.style.display = "none";
-    renderMyContrib();
-    return;
-  }
-  if(bikeCard) bikeCard.style.display = "block";
-
-  // 따릉이 API — 전체 1000개 조회 후 지역 필터링
+  const statusEl=document.getElementById("bikeStatus");
+  const bikeListEl=document.getElementById("bikeList");
+  const missionEl=document.getElementById("bikeMission");
+  const missionText=document.getElementById("bikeMissionText");
+  if(!statusEl)return;
+  const userRegion=window.UDATA?.region||"";
+  const isSeoul=SEOUL_GU.includes(userRegion)||userRegion==="서울";
+  const regionLabel=userRegion||"서울";
+  const bikeCard=document.getElementById("bikeCard");
+  if(!isSeoul){if(bikeCard)bikeCard.style.display="none";renderMyContrib();return;}
+  if(bikeCard)bikeCard.style.display="block";
   try{
-    const url = `https://openapi.seoul.go.kr:8088/${SEOUL_API_KEY}/json/bikeList/1/1000/`;
-    const res = await fetch(url);
-    const data = await res.json();
-    const rows = data?.rentBikeStatus?.row || [];
-    if(!rows.length) throw new Error("데이터 없음");
-
-    // 선택한 구 이름으로 필터링 (stationName에 구 이름 포함된 것)
-    const guName = userRegion === "서울" ? "" : userRegion;
-    const filtered = guName
-      ? rows.filter(r => r.stationName && r.stationName.includes(guName))
-      : rows;
-
-    const target = filtered.length > 0 ? filtered : rows.slice(0, 20);
-    const available = target.filter(r => parseInt(r.parkingBikeTotCnt) > 0);
-    const totalBikes = available.reduce((s,r)=>s+(parseInt(r.parkingBikeTotCnt)||0), 0);
-
-    // 따릉이 카드 타이틀 업데이트
-    const titleEl = document.querySelector("#bikeCard div[style*='font-size:11px']");
-    if(titleEl) titleEl.textContent = `🚲 ${regionLabel} 따릉이 현황 (열린데이터광장)`;
-
-    statusEl.textContent = `${regionLabel} ${available.length}개 대여소 · 총 ${totalBikes}대 이용 가능`;
-
-    if(available.length > 0){
-      bikeListEl.style.display = "block";
-      bikeListEl.innerHTML = `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">
-        ${available.slice(0,5).map(r=>`
-          <div style="background:rgba(255,255,255,.15);border-radius:8px;padding:4px 8px;font-size:11px">
-            🚲 ${r.stationName?.replace("따릉이","").replace(guName,"").trim()} (${r.parkingBikeTotCnt}대)
-          </div>`).join("")}
-      </div>`;
-      missionEl.style.display = "block";
-      missionText.textContent = `${regionLabel} 근처 따릉이 있어요! 자전거 미션 지금 바로 도전해봐요 🚲`;
-    } else {
-      bikeListEl.style.display = "block";
-      bikeListEl.innerHTML = `<div style="font-size:12px;color:rgba(255,255,255,.8);margin-top:4px">${regionLabel} 근처 현재 대여 가능한 따릉이가 없어요 😢</div>`;
+    const url=`https://openapi.seoul.go.kr:8088/${SEOUL_API_KEY}/json/bikeList/1/1000/`;
+    const res=await fetch(url);
+    const data=await res.json();
+    const rows=data?.rentBikeStatus?.row||[];
+    if(!rows.length)throw new Error("데이터 없음");
+    const guName=userRegion==="서울"?"":userRegion;
+    const filtered=guName?rows.filter(r=>r.stationName&&r.stationName.includes(guName)):rows;
+    const target=filtered.length>0?filtered:rows.slice(0,20);
+    const available=target.filter(r=>parseInt(r.parkingBikeTotCnt)>0);
+    const totalBikes=available.reduce((s,r)=>s+(parseInt(r.parkingBikeTotCnt)||0),0);
+    const titleEl=document.querySelector("#bikeCard div[style*='font-size:11px']");
+    if(titleEl)titleEl.textContent=`🚲 ${regionLabel} 따릉이 현황 (열린데이터광장)`;
+    statusEl.textContent=`${regionLabel} ${available.length}개 대여소 · 총 ${totalBikes}대 이용 가능`;
+    if(available.length>0){
+      bikeListEl.style.display="block";
+      bikeListEl.innerHTML=`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">${available.slice(0,5).map(r=>`<div style="background:rgba(255,255,255,.15);border-radius:8px;padding:4px 8px;font-size:11px">🚲 ${r.stationName?.replace("따릉이","").replace(guName,"").trim()} (${r.parkingBikeTotCnt}대)</div>`).join("")}</div>`;
+      missionEl.style.display="block";
+      missionText.textContent=`${regionLabel} 근처 따릉이 있어요! 자전거 미션 지금 바로 도전해봐요 🚲`;
+    }else{
+      bikeListEl.style.display="block";
+      bikeListEl.innerHTML=`<div style="font-size:12px;color:rgba(255,255,255,.8);margin-top:4px">${regionLabel} 근처 현재 대여 가능한 따릉이가 없어요 😢</div>`;
     }
-    window._bikeData = {total:totalBikes, stations:available.length};
-
+    window._bikeData={total:totalBikes,stations:available.length};
   }catch(e){
-    // 샘플 데이터 — 구별로 다른 역 표시
-    const samples = BIKE_SAMPLE[userRegion] || ["광화문역","시청역","종로3가"];
-    const titleEl = document.querySelector("#bikeCard div[style*='font-size:11px']");
-    if(titleEl) titleEl.textContent = `🚲 ${regionLabel} 따릉이 현황 (열린데이터광장)`;
-    statusEl.textContent = `${regionLabel} 인근 대여소 이용 가능`;
-    bikeListEl.style.display = "block";
-    bikeListEl.innerHTML = `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">
-      ${samples.map(s=>`<div style="background:rgba(255,255,255,.15);border-radius:8px;padding:4px 8px;font-size:11px">🚲 ${s}</div>`).join("")}
-    </div>`;
-    missionEl.style.display = "block";
-    missionText.textContent = `${regionLabel} 근처 따릉이 있어요! 자전거 미션 도전해봐요 🚲`;
-    window._bikeData = {total:0, stations:0};
+    const samples=BIKE_SAMPLE[userRegion]||["광화문역","시청역","종로3가"];
+    const titleEl=document.querySelector("#bikeCard div[style*='font-size:11px']");
+    if(titleEl)titleEl.textContent=`🚲 ${regionLabel} 따릉이 현황 (열린데이터광장)`;
+    statusEl.textContent=`${regionLabel} 인근 대여소 이용 가능`;
+    bikeListEl.style.display="block";
+    bikeListEl.innerHTML=`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">${samples.map(s=>`<div style="background:rgba(255,255,255,.15);border-radius:8px;padding:4px 8px;font-size:11px">🚲 ${s}</div>`).join("")}</div>`;
+    missionEl.style.display="block";
+    missionText.textContent=`${regionLabel} 근처 따릉이 있어요! 자전거 미션 도전해봐요 🚲`;
+    window._bikeData={total:0,stations:0};
   }
-  // 내 기여도 렌더링
   renderMyContrib();
 }
-window.loadSeoulBike = loadSeoulBike;
+window.loadSeoulBike=loadSeoulBike;
 
-// 따릉이 버튼 클릭 → 자전거 미션 바로 열기
-function startBikeMission(){
-  const uid = window.ME?.uid;
-  const m = MISSIONS.find(x=>x.id==="m8"); // 자전거/도보 미션
-  if(m && uid) openAI(m, uid, null);
-  else toast("챌린지 참여 후 이용해봐요! 🏆");
-}
-window.startBikeMission = startBikeMission;
+function startBikeMission(){const uid=window.ME?.uid;const m=MISSIONS.find(x=>x.id==="m8");if(m&&uid)openAI(m,uid,null);else toast("챌린지 참여 후 이용해봐요! 🏆");}
+window.startBikeMission=startBikeMission;
+function startAirMission(){const uid=window.ME?.uid;const missionId=window._airBad?"m2":"m8";const m=MISSIONS.find(x=>x.id===missionId);if(m&&uid)openAI(m,uid,null);else toast("챌린지 참여 후 이용해봐요! 🏆");}
+window.startAirMission=startAirMission;
+function startBusMission(){const uid=window.ME?.uid;const m=MISSIONS.find(x=>x.id==="m2");if(m&&uid)openAI(m,uid,null);else toast("챌린지 참여 후 이용해봐요! 🏆");}
+window.startBusMission=startBusMission;
 
-// 대기질 버튼 클릭 → 대기질 나쁘면 대중교통, 좋으면 자전거
-function startAirMission(){
-  const uid = window.ME?.uid;
-  const missionId = window._airBad ? "m2" : "m8"; // 나쁨→대중교통, 좋음→자전거
-  const m = MISSIONS.find(x=>x.id===missionId);
-  if(m && uid) openAI(m, uid, null);
-  else toast("챌린지 참여 후 이용해봐요! 🏆");
-}
-window.startAirMission = startAirMission;
-
-// 버스 미션 열기
-function startBusMission(){
-  const uid = window.ME?.uid;
-  const m = MISSIONS.find(x=>x.id==="m2"); // 대중교통 미션
-  if(m && uid) openAI(m, uid, null);
-  else toast("챌린지 참여 후 이용해봐요! 🏆");
-}
-window.startBusMission = startBusMission;
-
-// 인천 대중교통 정보 표시
 async function loadIncheonTransport(){
-  const card = document.getElementById("incheonTransCard");
-  const statusEl = document.getElementById("incheonTransStatus");
-  const detailEl = document.getElementById("incheonTransDetail");
-  const missionEl = document.getElementById("incheonTransMission");
-  const missionText = document.getElementById("incheonTransMissionText");
-  if(!card) return;
-
-  const userRegion = window.UDATA?.region || "";
-  const isIncheon = ["인천","부평","남동","연수","서구","계양","미추홀","동구","강화","옹진"].includes(userRegion);
-
-  if(!isIncheon){ card.style.display="none"; return; }
-  card.style.display = "block";
-
-  // 인천 지하철 혼잡도 + 버스 정보 (data.go.kr 인천교통공사)
-  // API 키 없을 때는 유용한 정적 정보 표시
-  try{
-    // 인천 지하철 실시간 혼잡도 API (data.go.kr)
-    // const url = `https://apis.data.go.kr/6280000/ICBusInfoService/...`
-    throw new Error("샘플모드"); // API 키 추가 전까지 샘플
-  }catch(e){
-    const now = new Date();
-    const hour = now.getHours();
-    const isRush = (hour>=7&&hour<=9)||(hour>=18&&hour<=20);
-    const dayType = [0,6].includes(now.getDay()) ? "주말" : "평일";
-
-    statusEl.textContent = `인천 대중교통 현황 · ${dayType} ${isRush?"🔴 혼잡":"🟢 원활"}`;
-    detailEl.innerHTML = `
-      🚇 인천1호선·2호선 운행 중<br/>
-      🚌 인천 시내버스 정상 운행 중<br/>
-      ${isRush ? "⚠️ 출퇴근 혼잡 시간대 — 여유있게 이동해요!" : "✅ 여유있는 이동 가능해요!"}
-    `;
-    missionEl.style.display = "block";
-
-    // 대기질 연동 — 나쁘면 대중교통 더 강력 추천
-    const airGrade = window._airData?.grade || "보통";
-    if(airGrade==="나쁨"||airGrade==="매우나쁨"){
-      missionText.textContent = `오늘 대기질 ${airGrade}! 자동차 대신 지하철·버스로 미세먼지 줄여요 🚇`;
-    } else {
-      missionText.textContent = "대중교통으로 이동하고 CO₂ 절감 미션 도전해봐요! 🚌";
-    }
+  const card=document.getElementById("incheonTransCard");
+  const statusEl=document.getElementById("incheonTransStatus");
+  const detailEl=document.getElementById("incheonTransDetail");
+  const missionEl=document.getElementById("incheonTransMission");
+  const missionText=document.getElementById("incheonTransMissionText");
+  if(!card)return;
+  const userRegion=window.UDATA?.region||"";
+  const isIncheon=["인천","부평","남동","연수","서구","계양","미추홀","동구","강화","옹진"].includes(userRegion);
+  if(!isIncheon){card.style.display="none";return;}
+  card.style.display="block";
+  try{throw new Error("샘플모드");}catch(e){
+    const now=new Date();
+    const hour=now.getHours();
+    const isRush=(hour>=7&&hour<=9)||(hour>=18&&hour<=20);
+    const dayType=[0,6].includes(now.getDay())?"주말":"평일";
+    statusEl.textContent=`인천 대중교통 현황 · ${dayType} ${isRush?"🔴 혼잡":"🟢 원활"}`;
+    detailEl.innerHTML=`🚇 인천1호선·2호선 운행 중<br/>🚌 인천 시내버스 정상 운행 중<br/>${isRush?"⚠️ 출퇴근 혼잡 시간대 — 여유있게 이동해요!":"✅ 여유있는 이동 가능해요!"}`;
+    missionEl.style.display="block";
+    const airGradeVal=window._airData?.grade||"보통";
+    if(airGradeVal==="나쁨"||airGradeVal==="매우나쁨"){missionText.textContent=`오늘 대기질 ${airGradeVal}! 자동차 대신 지하철·버스로 미세먼지 줄여요 🚇`;}
+    else{missionText.textContent="대중교통으로 이동하고 CO₂ 절감 미션 도전해봐요! 🚌";}
   }
 }
-window.loadIncheonTransport = loadIncheonTransport;
+window.loadIncheonTransport=loadIncheonTransport;
 
 function renderMyContrib(){
-  const d = window.UDATA||{};
-  const contribEl = document.getElementById("myContrib");
-  const statsEl = document.getElementById("contribStats");
-  const barEl = document.getElementById("contribBar");
-  const msgEl = document.getElementById("contribMsg");
-  if(!contribEl) return;
-
-  // 미션별 완료 횟수
-  const done = d.doneMissions||[];
-  const bikeCount = done.filter(id=>id==="m8").length;   // 자전거/도보
-  const busCount  = done.filter(id=>id==="m2").length;   // 대중교통
-  const tumblerCount = done.filter(id=>id==="m1").length; // 텀블러
-  const vegiCount = done.filter(id=>id==="m3").length;   // 채식
-  const totalCo2  = parseFloat((d.co2||0).toFixed(2));
-  const totalMission = d.missionCount||0;
-
-  // 미션 없어도 항상 표시
-  contribEl.style.display = "block";
-  if(totalMission === 0){
-    statsEl.innerHTML = `<div style="font-size:12px;color:rgba(255,255,255,.8);padding:8px 0">아직 미션이 없어요! 챌린지 참여 후 첫 미션을 완료해봐요 🌱</div>`;
-    barEl.innerHTML = "";
-    msgEl.innerHTML = "미션을 완료하면 내 환경 기여도가 여기 나타나요!";
+  const d=window.UDATA||{};
+  const contribEl=document.getElementById("myContrib");
+  const statsEl=document.getElementById("contribStats");
+  const barEl=document.getElementById("contribBar");
+  const msgEl=document.getElementById("contribMsg");
+  if(!contribEl)return;
+  const done=d.doneMissions||[];
+  const bikeCount=done.filter(id=>id==="m8").length;
+  const busCount=done.filter(id=>id==="m2").length;
+  const tumblerCount=done.filter(id=>id==="m1").length;
+  const vegiCount=done.filter(id=>id==="m3").length;
+  const totalCo2=parseFloat((d.co2||0).toFixed(2));
+  const totalMission=d.missionCount||0;
+  contribEl.style.display="block";
+  if(totalMission===0){
+    statsEl.innerHTML=`<div style="font-size:12px;color:rgba(255,255,255,.8);padding:8px 0">아직 미션이 없어요! 챌린지 참여 후 첫 미션을 완료해봐요 🌱</div>`;
+    barEl.innerHTML="";
+    msgEl.innerHTML="미션을 완료하면 내 환경 기여도가 여기 나타나요!";
     return;
   }
-
-  contribEl.style.display = "block";
-
-  // 통계 칩
-  const chips = [
-    bikeCount   ? {emoji:"🚲", label:"자전거/도보", count:bikeCount,  co2:(bikeCount*1.05).toFixed(2)} : null,
-    busCount    ? {emoji:"🚌", label:"대중교통",    count:busCount,   co2:(busCount*1.17).toFixed(2)}  : null,
-    tumblerCount? {emoji:"🧴", label:"텀블러",      count:tumblerCount,co2:(tumblerCount*0.332).toFixed(2)}: null,
-    vegiCount   ? {emoji:"🥗", label:"채식",        count:vegiCount,  co2:(vegiCount*0.8).toFixed(2)}  : null,
+  const chips=[
+    bikeCount?{emoji:"🚲",label:"자전거/도보",count:bikeCount,co2:(bikeCount*1.05).toFixed(2)}:null,
+    busCount?{emoji:"🚌",label:"대중교통",count:busCount,co2:(busCount*1.17).toFixed(2)}:null,
+    tumblerCount?{emoji:"🧴",label:"텀블러",count:tumblerCount,co2:(tumblerCount*0.332).toFixed(2)}:null,
+    vegiCount?{emoji:"🥗",label:"채식",count:vegiCount,co2:(vegiCount*0.8).toFixed(2)}:null,
   ].filter(Boolean);
-
-  statsEl.innerHTML = chips.map(c=>`
-    <div style="background:rgba(255,255,255,.18);border-radius:10px;padding:6px 10px;text-align:center;min-width:70px">
-      <div style="font-size:18px">${c.emoji}</div>
-      <div style="font-size:11px;font-weight:700;margin-top:2px">${c.count}회</div>
-      <div style="font-size:10px;color:rgba(255,255,255,.8)">-${c.co2}kg</div>
-      <div style="font-size:9px;color:rgba(255,255,255,.6)">${c.label}</div>
-    </div>`).join("") +
-    `<div style="background:rgba(255,255,255,.25);border-radius:10px;padding:6px 10px;text-align:center;min-width:70px;border:1.5px solid rgba(255,255,255,.4)">
-      <div style="font-size:18px">🌍</div>
-      <div style="font-size:11px;font-weight:700;margin-top:2px">${totalMission}회</div>
-      <div style="font-size:10px;color:rgba(255,255,255,.8)">-${totalCo2}kg</div>
-      <div style="font-size:9px;color:rgba(255,255,255,.6)">총 절감</div>
-    </div>`;
-
-  // 비유 메시지
-  const trees = (totalCo2/21.4);
-  const seoulAvgCo2PerDay = 8.2; // 서울시민 1인 일평균 CO₂ kg
-  const savedDays = (totalCo2/seoulAvgCo2PerDay).toFixed(1);
-  const carKm = (totalCo2/0.13).toFixed(0); // 자동차 km 환산
-
-  // 서울 대기질 연동 메시지
-  const airGrade = window._airData?.grade||"보통";
-  const airMsg = airGrade==="나쁨"||airGrade==="매우나쁨"
-    ? `오늘 서울 대기질이 ${airGrade}한데, 내 활동 덕분에 조금 더 깨끗해졌어요! 💪`
-    : `오늘 서울 공기가 ${airGrade}해요. 내 꾸준한 실천이 쌓여서예요! 🌱`;
-
-  msgEl.innerHTML = `
-    🚗 자동차 ${carKm}km 안 탄 효과<br/>
-    📅 서울시민 평균 탄소 ${savedDays}일치 절감<br/>
-    🌳 나무 ${trees>=1?trees.toFixed(1)+"그루":"한 그루의 "+Math.floor(trees*100)+"%"} 심은 효과<br/>
-    ${airMsg}`;
+  statsEl.innerHTML=chips.map(c=>`<div style="background:rgba(255,255,255,.18);border-radius:10px;padding:6px 10px;text-align:center;min-width:70px"><div style="font-size:18px">${c.emoji}</div><div style="font-size:11px;font-weight:700;margin-top:2px">${c.count}회</div><div style="font-size:10px;color:rgba(255,255,255,.8)">-${c.co2}kg</div><div style="font-size:9px;color:rgba(255,255,255,.6)">${c.label}</div></div>`).join("")+`<div style="background:rgba(255,255,255,.25);border-radius:10px;padding:6px 10px;text-align:center;min-width:70px;border:1.5px solid rgba(255,255,255,.4)"><div style="font-size:18px">🌍</div><div style="font-size:11px;font-weight:700;margin-top:2px">${totalMission}회</div><div style="font-size:10px;color:rgba(255,255,255,.8)">-${totalCo2}kg</div><div style="font-size:9px;color:rgba(255,255,255,.6)">총 절감</div></div>`;
+  const trees=(totalCo2/21.4);
+  const savedDays=(totalCo2/8.2).toFixed(1);
+  const carKm=(totalCo2/0.13).toFixed(0);
+  const airGradeVal=window._airData?.grade||"보통";
+  const airMsg=airGradeVal==="나쁨"||airGradeVal==="매우나쁨"?`오늘 서울 대기질이 ${airGradeVal}한데, 내 활동 덕분에 조금 더 깨끗해졌어요! 💪`:`오늘 서울 공기가 ${airGradeVal}해요. 내 꾸준한 실천이 쌓여서예요! 🌱`;
+  msgEl.innerHTML=`🚗 자동차 ${carKm}km 안 탄 효과<br/>📅 서울시민 평균 탄소 ${savedDays}일치 절감<br/>🌳 나무 ${trees>=1?trees.toFixed(1)+"그루":"한 그루의 "+Math.floor(trees*100)+"%"} 심은 효과<br/>${airMsg}`;
 }
-window.renderMyContrib = renderMyContrib;
+window.renderMyContrib=renderMyContrib;
 
-// ══ 지도 ══
-// CO₂ kg → 나무 이모지
 function co2ToTree(co2kg){
-  if(co2kg>=100) return{emoji:"🏕️",label:"숲",next:Infinity};
-  if(co2kg>=50)  return{emoji:"🌲",label:"큰나무",next:100};
+  if(co2kg>=100)return{emoji:"🏕️",label:"숲",next:Infinity};
+  if(co2kg>=50)return{emoji:"🌲",label:"큰나무",next:100};
   if(co2kg>=21.4)return{emoji:"🌳",label:"나무",next:50};
-  if(co2kg>=5)   return{emoji:"🌿",label:"새싹",next:21.4};
-  if(co2kg>=1)   return{emoji:"🌱",label:"씨앗",next:5};
+  if(co2kg>=5)return{emoji:"🌿",label:"새싹",next:21.4};
+  if(co2kg>=1)return{emoji:"🌱",label:"씨앗",next:5};
   return{emoji:"🌰",label:"도토리",next:1};
 }
 
 function drawMap(){
-  const d = window.UDATA||{};
-  const totalCo2 = Math.round((d.co2||0)*100)/100;
-  const totalUsers = parseInt(document.getElementById("bTotal")?.textContent?.replace(/,/g,"")||"0");
-  const globalCo2 = parseFloat(document.getElementById("bCo2")?.textContent)||0;
-
-  // 상단 요약 업데이트
-  const fTotal = document.getElementById("forestTotal");
-  const fCo2 = document.getElementById("forestCo2");
-  const fTrees = document.getElementById("forestTrees");
-  if(fTotal) fTotal.textContent = totalUsers > 0 ? totalUsers.toLocaleString()+"명" : "0명";
-  if(fCo2) fCo2.textContent = globalCo2 >= 1000 ? (globalCo2/1000).toFixed(1)+"t" : globalCo2.toFixed(1)+"kg";
-
-  // 전체 나무 수 계산 (1그루 = 21.4kg CO₂)
-  const totalTrees = Math.max(1, Math.floor(globalCo2/21.4));
-  if(fTrees) fTrees.textContent = totalTrees.toLocaleString()+"그루";
-
-  // 나무 숲 그리기
-  const grid = document.getElementById("forestGrid");
-  const msg = document.getElementById("forestMsg");
+  const d=window.UDATA||{};
+  const totalCo2=Math.round((d.co2||0)*100)/100;
+  const totalUsers=parseInt(document.getElementById("bTotal")?.textContent?.replace(/,/g,"")||"0");
+  const globalCo2=parseFloat(document.getElementById("bCo2")?.textContent)||0;
+  const fTotal=document.getElementById("forestTotal");
+  const fCo2=document.getElementById("forestCo2");
+  const fTrees=document.getElementById("forestTrees");
+  if(fTotal)fTotal.textContent=totalUsers>0?totalUsers.toLocaleString()+"명":"0명";
+  if(fCo2)fCo2.textContent=globalCo2>=1000?(globalCo2/1000).toFixed(1)+"t":globalCo2.toFixed(1)+"kg";
+  const totalTrees=Math.max(1,Math.floor(globalCo2/21.4));
+  if(fTrees)fTrees.textContent=totalTrees.toLocaleString()+"그루";
+  const grid=document.getElementById("forestGrid");
+  const msg=document.getElementById("forestMsg");
   if(grid){
-    const showTrees = Math.min(totalTrees, 60); // 최대 60그루 표시
-    const treeEmojis = ["🌳","🌲","🌴","🎋"];
-    let html = "";
+    const showTrees=Math.min(totalTrees,60);
+    const treeEmojis=["🌳","🌲","🌴","🎋"];
+    let html="";
     for(let i=0;i<showTrees;i++){
-      const size = 20 + Math.random()*14;
-      const emoji = treeEmojis[Math.floor(Math.random()*treeEmojis.length)];
-      const delay = (i*0.05).toFixed(2);
-      html += `<span style="font-size:${size}px;animation:growTree .5s ease ${delay}s both;display:inline-block">${emoji}</span>`;
+      const size=20+Math.random()*14;
+      const emoji=treeEmojis[Math.floor(Math.random()*treeEmojis.length)];
+      const delay=(i*0.05).toFixed(2);
+      html+=`<span style="font-size:${size}px;animation:growTree .5s ease ${delay}s both;display:inline-block">${emoji}</span>`;
     }
-    if(totalTrees > 60){
-      html += `<div style="font-size:12px;color:#fff;font-weight:700;background:rgba(0,0,0,.3);border-radius:10px;padding:4px 10px;margin:4px">+${(totalTrees-60).toLocaleString()}그루 더!</div>`;
-    }
-    grid.innerHTML = html;
-    if(msg) msg.textContent = `EcoQuest 유저들이 함께 심은 나무 🌳 ${totalTrees.toLocaleString()}그루`;
+    if(totalTrees>60)html+=`<div style="font-size:12px;color:#fff;font-weight:700;background:rgba(0,0,0,.3);border-radius:10px;padding:4px 10px;margin:4px">+${(totalTrees-60).toLocaleString()}그루 더!</div>`;
+    grid.innerHTML=html;
+    if(msg)msg.textContent=`EcoQuest 유저들이 함께 심은 나무 🌳 ${totalTrees.toLocaleString()}그루`;
   }
-
-  // 내 나무
-  const myTree = co2ToTree(totalCo2);
-  const myEmoji = document.getElementById("myTreeEmoji");
-  const myStatus = document.getElementById("myTreeStatus");
-  const myDesc = document.getElementById("myTreeDesc");
-  const myBar = document.getElementById("myTreeBar");
-  if(myEmoji) myEmoji.textContent = myTree.emoji;
-  if(myStatus) myStatus.textContent = `${myTree.label} (${totalCo2.toFixed(1)}kg 절감)`;
+  const myTree=co2ToTree(totalCo2);
+  const myEmoji=document.getElementById("myTreeEmoji");
+  const myStatus=document.getElementById("myTreeStatus");
+  const myDesc=document.getElementById("myTreeDesc");
+  const myBar=document.getElementById("myTreeBar");
+  if(myEmoji)myEmoji.textContent=myTree.emoji;
+  if(myStatus)myStatus.textContent=`${myTree.label} (${totalCo2.toFixed(1)}kg 절감)`;
   if(myDesc){
-    if(totalCo2 === 0){
-      myDesc.textContent = "첫 미션을 완료하면 나무가 자라기 시작해요!";
-    } else if(myTree.next === Infinity){
-      myDesc.textContent = "최고 단계 달성! 🏕️ 완전한 숲을 이뤘어요!";
-    } else {
-      myDesc.textContent = `다음 단계까지 ${(myTree.next - totalCo2).toFixed(1)}kg 더 절감하면 돼요!`;
-    }
+    if(totalCo2===0)myDesc.textContent="첫 미션을 완료하면 나무가 자라기 시작해요!";
+    else if(myTree.next===Infinity)myDesc.textContent="최고 단계 달성! 🏕️ 완전한 숲을 이뤘어요!";
+    else myDesc.textContent=`다음 단계까지 ${(myTree.next-totalCo2).toFixed(1)}kg 더 절감하면 돼요!`;
   }
   if(myBar){
-    const prevMap = {"🌰":0,"🌱":1,"🌿":5,"🌳":21.4,"🌲":50,"🏕️":100};
-    const prev = prevMap[myTree.emoji]||0;
-    const next = myTree.next===Infinity?totalCo2:myTree.next;
-    const pct = Math.min(100, Math.floor((totalCo2-prev)/(next-prev)*100));
-    myBar.style.width = pct+"%";
+    const prevMap={"🌰":0,"🌱":1,"🌿":5,"🌳":21.4,"🌲":50,"🏕️":100};
+    const prev=prevMap[myTree.emoji]||0;
+    const next=myTree.next===Infinity?totalCo2:myTree.next;
+    const pct=Math.min(100,Math.floor((totalCo2-prev)/(next-prev)*100));
+    myBar.style.width=pct+"%";
   }
-
-  // TOP 기여자 (미션 수 기준)
   loadTopContrib();
 }
 window.drawMap=drawMap;
 
+// ★ 변경 3: loadTopContrib - 닉네임 표시
 async function loadTopContrib(){
-  const w = document.getElementById("topContrib");
-  if(!w) return;
+  const w=document.getElementById("topContrib");
+  if(!w)return;
   try{
-    const snap = await window.FB.getDocs(window.FB.collection(window.FB.db,"users"));
-    const users = snap.docs.map(d=>({id:d.id,...d.data()}))
+    const snap=await window.FB.getDocs(window.FB.collection(window.FB.db,"users"));
+    const users=snap.docs.map(d=>({id:d.id,...d.data()}))
       .filter(u=>u.missionCount>0)
       .sort((a,b)=>(b.co2||0)-(a.co2||0))
       .slice(0,5);
-    if(!users.length){
-      w.innerHTML='<div style="text-align:center;padding:20px;color:var(--sub);font-size:13px">아직 기여자가 없어요!</div>';
-      return;
-    }
+    if(!users.length){w.innerHTML='<div style="text-align:center;padding:20px;color:var(--sub);font-size:13px">아직 기여자가 없어요!</div>';return;}
     const medals=["🥇","🥈","🥉","4️⃣","5️⃣"];
     w.innerHTML=users.map((u,i)=>{
       const tree=co2ToTree(u.co2||0);
@@ -2615,7 +2198,7 @@ async function loadTopContrib(){
         <div style="font-size:20px">${medals[i]}</div>
         <div style="font-size:28px">${tree.emoji}</div>
         <div style="flex:1">
-          <div style="font-size:13px;font-weight:700;color:var(--txt)">${u.id===window.ME?.uid?"나 🌟":"익명 지구지킴이"}</div>
+          <div style="font-size:13px;font-weight:700;color:var(--txt)">${u.nickname||"익명 지구지킴이"}${u.id===window.ME?.uid?" 🌟":""}</div>
           <div style="font-size:11px;color:var(--sub)">${tree.label} · 미션 ${u.missionCount||0}개</div>
         </div>
         <div style="text-align:right">
@@ -2624,13 +2207,10 @@ async function loadTopContrib(){
         </div>
       </div>`;
     }).join("");
-  }catch(e){
-    w.innerHTML='<div style="text-align:center;padding:16px;color:var(--sub);font-size:12px">불러오기 실패</div>';
-  }
+  }catch(e){w.innerHTML='<div style="text-align:center;padding:16px;color:var(--sub);font-size:12px">불러오기 실패</div>';}
 }
 window.loadTopContrib=loadTopContrib;
 
-// ══ 관리자 ══
 function openAdmin(){
   if(window.ME?.email!==window.ADMIN){toast("관리자만 접근 가능해요!");return;}
   document.getElementById("adminPage").style.display="block";
@@ -2674,19 +2254,8 @@ function renderAdminOrders(list){
 }
 window.renderAdminOrders=renderAdminOrders;
 
-window.filterAdminOrders=()=>{
-  const f=document.getElementById("orderFilter").value;
-  const filtered=f==="all"?_allOrders:_allOrders.filter(o=>o.status===f);
-  renderAdminOrders(filtered);
-};
-
-window.markOrderDone=async(id)=>{
-  try{
-    await window.FB.updateDoc(window.FB.doc(window.FB.db,"orders",id),{status:"done"});
-    toast("✅ 완료 처리됐어요!");
-    window.loadAdminOrders();
-  }catch(e){toast("실패: "+e.message);}
-};
+window.filterAdminOrders=()=>{const f=document.getElementById("orderFilter").value;const filtered=f==="all"?_allOrders:_allOrders.filter(o=>o.status===f);renderAdminOrders(filtered);};
+window.markOrderDone=async(id)=>{try{await window.FB.updateDoc(window.FB.doc(window.FB.db,"orders",id),{status:"done"});toast("✅ 완료 처리됐어요!");window.loadAdminOrders();}catch(e){toast("실패: "+e.message);}};
 
 let _allUsers=[];
 window.loadAllUsers=async()=>{
@@ -2719,15 +2288,7 @@ function renderAdminUsers(list){
     </div>`).join("");
 }
 
-window.searchAdminUsers=()=>{
-  const q=document.getElementById("userSearchInp").value.toLowerCase();
-  const filtered=_allUsers.filter(u=>
-    (u.region||"").toLowerCase().includes(q)||
-    (u.age||"").toLowerCase().includes(q)||
-    (u.interests||[]).some(i=>i.toLowerCase().includes(q))
-  );
-  renderAdminUsers(filtered);
-};
+window.searchAdminUsers=()=>{const q=document.getElementById("userSearchInp").value.toLowerCase();const filtered=_allUsers.filter(u=>(u.region||"").toLowerCase().includes(q)||(u.age||"").toLowerCase().includes(q)||(u.interests||[]).some(i=>i.toLowerCase().includes(q)));renderAdminUsers(filtered);};
 
 window.loadMissionLogs=async()=>{
   const w=document.getElementById("adminMissionList");
@@ -2736,26 +2297,10 @@ window.loadMissionLogs=async()=>{
     const snap=await window.FB.getDocs(window.FB.collection(window.FB.db,"missionLogs"));
     const logs=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0)).slice(0,50);
     if(!logs.length){w.innerHTML='<div style="text-align:center;padding:20px;color:#aaa">로그 없음</div>';return;}
-    // 미션별 집계
     const byMission={};
     logs.forEach(l=>{byMission[l.missionName]=(byMission[l.missionName]||0)+1;});
     const missionSummary=Object.entries(byMission).sort((a,b)=>b[1]-a[1]);
-    w.innerHTML=`
-      <div style="background:#fff;border-radius:12px;padding:12px;margin-bottom:10px;border:1px solid #eee">
-        <div style="font-size:13px;font-weight:700;margin-bottom:8px">🏆 미션별 인기 순위</div>
-        ${missionSummary.map(([name,cnt],i)=>`
-          <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f5f5f5;font-size:12px">
-            <span>${i+1}. ${name}</span>
-            <span style="font-weight:700;color:var(--g2)">${cnt}회</span>
-          </div>`).join("")}
-      </div>
-      <div style="font-size:11px;color:#aaa;margin-bottom:6px">최근 로그 ${logs.length}건</div>
-      ${logs.map(l=>`
-        <div style="background:#fff;border-radius:10px;padding:8px 10px;margin-bottom:4px;border:1px solid #eee;font-size:12px">
-          <div style="font-weight:700">${l.missionName}</div>
-          <div style="color:#aaa">${l.date||"-"} · ${l.timeSlot||"-"} · ${l.age||"-"} · ${l.region||"-"}</div>
-          <div style="color:var(--g2)">CO₂ -${l.co2||0}kg · +${l.point||0}P</div>
-        </div>`).join("")}`;
+    w.innerHTML=`<div style="background:#fff;border-radius:12px;padding:12px;margin-bottom:10px;border:1px solid #eee"><div style="font-size:13px;font-weight:700;margin-bottom:8px">🏆 미션별 인기 순위</div>${missionSummary.map(([name,cnt],i)=>`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f5f5f5;font-size:12px"><span>${i+1}. ${name}</span><span style="font-weight:700;color:var(--g2)">${cnt}회</span></div>`).join("")}</div><div style="font-size:11px;color:#aaa;margin-bottom:6px">최근 로그 ${logs.length}건</div>${logs.map(l=>`<div style="background:#fff;border-radius:10px;padding:8px 10px;margin-bottom:4px;border:1px solid #eee;font-size:12px"><div style="font-weight:700">${l.missionName}</div><div style="color:#aaa">${l.date||"-"} · ${l.timeSlot||"-"} · ${l.age||"-"} · ${l.region||"-"}</div><div style="color:var(--g2)">CO₂ -${l.co2||0}kg · +${l.point||0}P</div></div>`).join("")}`;
   }catch(e){if(w)w.innerHTML='<div style="padding:12px;color:red">로딩 실패</div>';}
 };
 
@@ -2772,74 +2317,23 @@ async function loadAdminStats(){
     const totalCo2=users.reduce((s,u)=>s+(u.co2||0),0);
     const totalPoints=users.reduce((s,u)=>s+(u.point||0),0);
     const totalRevenue=orders.reduce((s,o)=>s+(o.price||0),0);
-
-    // 스탯 카드
     const sc=document.getElementById("adminStatCards");
-    if(sc)sc.innerHTML=[
-      {label:"총 회원",val:users.length+"명",color:"var(--g2)"},
-      {label:"총 주문",val:orders.length+"건",color:"var(--blue)"},
-      {label:"총 CO₂ 절감",val:totalCo2.toFixed(1)+"kg",color:"var(--g1)"},
-      {label:"총 매출",val:totalRevenue.toLocaleString()+"P",color:"var(--acc)"},
-      {label:"미션 로그",val:logs.length+"건",color:"var(--g2)"},
-      {label:"보유 포인트",val:totalPoints.toLocaleString()+"P",color:"var(--red)"},
-    ].map(s=>`
-      <div style="background:#fff;border-radius:12px;padding:14px;text-align:center;border:1px solid #eee">
-        <div style="font-size:20px;font-weight:900;color:${s.color}">${s.val}</div>
-        <div style="font-size:11px;color:#aaa;margin-top:3px">${s.label}</div>
-      </div>`).join("");
-
-    // B2B 리포트
+    if(sc)sc.innerHTML=[{label:"총 회원",val:users.length+"명",color:"var(--g2)"},{label:"총 주문",val:orders.length+"건",color:"var(--blue)"},{label:"총 CO₂ 절감",val:totalCo2.toFixed(1)+"kg",color:"var(--g1)"},{label:"총 매출",val:totalRevenue.toLocaleString()+"P",color:"var(--acc)"},{label:"미션 로그",val:logs.length+"건",color:"var(--g2)"},{label:"보유 포인트",val:totalPoints.toLocaleString()+"P",color:"var(--red)"}].map(s=>`<div style="background:#fff;border-radius:12px;padding:14px;text-align:center;border:1px solid #eee"><div style="font-size:20px;font-weight:900;color:${s.color}">${s.val}</div><div style="font-size:11px;color:#aaa;margin-top:3px">${s.label}</div></div>`).join("");
     const ageMap={},genderMap={},regionMap={},jobMap={},carMap={},householdMap={},ecoLevelMap={},interestMap={},timeMap={};
-    users.forEach(u=>{
-      if(u.age)ageMap[u.age]=(ageMap[u.age]||0)+1;
-      if(u.gender)genderMap[u.gender]=(genderMap[u.gender]||0)+1;
-      if(u.region)regionMap[u.region]=(regionMap[u.region]||0)+1;
-      if(u.job)jobMap[u.job]=(jobMap[u.job]||0)+1;
-      if(u.hasCar)carMap[u.hasCar]=(carMap[u.hasCar]||0)+1;
-      if(u.household)householdMap[u.household]=(householdMap[u.household]||0)+1;
-      if(u.ecoLevel)ecoLevelMap[u.ecoLevel]=(ecoLevelMap[u.ecoLevel]||0)+1;
-      (u.interests||[]).forEach(i=>{interestMap[i]=(interestMap[i]||0)+1;});
-    });
+    users.forEach(u=>{if(u.age)ageMap[u.age]=(ageMap[u.age]||0)+1;if(u.gender)genderMap[u.gender]=(genderMap[u.gender]||0)+1;if(u.region)regionMap[u.region]=(regionMap[u.region]||0)+1;if(u.job)jobMap[u.job]=(jobMap[u.job]||0)+1;if(u.hasCar)carMap[u.hasCar]=(carMap[u.hasCar]||0)+1;if(u.household)householdMap[u.household]=(householdMap[u.household]||0)+1;if(u.ecoLevel)ecoLevelMap[u.ecoLevel]=(ecoLevelMap[u.ecoLevel]||0)+1;(u.interests||[]).forEach(i=>{interestMap[i]=(interestMap[i]||0)+1;});});
     logs.forEach(l=>{if(l.timeSlot)timeMap[l.timeSlot]=(timeMap[l.timeSlot]||0)+1;});
-
     const fmt=(map)=>Object.entries(map).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`${k}(${v}명)`).join(" · ")||"데이터 없음";
     const b2b=document.getElementById("b2bReport");
-    if(b2b)b2b.innerHTML=`
-      <div style="font-size:12px;margin-bottom:6px"><b>성별:</b> ${fmt(genderMap)}</div>
-      <div style="font-size:12px;margin-bottom:6px"><b>나이대:</b> ${fmt(ageMap)}</div>
-      <div style="font-size:12px;margin-bottom:6px"><b>지역 TOP5:</b> ${Object.entries(regionMap).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([k,v])=>`${k}(${v}명)`).join(" · ")||"데이터 없음"}</div>
-      <div style="font-size:12px;margin-bottom:6px"><b>직업:</b> ${fmt(jobMap)}</div>
-      <div style="font-size:12px;margin-bottom:6px"><b>자동차 보유:</b> ${fmt(carMap)}</div>
-      <div style="font-size:12px;margin-bottom:6px"><b>가구 형태:</b> ${fmt(householdMap)}</div>
-      <div style="font-size:12px;margin-bottom:6px"><b>환경 관심도:</b> ${fmt(ecoLevelMap)}</div>
-      <div style="font-size:12px;margin-bottom:6px"><b>관심분야:</b> ${fmt(interestMap)}</div>
-      <div style="font-size:12px"><b>활동 시간대:</b> ${Object.entries(timeMap).map(([k,v])=>`${k}(${v}건)`).join(" · ")||"데이터 없음"}</div>`;
-
-    // 시간대 차트
+    if(b2b)b2b.innerHTML=`<div style="font-size:12px;margin-bottom:6px"><b>성별:</b> ${fmt(genderMap)}</div><div style="font-size:12px;margin-bottom:6px"><b>나이대:</b> ${fmt(ageMap)}</div><div style="font-size:12px;margin-bottom:6px"><b>지역 TOP5:</b> ${Object.entries(regionMap).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([k,v])=>`${k}(${v}명)`).join(" · ")||"데이터 없음"}</div><div style="font-size:12px;margin-bottom:6px"><b>직업:</b> ${fmt(jobMap)}</div><div style="font-size:12px;margin-bottom:6px"><b>자동차 보유:</b> ${fmt(carMap)}</div><div style="font-size:12px;margin-bottom:6px"><b>가구 형태:</b> ${fmt(householdMap)}</div><div style="font-size:12px;margin-bottom:6px"><b>환경 관심도:</b> ${fmt(ecoLevelMap)}</div><div style="font-size:12px;margin-bottom:6px"><b>관심분야:</b> ${fmt(interestMap)}</div><div style="font-size:12px"><b>활동 시간대:</b> ${Object.entries(timeMap).map(([k,v])=>`${k}(${v}건)`).join(" · ")||"데이터 없음"}</div>`;
     const timeEl=document.getElementById("timeDistChart");
-    if(timeEl){
-      const slots=["새벽","오전","오후","저녁"];
-      const vals=slots.map(s=>timeMap[s]||0);
-      timeEl.innerHTML=slots.map((s,i)=>`
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-          <div style="font-size:12px;width:32px;color:#666">${s}</div>
-          <div style="flex:1;background:#f0f0f0;border-radius:8px;height:20px;overflow:hidden">
-            <div style="width:${vals[i]?Math.max(5,vals[i]/Math.max(...vals)*100):0}%;background:var(--g1);height:100%;border-radius:8px;transition:width .5s"></div>
-          </div>
-          <div style="font-size:12px;font-weight:700;color:var(--g2);width:24px">${vals[i]}</div>
-        </div>`).join("");
-    }
-
+    if(timeEl){const slots=["새벽","오전","오후","저녁"];const vals=slots.map(s=>timeMap[s]||0);timeEl.innerHTML=slots.map((s,i)=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><div style="font-size:12px;width:32px;color:#666">${s}</div><div style="flex:1;background:#f0f0f0;border-radius:8px;height:20px;overflow:hidden"><div style="width:${vals[i]?Math.max(5,vals[i]/Math.max(...vals)*100):0}%;background:var(--g1);height:100%;border-radius:8px;transition:width .5s"></div></div><div style="font-size:12px;font-weight:700;color:var(--g2);width:24px">${vals[i]}</div></div>`).join("");}
     window._adminData={users,orders,logs,ageMap,regionMap,interestMap,timeMap};
   }catch(e){console.log("통계 로딩 실패",e);}
 }
 window.loadAdminStats=loadAdminStats;
 
 function setAdminTab(t,el){
-  ["orders","users","missions","stats"].forEach(id=>{
-    const d=document.getElementById("admin-"+id);
-    if(d)d.style.display=id===t?"block":"none";
-  });
+  ["orders","users","missions","stats"].forEach(id=>{const d=document.getElementById("admin-"+id);if(d)d.style.display=id===t?"block":"none";});
   document.querySelectorAll(".admin-tab").forEach(b=>b.classList.remove("on"));
   if(el)el.classList.add("on");
   if(t==="stats")loadAdminStats();
@@ -2853,11 +2347,7 @@ window.exportCSV=()=>{
   const d=window._adminData;
   if(!d){toast("통계 탭에서 먼저 로딩해주세요!");return;}
   const rows=[["UID","미션수","포인트","CO2절감","성별","나이대","지역","직업","자동차","가구형태","환경관심도","관심분야"]];
-  d.users.forEach(u=>rows.push([
-    u.id||"",u.missionCount||0,u.point||0,(u.co2||0).toFixed(2),
-    u.gender||"",u.age||"",u.region||"",u.job||"",u.hasCar||"",u.household||"",u.ecoLevel||"",
-    (u.interests||[]).join("|")
-  ]));
+  d.users.forEach(u=>rows.push([u.id||"",u.missionCount||0,u.point||0,(u.co2||0).toFixed(2),u.gender||"",u.age||"",u.region||"",u.job||"",u.hasCar||"",u.household||"",u.ecoLevel||"",(u.interests||[]).join("|")]));
   const csv=rows.map(r=>r.join(",")).join("\n");
   const blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8"});
   const a=document.createElement("a");
@@ -2867,12 +2357,10 @@ window.exportCSV=()=>{
   toast("✅ CSV 다운로드 완료!");
 };
 
-// ══ 오버레이 유틸 ══
 function openOv(id){document.getElementById(id).classList.add("on");}
 function closeOv(id){document.getElementById(id).classList.remove("on");}
 window.openOv=openOv;window.closeOv=closeOv;
 
-// 오버레이 바깥 클릭으로 닫기
 document.querySelectorAll(".overlay").forEach(ov=>{
   ov.addEventListener("click",e=>{if(e.target===ov)closeOv(ov.id);});
 });

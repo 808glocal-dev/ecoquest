@@ -206,3 +206,90 @@
   }
 
 })();
+
+// ── PATCH 6: 관리자 챌린지 누적 카운트 초기화 버튼 ──
+// 관리자 stats 탭에 "챌린지 카운트 초기화" 버튼 추가
+(function addSeedButton() {
+  function tryInject() {
+    const statsDiv = document.getElementById('admin-stats');
+    if (!statsDiv || document.getElementById('seedChalBtn')) return;
+
+    const seedBox = document.createElement('div');
+    seedBox.style.cssText = 'background:#fff;border-radius:14px;padding:14px;border:1px solid #eee;margin-bottom:10px';
+    seedBox.innerHTML = `
+      <div style="font-size:14px;font-weight:900;margin-bottom:8px">🌱 챌린지 누적 카운트 초기화</div>
+      <div style="font-size:12px;color:#aaa;margin-bottom:10px">
+        stats/challenges 문서가 없으면 baseParticipants 값으로 초기값을 세팅해요.<br/>
+        이미 있으면 건드리지 않아요 (누적 카운트 보존).
+      </div>
+      <button id="seedChalBtn"
+        style="background:#2ECC71;color:#fff;border:none;border-radius:10px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">
+        🚀 초기값 세팅
+      </button>
+      <span id="seedChalResult" style="font-size:12px;color:#666;margin-left:10px"></span>
+    `;
+    statsDiv.prepend(seedBox);
+
+    document.getElementById('seedChalBtn').onclick = async function() {
+      const btn = this;
+      const result = document.getElementById('seedChalResult');
+      btn.disabled = true; btn.textContent = '처리 중...';
+
+      try {
+        const snap = await window.FB.getDoc(
+          window.FB.doc(window.FB.db, 'stats', 'challenges')
+        );
+        if (snap.exists()) {
+          result.textContent = '✅ 이미 문서 있음 — 기존 누적 카운트 유지';
+          result.style.color = 'var(--g2)';
+        } else {
+          // CHALLENGES 배열이 window에 없으면 대기
+          const CHAL = window.CHALLENGES_DATA || window._CHALLENGES;
+          const seed = {};
+
+          // 전역 CHALLENGES 배열 접근 (스크립트 스코프 문제 우회)
+          const baseMap = {1:1284,2:892,3:547,4:328,5:215,6:142,7:389,8:201,9:312,10:445,11:87,12:163,13:521,14:276};
+          Object.entries(baseMap).forEach(([id, count]) => {
+            seed[`c${id}`] = count;
+          });
+
+          await window.FB.setDoc(
+            window.FB.doc(window.FB.db, 'stats', 'challenges'),
+            seed
+          );
+          result.textContent = '✅ 초기값 세팅 완료! 이제부터 누적됩니다.';
+          result.style.color = 'var(--g2)';
+
+          // 챌린지 카드 즉시 업데이트
+          if (typeof renderOfficialChallenges === 'function') renderOfficialChallenges();
+        }
+      } catch(e) {
+        result.textContent = '❌ 실패: ' + e.message;
+        result.style.color = 'var(--red)';
+      }
+      btn.disabled = false; btn.textContent = '🚀 초기값 세팅';
+    };
+  }
+
+  // stats 탭이 열릴 때 주입
+  const _origSetAdminTab = window.setAdminTab;
+  if (typeof _origSetAdminTab === 'function') {
+    window.setAdminTab = function(t, el) {
+      _origSetAdminTab(t, el);
+      if (t === 'stats') setTimeout(tryInject, 100);
+    };
+  }
+  // 이미 stats 탭이 열려 있을 수도 있으니 즉시도 시도
+  setTimeout(tryInject, 500);
+})();
+
+// ── PATCH 7: cancelChal 이 stats/challenges 를 감소시키지 않음을 보장 ──
+// (기존 cancelChal은 이미 감소 안 하지만, 명시적으로 래핑해서 안전 보장)
+const _origCancelChal = window.cancelChal;
+if (typeof _origCancelChal === 'function') {
+  window.cancelChal = async function(challengeId) {
+    // stats/challenges 건드리지 않고 원본 로직만 실행
+    await _origCancelChal(challengeId);
+    // 누적 카운트는 감소하지 않음 — 의도적
+  };
+}

@@ -47,10 +47,10 @@ const corpPage = document.createElement('div');
 corpPage.className = 'page';
 corpPage.id = 'page-corporate';
 corpPage.innerHTML = `
-  <!-- 항상 공개: 기업 랭킹 -->
-  <div id="corp-public-ranking" style="padding-bottom:4px">
+  <!-- ① 항상 공개: 전체 기업 랭킹 (비가입자도 보임) -->
+  <div id="corp-public-section">
     <div style="background:linear-gradient(135deg,#0f3d20,#1a6b3a);padding:16px;color:#fff;text-align:center">
-      <div style="font-size:14px;font-weight:900;margin-bottom:2px">🏆 EcoQuest 기업 랭킹</div>
+      <div style="font-size:15px;font-weight:900;margin-bottom:2px">🏆 EcoQuest 기업 랭킹</div>
       <div style="font-size:12px;color:rgba(255,255,255,.7)">친환경 실천 기업 순위 · 실시간 업데이트</div>
     </div>
     <div style="background:#fff;border-radius:14px;overflow:hidden;margin:12px 12px 0" id="corp-public-ranking-list">
@@ -58,7 +58,7 @@ corpPage.innerHTML = `
     </div>
   </div>
 
-  <!-- 비가입 상태: 등록/합류 버튼 -->
+  <!-- ② 비가입자: 등록/합류 유도 -->
   <div id="corp-no-company" style="padding:12px 12px 20px;display:none">
     <div style="background:linear-gradient(135deg,#f0fbf4,#e8f5e9);border:1.5px solid var(--g1);border-radius:16px;padding:16px;margin-bottom:12px">
       <div style="font-size:14px;font-weight:700;color:var(--txt);margin-bottom:4px">🏢 우리 회사도 참여하기</div>
@@ -78,22 +78,23 @@ corpPage.innerHTML = `
     </div>
   </div>
 
-  <!-- 가입 후 대시보드 -->
+  <!-- ③ 가입자: 내 회사 대시보드 -->
   <div id="corp-dashboard" style="display:none;padding-bottom:20px">
-    <!-- 헤더 -->
-    <div style="background:linear-gradient(135deg,#0f3d20,#2ECC71);padding:14px 16px 12px;color:#fff">
-      <div style="font-size:10px;color:rgba(255,255,255,.6);font-weight:700;letter-spacing:.5px;margin-bottom:2px">FOR BUSINESS</div>
-      <div style="display:flex;align-items:center;justify-content:space-between">
-        <div style="font-size:17px;font-weight:900" id="corp-company-name">회사명</div>
+
+    <!-- 1. 회사명 헤더 (최상단) -->
+    <div style="background:linear-gradient(135deg,#0f3d20,#2ECC71);padding:16px;color:#fff">
+      <div style="font-size:10px;color:rgba(255,255,255,.6);font-weight:700;letter-spacing:.5px;margin-bottom:4px">FOR BUSINESS</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+        <div style="font-size:20px;font-weight:900" id="corp-company-name">회사명</div>
         <div style="font-size:11px;background:rgba(255,255,255,.2);padding:3px 10px;border-radius:20px;font-weight:700" id="corp-plan-badge">스탠다드</div>
       </div>
-      <div style="font-size:11px;color:rgba(255,255,255,.7);margin-top:4px" id="corp-invite-code-display"></div>
+      <div style="font-size:11px;color:rgba(255,255,255,.65)" id="corp-invite-code-display"></div>
     </div>
 
-    <!-- KPI -->
+    <!-- 2. KPI -->
     <div class="corp-kpi-row">
       <div class="corp-kpi dark">
-        <div class="corp-kpi-label">이번 달 CO₂ 절감</div>
+        <div class="corp-kpi-label">CO₂ 절감</div>
         <div class="corp-kpi-value" id="corp-co2">0</div>
         <div class="corp-kpi-unit">kg CO₂</div>
         <div class="corp-kpi-badge" id="corp-co2-badge">집계중</div>
@@ -115,7 +116,7 @@ corpPage.innerHTML = `
       </div>
     </div>
 
-    <!-- ESG 리포트 -->
+    <!-- 3. ESG 리포트 -->
     <div class="corp-report-card">
       <div style="font-size:15px;font-weight:800;color:#fff;margin-bottom:4px">📄 ESG 활동 리포트</div>
       <div style="font-size:12px;color:rgba(255,255,255,.55);margin-bottom:14px;line-height:1.5">직원들의 친환경 활동 데이터를<br/>ESG 보고서용 파일로 자동 생성</div>
@@ -132,32 +133,20 @@ corpPage.innerHTML = `
       </div>
     </div>
 
-    <!-- 직원 참여율 -->
+    <!-- 4. 직원 참여율 -->
     <div style="background:#fff;border:1px solid var(--bdr);border-radius:16px;padding:14px;margin:0 12px 14px">
       <div style="font-size:14px;font-weight:700;color:var(--txt);margin-bottom:10px">직원 참여 현황</div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
         <div style="font-size:26px;font-weight:900;color:var(--txt)" id="corp-participation-pct">0%<span style="font-size:13px;font-weight:500;color:var(--sub)"> 참여 중</span></div>
         <div style="font-size:12px;color:var(--sub)" id="corp-participation-count">0 / 0명</div>
       </div>
-      <div style="height:10px;background:#e8f5e9;border-radius:10px;overflow:hidden;margin-bottom:6px">
+      <div style="height:10px;background:#e8f5e9;border-radius:10px;overflow:hidden">
         <div id="corp-participation-bar" style="height:100%;background:linear-gradient(90deg,var(--g2),var(--g1));border-radius:10px;width:0%;transition:width 1s"></div>
       </div>
     </div>
 
-    <!-- 기업 랭킹 -->
-    <div class="sec"><div class="sec-t">🏆 기업 랭킹</div><div class="sec-m" onclick="loadCorpRanking()">새로고침</div></div>
-    <div style="background:#fff;border:1px solid var(--bdr);border-radius:14px;overflow:hidden;margin:0 12px 14px" id="corp-ranking-list">
-      <div style="text-align:center;padding:20px;color:var(--sub);font-size:12px">로딩 중...</div>
-    </div>
-
-    <!-- 최근 직원 활동 -->
-    <div class="sec"><div class="sec-t">📸 직원 최근 활동</div></div>
-    <div id="corp-activity-feed" style="padding:0 12px 14px">
-      <div style="text-align:center;padding:20px;color:var(--sub);font-size:12px">로딩 중...</div>
-    </div>
-
-    <!-- 플랜 업그레이드 -->
-    <div style="background:#f0fbf4;border:1px solid var(--bdr);border-radius:16px;padding:14px;margin:0 12px;display:flex;align-items:center;gap:12px" onclick="openOv('ovCorpPlan')">
+    <!-- 5. 플랜 업그레이드 -->
+    <div style="background:#f0fbf4;border:1px solid var(--bdr);border-radius:16px;padding:14px;margin:0 12px 14px;display:flex;align-items:center;gap:12px;cursor:pointer" onclick="openOv('ovCorpPlan')">
       <div style="font-size:28px;flex-shrink:0">⭐</div>
       <div style="flex:1">
         <div style="font-size:13px;font-weight:700;color:var(--txt)">프리미엄 플랜으로 업그레이드</div>
@@ -165,6 +154,13 @@ corpPage.innerHTML = `
       </div>
       <button style="background:var(--g2);color:#fff;font-size:12px;font-weight:700;padding:8px 14px;border-radius:10px;border:none;cursor:pointer;white-space:nowrap">보기</button>
     </div>
+
+    <!-- 6. 직원 인증기록 (하단) -->
+    <div class="sec"><div class="sec-t">📸 직원 인증기록</div></div>
+    <div id="corp-activity-feed" style="padding:0 12px 20px">
+      <div style="text-align:center;padding:20px;color:var(--sub);font-size:12px">로딩 중...</div>
+    </div>
+
   </div>
 `;
 appDiv.insertBefore(corpPage, appDiv.querySelector('.tab-bar'));

@@ -325,6 +325,18 @@ async function loadCorpDashboard() {
   const noComp = document.getElementById('corp-no-company');
   const dashboard = document.getElementById('corp-dashboard');
 
+  // Firebase에서 최신 유저 데이터 다시 불러오기 (탭 클릭 시마다)
+  if (window.ME) {
+    try {
+      const freshSnap = await window.FB.getDoc(
+        window.FB.doc(window.FB.db, 'users', window.ME.uid)
+      );
+      if (freshSnap.exists()) {
+        Object.assign(window.UDATA, freshSnap.data());
+      }
+    } catch(e) { console.log('유저 데이터 새로고침 실패', e); }
+  }
+
   const companyId = window.UDATA?.companyId;
   if (!companyId) {
     noComp.style.display = 'block';

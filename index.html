@@ -452,7 +452,11 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
       <button class="btn btn-g" style="flex:1;padding:12px" onclick="showCert()">🏆 증명서 발급</button>
     </div>
     <div style="padding:0 12px;margin-bottom:4px">
-      <button class="btn btn-gray" style="padding:10px" onclick="openOnboardEdit()">✏️ 내 정보 / 지역 수정</button>
+      <button class="btn btn-gray" style="padding:10px" onclick="openOnboardEdit()">✏️ 내 정보 / 지역 수정</button> 
+      </div>
+    <div style="padding:0 12px;margin-bottom:4px">
+      <button class="btn btn-gray" style="padding:10px" onclick="goPage('legal')">📋 개인정보처리방침 · 이용약관</button>
+    </div>
     </div>
     <div class="sec"><div class="sec-t">📸 내 인증 기록</div></div>
     <div id="myVerifs" style="padding:0 12px"></div>
@@ -462,7 +466,90 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
       <button class="btn btn-red" onclick="openAdmin()">🔐 관리자 페이지 열기</button>
     </div>
   </div>
-
+<div class="page" id="page-legal">
+    <div style="background:linear-gradient(135deg,#1a6b3a,#2ECC71);padding:20px 16px 16px;color:#fff">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+        <button onclick="goPage('my')" style="background:rgba(255,255,255,.2);border:none;border-radius:8px;padding:4px 10px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">← 뒤로</button>
+        <div style="font-size:18px;font-weight:900">📋 법적 고지</div>
+      </div>
+      <div style="font-size:12px;color:rgba(255,255,255,.8)">개인정보처리방침 · 이용약관</div>
+    </div>
+    <div style="display:flex;background:#fff;border-bottom:1px solid var(--bdr);position:sticky;top:0;z-index:10">
+      <button id="legal-tab-privacy" onclick="setLegalTab('privacy')" style="flex:1;padding:14px;border:none;background:none;font-size:14px;font-weight:700;color:var(--g1);border-bottom:2px solid var(--g1);cursor:pointer;font-family:inherit">개인정보처리방침</button>
+      <button id="legal-tab-terms" onclick="setLegalTab('terms')" style="flex:1;padding:14px;border:none;background:none;font-size:14px;font-weight:700;color:var(--sub);cursor:pointer;font-family:inherit">이용약관</button>
+    </div>
+    <div id="legal-privacy" style="padding:20px 16px 80px">
+      <div style="font-size:13px;color:var(--sub);margin-bottom:20px">최종 업데이트: 2026년 3월 26일</div>
+      <div style="background:#fff;border-radius:14px;padding:16px;margin-bottom:12px;border:1px solid var(--bdr)">
+        <div style="font-size:14px;font-weight:900;color:var(--g2);border-left:4px solid var(--g1);padding-left:10px;margin-bottom:10px">1. 수집하는 개인정보 항목 및 수집 방법</div>
+        <div style="background:#f8f8f8;border-radius:10px;padding:10px;font-size:12px;color:#444;line-height:1.8">
+          · 이름, 이메일 주소, 프로필 사진 (Google 계정 연동) → 회원가입 및 본인 확인<br/>
+          · 지역 정보 (사용자 직접 입력) → 지역 기반 미션 제공<br/>
+          · 미션 참여 이력, 인증 사진, CO₂ 감축량 → 서비스 제공 및 통계 분석<br/>
+          · 서비스 이용 기록 (접속 로그 등) → 서비스 개선 및 부정 이용 방지
+        </div>
+      </div>
+      <div style="background:#fff;border-radius:14px;padding:16px;margin-bottom:12px;border:1px solid var(--bdr)">
+        <div style="font-size:14px;font-weight:900;color:var(--g2);border-left:4px solid var(--g1);padding-left:10px;margin-bottom:10px">2. 개인정보의 이용 목적</div>
+        <div style="font-size:13px;color:#444;line-height:1.8">· 서비스 제공: 미션 참여, 포인트 적립, 랭킹 등 핵심 기능 운영<br/>· 서비스 개선: 이용 패턴 분석을 통한 기능 개선<br/>· 통계 및 연구: 환경 행동 데이터 집계 분석 (비식별화 처리 후 활용)<br/>· 공지 전달: 서비스 변경, 이벤트 안내 등</div>
+      </div>
+      <div style="background:#fff;border-radius:14px;padding:16px;margin-bottom:12px;border:1px solid var(--bdr)">
+        <div style="font-size:14px;font-weight:900;color:var(--g2);border-left:4px solid var(--g1);padding-left:10px;margin-bottom:10px">3. 개인정보의 제3자 제공</div>
+        <p style="font-size:13px;color:#444;line-height:1.8">원칙적으로 제3자에게 제공하지 않습니다. ESG 기업·연구기관에는 비식별화된 집계 데이터만 제공됩니다.</p>
+      </div>
+      <div style="background:#fff;border-radius:14px;padding:16px;margin-bottom:12px;border:1px solid var(--bdr)">
+        <div style="font-size:14px;font-weight:900;color:var(--g2);border-left:4px solid var(--g1);padding-left:10px;margin-bottom:10px">4. 개인정보 처리 위탁</div>
+        <div style="font-size:13px;color:#444;line-height:1.8">· Google Firebase (Google LLC): 인증, DB 저장 및 관리<br/>· Vercel Inc.: 웹 서비스 호스팅</div>
+      </div>
+      <div style="background:#fff;border-radius:14px;padding:16px;margin-bottom:12px;border:1px solid var(--bdr)">
+        <div style="font-size:14px;font-weight:900;color:var(--g2);border-left:4px solid var(--g1);padding-left:10px;margin-bottom:10px">5. 이용자의 권리</div>
+        <div style="font-size:13px;color:#444;line-height:1.8">· 개인정보 열람·정정·삭제·처리정지 요청 가능<br/>· 회원 탈퇴는 마이페이지 내 메뉴에서 가능합니다.</div>
+      </div>
+      <div style="background:#fff;border-radius:14px;padding:16px;margin-bottom:12px;border:1px solid var(--bdr)">
+        <div style="font-size:14px;font-weight:900;color:var(--g2);border-left:4px solid var(--g1);padding-left:10px;margin-bottom:10px">6. 개인정보 보호책임자</div>
+        <div style="font-size:13px;color:#444;line-height:1.8">· 성명: 오현지<br/>· 이메일: 808glocal@gmail.com</div>
+      </div>
+      <div style="background:#e8f5e9;border-radius:14px;padding:16px;border:1px solid var(--g1)">
+        <p style="font-size:13px;color:var(--g2);font-weight:700;margin-bottom:4px">개인정보 관련 문의</p>
+        <p style="font-size:13px;color:#444">이메일: 808glocal@gmail.com</p>
+      </div>
+    </div>
+    <div id="legal-terms" style="padding:20px 16px 80px;display:none">
+      <div style="font-size:13px;color:var(--sub);margin-bottom:20px">최종 업데이트: 2026년 3월 26일</div>
+      <div style="background:#fff;border-radius:14px;padding:16px;margin-bottom:12px;border:1px solid var(--bdr)">
+        <div style="font-size:14px;font-weight:900;color:var(--g2);border-left:4px solid var(--g1);padding-left:10px;margin-bottom:10px">제1조 (목적)</div>
+        <p style="font-size:13px;color:#444;line-height:1.8">이 약관은 에코퀘스트 서비스의 이용과 관련하여 서비스와 이용자 간의 권리, 의무 및 책임사항을 규정함을 목적으로 합니다.</p>
+      </div>
+      <div style="background:#fff;border-radius:14px;padding:16px;margin-bottom:12px;border:1px solid var(--bdr)">
+        <div style="font-size:14px;font-weight:900;color:var(--g2);border-left:4px solid var(--g1);padding-left:10px;margin-bottom:10px">제2조 (서비스의 내용)</div>
+        <div style="font-size:13px;color:#444;line-height:1.8">· 일일 환경 미션 제공 및 인증 기능<br/>· CO₂ 감축량 측정 및 시각화<br/>· 미션 참여 포인트 적립 및 랭킹 서비스<br/>· 인증 피드 및 커뮤니티 기능</div>
+      </div>
+      <div style="background:#fff;border-radius:14px;padding:16px;margin-bottom:12px;border:1px solid var(--bdr)">
+        <div style="font-size:14px;font-weight:900;color:var(--g2);border-left:4px solid var(--g1);padding-left:10px;margin-bottom:10px">제3조 (회원 가입)</div>
+        <p style="font-size:13px;color:#444;line-height:1.8">Google 계정을 통해 가입할 수 있습니다. 만 14세 미만의 아동은 이용할 수 없습니다.</p>
+      </div>
+      <div style="background:#fff;border-radius:14px;padding:16px;margin-bottom:12px;border:1px solid var(--bdr)">
+        <div style="font-size:14px;font-weight:900;color:var(--g2);border-left:4px solid var(--g1);padding-left:10px;margin-bottom:10px">제4조 (이용자의 의무)</div>
+        <div style="font-size:13px;color:#444;line-height:1.8">· 허위 인증 사진 등록 등 부정한 방법으로 포인트 취득 금지<br/>· 타인의 계정 도용 및 개인정보 침해 금지<br/>· 서비스 운영 방해 행위 금지<br/>· 욕설, 혐오 표현 등 불쾌 콘텐츠 게시 금지<br/>· 상업적 광고, 스팸 게시물 금지</div>
+      </div>
+      <div style="background:#fff;border-radius:14px;padding:16px;margin-bottom:12px;border:1px solid var(--bdr)">
+        <div style="font-size:14px;font-weight:900;color:var(--g2);border-left:4px solid var(--g1);padding-left:10px;margin-bottom:10px">제5조 (포인트 정책)</div>
+        <p style="font-size:13px;color:#444;line-height:1.8">포인트는 현금으로 환전되지 않으며, 회원 탈퇴 시 소멸됩니다.</p>
+      </div>
+      <div style="background:#fff;border-radius:14px;padding:16px;margin-bottom:12px;border:1px solid var(--bdr)">
+        <div style="font-size:14px;font-weight:900;color:var(--g2);border-left:4px solid var(--g1);padding-left:10px;margin-bottom:10px">제6조 (면책 조항)</div>
+        <p style="font-size:13px;color:#444;line-height:1.8">천재지변, 불가항력적 사유로 인한 서비스 중단에 대해 책임지지 않습니다.</p>
+      </div>
+      <div style="background:#fff;border-radius:14px;padding:16px;margin-bottom:12px;border:1px solid var(--bdr)">
+        <div style="font-size:14px;font-weight:900;color:var(--g2);border-left:4px solid var(--g1);padding-left:10px;margin-bottom:10px">제7조 (약관의 변경)</div>
+        <p style="font-size:13px;color:#444;line-height:1.8">약관 변경 시 시행일 7일 전에 공지합니다.</p>
+      </div>
+      <div style="background:#e8f5e9;border-radius:14px;padding:16px;border:1px solid var(--g1)">
+        <p style="font-size:13px;color:var(--g2);font-weight:700;margin-bottom:4px">서비스 문의</p>
+        <p style="font-size:13px;color:#444">이메일: 808glocal@gmail.com</p>
+      </div>
+    </div>
+  </div>
   <div id="adminPage" style="display:none;position:fixed;inset:0;background:#f5f5f5;z-index:500;overflow-y:auto;padding-bottom:60px;max-width:480px;left:50%;transform:translateX(-50%)">
     <div style="background:linear-gradient(135deg,#1a1a2e,#16213e);padding:16px;position:sticky;top:0;z-index:10;box-shadow:0 2px 10px rgba(0,0,0,.3)">
       <div style="display:flex;align-items:center;justify-content:space-between">
@@ -2495,7 +2582,15 @@ async function checkFailedChallenges(uid){
     }
   }catch(e){}
 }
-window.checkFailedChallenges=checkFailedChallenges;
+window.checkFailedChallenges=checkFailedChallenges;function setLegalTab(tab){
+  document.getElementById("legal-privacy").style.display=tab==="privacy"?"block":"none";
+  document.getElementById("legal-terms").style.display=tab==="terms"?"block":"none";
+  document.getElementById("legal-tab-privacy").style.color=tab==="privacy"?"var(--g1)":"var(--sub)";
+  document.getElementById("legal-tab-privacy").style.borderBottom=tab==="privacy"?"2px solid var(--g1)":"none";
+  document.getElementById("legal-tab-terms").style.color=tab==="terms"?"var(--g1)":"var(--sub)";
+  document.getElementById("legal-tab-terms").style.borderBottom=tab==="terms"?"2px solid var(--g1)":"none";
+}
+window.setLegalTab=setLegalTab;
 
 function openOv(id){document.getElementById(id).classList.add("on");}
 function closeOv(id){document.getElementById(id).classList.remove("on");}

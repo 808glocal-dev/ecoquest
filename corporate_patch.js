@@ -114,9 +114,12 @@ corpPage.innerHTML = `
         <div><div style="font-size:9px;color:rgba(255,255,255,.4);font-weight:700;text-transform:uppercase;letter-spacing:.5px">포함 데이터</div><div style="font-size:13px;font-weight:700;color:var(--g1)">CO₂·미션·인원</div></div>
         <div><div style="font-size:9px;color:rgba(255,255,255,.4);font-weight:700;text-transform:uppercase;letter-spacing:.5px">형식</div><div style="font-size:13px;font-weight:700;color:var(--g1)">CSV</div></div>
       </div>
-      <button onclick="downloadCorpESGReport()" style="display:flex;align-items:center;justify-content:center;gap:8px;background:var(--g1);color:var(--txt);font-size:14px;font-weight:700;padding:12px;border-radius:12px;border:none;width:100%;cursor:pointer;font-family:inherit">
+      <button id="corp-report-download-btn" onclick="downloadCorpESGReport()" style="display:none;align-items:center;justify-content:center;gap:8px;background:var(--g1);color:var(--txt);font-size:14px;font-weight:700;padding:12px;border-radius:12px;border:none;width:100%;cursor:pointer;font-family:inherit">
         📥 ESG 리포트 다운로드
       </button>
+      <div id="corp-report-noadmin" style="display:none;background:rgba(255,255,255,.1);border-radius:12px;padding:10px;text-align:center;font-size:12px;color:rgba(255,255,255,.6)">
+        🔒 ESG 리포트는 회사 관리자만 다운로드할 수 있어요
+      </div>
     </div>
 
     <!-- 직원 참여율 -->
@@ -349,6 +352,13 @@ async function loadCorpDashboard() {
     document.getElementById('corp-report-period').textContent =
       `${now.getFullYear()}년 ${now.getMonth() + 1}월`;
 
+    // 관리자 여부에 따라 리포트 버튼 표시
+    const isAdmin = _corpData?.adminUid === window.ME?.uid;
+    const dlBtn = document.getElementById('corp-report-download-btn');
+    const noAdminMsg = document.getElementById('corp-report-noadmin');
+    if (dlBtn) dlBtn.style.display = isAdmin ? 'flex' : 'none';
+    if (noAdminMsg) noAdminMsg.style.display = isAdmin ? 'none' : 'block';
+
     // 전체 유저 중 같은 companyId 가진 사람들 조회
     const userSnap = await window.FB.getDocs(window.FB.collection(window.FB.db, 'users'));
     const members = userSnap.docs.map(d => ({ id: d.id, ...d.data() }))
@@ -469,6 +479,11 @@ window.loadCorpRanking = async () => {
 
 // ── ESG 리포트 CSV 다운로드 ──
 window.downloadCorpESGReport = () => {
+  // 관리자만 다운로드 가능
+  if (_corpData?.adminUid !== window.ME?.uid) {
+    toast('🔒 ESG 리포트는 회사 관리자만 다운로드할 수 있어요!');
+    return;
+  }
   const members = window._corpMembers;
   if (!members || !members.length) { toast('데이터가 없어요! 잠시 후 다시 시도해주세요.'); return; }
 

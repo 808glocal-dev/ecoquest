@@ -47,21 +47,31 @@ const corpPage = document.createElement('div');
 corpPage.className = 'page';
 corpPage.id = 'page-corporate';
 corpPage.innerHTML = `
-  <!-- 비로그인/미가입 상태 -->
-  <div id="corp-no-company" style="padding:20px">
-    <div style="background:linear-gradient(135deg,#0f3d20,#1a6b3a);border-radius:16px;padding:20px;color:#fff;text-align:center;margin-bottom:14px">
-      <div style="font-size:40px;margin-bottom:10px">🏢</div>
-      <div style="font-size:18px;font-weight:900;margin-bottom:6px">EcoQuest for Business</div>
-      <div style="font-size:13px;color:rgba(255,255,255,.75);line-height:1.6">직원들의 친환경 활동 데이터를<br/>ESG 보고서로 자동 생성해드려요</div>
+  <!-- 항상 공개: 기업 랭킹 -->
+  <div id="corp-public-ranking" style="padding-bottom:4px">
+    <div style="background:linear-gradient(135deg,#0f3d20,#1a6b3a);padding:16px;color:#fff;text-align:center">
+      <div style="font-size:14px;font-weight:900;margin-bottom:2px">🏆 EcoQuest 기업 랭킹</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.7)">친환경 실천 기업 순위 · 실시간 업데이트</div>
     </div>
-    <button class="btn btn-g" style="margin-bottom:10px" onclick="openOv('ovCorpCreate')">+ 우리 회사 등록하기</button>
-    <button class="btn btn-gray" onclick="openOv('ovCorpJoin')">초대코드로 회사 합류하기</button>
-    <div style="margin-top:16px;background:#fff;border-radius:14px;padding:14px;border:1px solid var(--bdr)">
-      <div style="font-size:13px;font-weight:700;color:var(--txt);margin-bottom:10px">📋 기업 플랜 혜택</div>
+    <div style="background:#fff;border-radius:14px;overflow:hidden;margin:12px 12px 0" id="corp-public-ranking-list">
+      <div style="text-align:center;padding:20px;color:var(--sub);font-size:12px">로딩 중...</div>
+    </div>
+  </div>
+
+  <!-- 비가입 상태: 등록/합류 버튼 -->
+  <div id="corp-no-company" style="padding:12px 12px 20px;display:none">
+    <div style="background:linear-gradient(135deg,#f0fbf4,#e8f5e9);border:1.5px solid var(--g1);border-radius:16px;padding:16px;margin-bottom:12px">
+      <div style="font-size:14px;font-weight:700;color:var(--txt);margin-bottom:4px">🏢 우리 회사도 참여하기</div>
+      <div style="font-size:12px;color:var(--sub);margin-bottom:12px;line-height:1.6">직원들의 친환경 활동을 집계하고<br/>ESG 보고서를 자동으로 생성해요</div>
+      <button class="btn btn-g" style="margin-bottom:8px;padding:12px" onclick="openOv('ovCorpCreate')">+ 우리 회사 등록하기</button>
+      <button class="btn btn-gray" style="padding:12px" onclick="openOv('ovCorpJoin')">초대코드로 회사 합류하기</button>
+    </div>
+    <div style="background:#fff;border-radius:14px;padding:14px;border:1px solid var(--bdr)">
+      <div style="font-size:13px;font-weight:700;color:var(--txt);margin-bottom:8px">📋 기업 플랜 혜택</div>
       <div style="font-size:12px;color:var(--sub);line-height:2">
         ✅ 직원 CO₂ 절감량 자동 집계<br/>
         ✅ 기업 간 랭킹 노출<br/>
-        ✅ ESG 활동 리포트 PDF/CSV<br/>
+        ✅ ESG 활동 리포트 CSV<br/>
         ✅ 앱 내 기업 로고 노출<br/>
         ✅ 전용 미션 생성 (프로+)
       </div>
@@ -338,13 +348,19 @@ async function loadCorpDashboard() {
   }
 
   const companyId = window.UDATA?.companyId;
+
+  // 공개 랭킹은 항상 로드
+  loadCorpPublicRanking();
+
   if (!companyId) {
-    noComp.style.display = 'block';
+    // 비가입: 공개 랭킹 + 등록/합류 버튼 표시
+    document.getElementById('corp-no-company').style.display = 'block';
     dashboard.style.display = 'none';
     return;
   }
 
-  noComp.style.display = 'none';
+  // 가입: 등록/합류 버튼 숨기고 대시보드 표시
+  document.getElementById('corp-no-company').style.display = 'none';
   dashboard.style.display = 'block';
 
   try {
@@ -437,6 +453,66 @@ function renderCorpActivityFeed(members) {
 }
 
 // ── 기업 랭킹 ──
+// ── 공개 랭킹 (누구나 볼 수 있는 버전) ──
+async function loadCorpPublicRanking() {
+  const w = document.getElementById('corp-public-ranking-list');
+  if (!w) return;
+  try {
+    const userSnap = await window.FB.getDocs(window.FB.collection(window.FB.db, 'users'));
+    const allUsers = userSnap.docs.map(d => ({ id: d.id, ...d.data() })).filter(u => u.companyId);
+
+    const corpMap = {};
+    allUsers.forEach(u => {
+      if (!u.companyId) return;
+      if (!corpMap[u.companyId]) {
+        corpMap[u.companyId] = { id: u.companyId, name: u.companyName || '미등록', co2: 0, members: 0 };
+      }
+      corpMap[u.companyId].co2 += (u.co2 || 0);
+      if (u.missionCount > 0) corpMap[u.companyId].members++;
+    });
+
+    const ranked = Object.values(corpMap).sort((a, b) => b.co2 - a.co2);
+    const myCorpId = window.UDATA?.companyId;
+
+    if (!ranked.length) {
+      w.innerHTML = '<div style="text-align:center;padding:24px;color:var(--sub);font-size:13px">아직 참여 기업이 없어요!<br/>첫 번째 기업이 되어보세요 🏢</div>';
+      return;
+    }
+
+    const medals = ['🥇', '🥈', '🥉'];
+    const avatars = ['🏢', '🌍', '⚡', '🌿', '🚀', '💡', '🌱', '🔥'];
+    const colors = ['#d4f1e0', '#e8f0fe', '#fce8e8', '#f5f0ff', '#fff3d4', '#e8f5e9', '#fef3c7', '#ede9fe'];
+
+    w.innerHTML = ranked.slice(0, 10).map((c, i) => {
+      const isMine = c.id === myCorpId;
+      const trees = (c.co2 / 21.4).toFixed(1);
+      return `<div style="display:flex;align-items:center;gap:10px;padding:13px 16px;border-bottom:1px solid var(--bdr);${isMine ? 'background:#f0fbf4;' : ''}${i === Math.min(ranked.length, 10) - 1 ? 'border:none;' : ''}">
+        <div style="font-size:${i < 3 ? '20px' : '13px'};font-weight:900;color:${i < 3 ? 'inherit' : 'var(--sub)'};width:22px;text-align:center">${medals[i] || (i + 1)}</div>
+        <div style="width:36px;height:36px;border-radius:10px;background:${colors[i % colors.length]};display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">${avatars[i % avatars.length]}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:700;color:var(--txt);display:flex;align-items:center;gap:4px">
+            ${c.name}
+            ${isMine ? '<span style="background:var(--g2);color:#fff;font-size:9px;padding:1px 5px;border-radius:4px">우리</span>' : ''}
+          </div>
+          <div style="font-size:11px;color:var(--sub);margin-top:1px">🌳 나무 ${trees}그루 · 직원 ${c.members}명</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-size:14px;font-weight:900;color:var(--g2)">${c.co2.toFixed(1)}</div>
+          <div style="font-size:10px;color:var(--sub)">kg CO₂</div>
+        </div>
+      </div>`;
+    }).join('');
+
+    // 랭킹 아래 참여 유도 문구
+    w.innerHTML += `<div style="padding:12px 16px;background:#f8f8f8;text-align:center;font-size:12px;color:var(--sub)">
+      총 ${ranked.length}개 기업 참여 중 🌍
+    </div>`;
+  } catch (e) {
+    w.innerHTML = '<div style="text-align:center;padding:16px;color:var(--sub);font-size:12px">랭킹 로딩 실패</div>';
+  }
+}
+window.loadCorpPublicRanking = loadCorpPublicRanking;
+
 window.loadCorpRanking = async () => {
   const w = document.getElementById('corp-ranking-list');
   if (!w) return;

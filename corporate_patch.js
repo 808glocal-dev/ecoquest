@@ -712,6 +712,23 @@
       </div>`;
 
     myPage.appendChild(sec);
+     // 탭바에 기업 버튼 추가
+const tabBar = document.querySelector('.tab-bar');
+if (tabBar && !document.getElementById('tb-company')) {
+  const btn = document.createElement('button');
+  btn.className = 'tb';
+  btn.id = 'tb-company';
+  btn.setAttribute('data-page', 'my');
+  btn.innerHTML = '<span class="ic">🏢</span>기업';
+  btn.onclick = function() {
+    goPage('my');
+    setTimeout(() => {
+      const sec = document.getElementById('companySec');
+      if (sec) sec.scrollIntoView({ behavior: 'smooth' });
+    }, 200);
+  };
+  tabBar.appendChild(btn);
+}
   }
 
   window.loadCompanySec = async function () {

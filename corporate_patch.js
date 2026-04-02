@@ -400,3 +400,98 @@
   };
 
 })();
+
+/* =====================================================
+   교통 미션 패치 – 자전거 + 대중교통 선택
+   ===================================================== */
+(function () {
+  'use strict';
+
+  /* loadSeoulBike 완료 후 미션 버튼 영역을 2개로 교체 */
+  const _origBike = window.loadSeoulBike;
+  window.loadSeoulBike = async function () {
+    if (_origBike) await _origBike();
+    patchTransportButtons();
+  };
+
+  /* incheon 카드도 같은 패턴으로 교체 */
+  const _origIncheon = window.loadIncheonTransport;
+  window.loadIncheonTransport = async function () {
+    if (_origIncheon) await _origIncheon();
+    patchTransportButtons();
+  };
+
+  function patchTransportButtons() {
+    /* ── 따릉이(서울) 카드 ── */
+    const bm = document.getElementById('bikeMission');
+    if (bm && !bm._patched) {
+      bm._patched = true;
+      bm.innerHTML = `
+        <div style="font-size:11px;color:rgba(255,255,255,.75);font-weight:700;margin-bottom:6px">
+          💡 오늘 교통 미션 선택하기
+        </div>
+        <div style="display:flex;gap:6px">
+          <button onclick="startBikeMission()"
+            style="flex:1;background:rgba(255,255,255,.18);border:1.5px solid rgba(255,255,255,.4);
+                   border-radius:12px;padding:10px 6px;cursor:pointer;font-family:inherit;color:#fff;
+                   text-align:center;line-height:1.4">
+            <div style="font-size:20px;margin-bottom:2px">🚲</div>
+            <div style="font-size:12px;font-weight:700">자전거·도보</div>
+            <div style="font-size:10px;opacity:.8;margin-top:2px">-1.05kg CO₂</div>
+          </button>
+          <button onclick="startBusMission()"
+            style="flex:1;background:rgba(255,255,255,.18);border:1.5px solid rgba(255,255,255,.4);
+                   border-radius:12px;padding:10px 6px;cursor:pointer;font-family:inherit;color:#fff;
+                   text-align:center;line-height:1.4">
+            <div style="font-size:20px;margin-bottom:2px">🚌</div>
+            <div style="font-size:12px;font-weight:700">대중교통</div>
+            <div style="font-size:10px;opacity:.8;margin-top:2px">-1.17kg CO₂</div>
+          </button>
+        </div>`;
+    }
+
+    /* ── 인천 교통 카드 ── */
+    const im = document.getElementById('incheonTransMission');
+    if (im && !im._patched) {
+      im._patched = true;
+      im.innerHTML = `
+        <div style="font-size:11px;color:rgba(255,255,255,.75);font-weight:700;margin-bottom:6px">
+          💡 오늘 교통 미션 선택하기
+        </div>
+        <div style="display:flex;gap:6px">
+          <button onclick="startBusMission()"
+            style="flex:1;background:rgba(255,255,255,.18);border:1.5px solid rgba(255,255,255,.4);
+                   border-radius:12px;padding:10px 6px;cursor:pointer;font-family:inherit;color:#fff;
+                   text-align:center;line-height:1.4">
+            <div style="font-size:20px;margin-bottom:2px">🚇</div>
+            <div style="font-size:12px;font-weight:700">지하철·버스</div>
+            <div style="font-size:10px;opacity:.8;margin-top:2px">-1.17kg CO₂</div>
+          </button>
+          <button onclick="startBikeMission()"
+            style="flex:1;background:rgba(255,255,255,.18);border:1.5px solid rgba(255,255,255,.4);
+                   border-radius:12px;padding:10px 6px;cursor:pointer;font-family:inherit;color:#fff;
+                   text-align:center;line-height:1.4">
+            <div style="font-size:20px;margin-bottom:2px">🚶</div>
+            <div style="font-size:12px;font-weight:700">도보·자전거</div>
+            <div style="font-size:10px;opacity:.8;margin-top:2px">-1.05kg CO₂</div>
+          </button>
+        </div>`;
+    }
+  }
+
+  /* startBikeMission / startBusMission 안전 보강 (원본에 이미 있지만 재선언으로 보강) */
+  window.startBikeMission = function () {
+    const uid = window.ME?.uid;
+    if (!uid) { if (window.showLoginPrompt) window.showLoginPrompt('미션 인증은 로그인 후 가능해요! 🌱'); else toast('로그인이 필요해요!'); return; }
+    const m = MISSIONS.find(x => x.id === 'm8');
+    if (m) openAI(m, uid, null);
+  };
+
+  window.startBusMission = function () {
+    const uid = window.ME?.uid;
+    if (!uid) { if (window.showLoginPrompt) window.showLoginPrompt('미션 인증은 로그인 후 가능해요! 🌱'); else toast('로그인이 필요해요!'); return; }
+    const m = MISSIONS.find(x => x.id === 'm2');
+    if (m) openAI(m, uid, null);
+  };
+
+})();

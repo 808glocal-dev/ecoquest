@@ -721,7 +721,7 @@ if (tabBar && !document.getElementById('tb-company')) {
   btn.setAttribute('data-page', 'my');
   btn.innerHTML = '<span class="ic">🏢</span>기업';
   btn.onclick = function() {
-    goPage('my');
+    if(window.goPage) window.goPage('my');
     setTimeout(() => {
       const sec = document.getElementById('companySec');
       if (sec) sec.scrollIntoView({ behavior: 'smooth' });

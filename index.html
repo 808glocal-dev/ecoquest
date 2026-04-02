@@ -190,20 +190,8 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
 .badge-grid{display:flex;flex-wrap:wrap;gap:8px;padding:0 12px}
 /* ========== PC/태블릿 반응형 레이아웃 ========== */
 @media (min-width: 768px) {
+  body { max-width: 100%; background: #d6eedd; }
 
-  body {
-    max-width: 100%;
-    background: #d6eedd;
-  }
-
-@media (min-width: 768px) {
-
-  body {
-    max-width: 100%;
-    background: #d6eedd;
-  }
-
-  /* 앱 전체: 단일 컬럼 (사이드바 제거) */
   #app {
     display: block;
     max-width: 1300px;
@@ -214,14 +202,7 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
     box-shadow: 0 0 60px rgba(0,0,0,.07);
   }
 
-  /* 헤더: 기본 흐름 */
-  .hdr {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-
-  /* 하단 탭바: PC에서도 fixed bottom 유지 */
+  /* 탭바: PC에서도 fixed bottom 유지 */
   .tab-bar {
     position: fixed;
     bottom: 0;
@@ -233,100 +214,51 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
     border-top: 1px solid var(--bdr);
     display: flex;
     flex-direction: row;
-    align-items: stretch;
-    justify-content: stretch;
     z-index: 100;
     padding-bottom: env(safe-area-inset-bottom);
-    height: 60px;
   }
 
-  /* 탭 버튼: PC에서도 아이콘 + 텍스트 세로 배치 */
   .tb {
     flex: 1;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    gap: 3px;
+    gap: 2px;
     padding: 8px 4px 6px;
     border-radius: 0;
-    font-size: 12px;
+    font-size: 10px;
     font-weight: 600;
     color: var(--sub);
-    margin-bottom: 0;
   }
 
-  .tb .ic {
-    font-size: 22px;
-    width: auto;
-  }
-
-  .tb.on {
-    background: none;
-    color: var(--g1);
-    transform: none;
-  }
-
+  .tb .ic { font-size: 22px; width: auto; }
+  .tb.on { background: none; color: var(--g1); }
   .tb.on .ic { transform: scale(1.1); }
 
-  /* 페이지: 일반 흐름 */
-  .page {
-    display: none;
-    padding-bottom: 20px;
-  }
+  .page { display: none; padding-bottom: 20px; }
   .page.on { display: block; }
 
-  /* 미션 스크롤 → 줄바꿈 */
-  .mscroll {
-    flex-wrap: wrap;
-    overflow-x: visible;
-    padding: 0 16px 8px;
-  }
+  .mscroll { flex-wrap: wrap; overflow-x: visible; padding: 0 16px 8px; }
+  .mc { width: calc(20% - 9px); min-width: 148px; max-width: 180px; }
 
-  .mc {
-    width: calc(20% - 9px);
-    min-width: 148px;
-    max-width: 180px;
-  }
+  .chal-grid { grid-template-columns: repeat(3, 1fr); }
 
-  /* 챌린지 그리드: 3열 */
-  .chal-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-
-  /* 도서 목록: 2열 */
   #bookList {
     display: grid !important;
     grid-template-columns: 1fr 1fr;
     gap: 10px;
     padding: 0 12px;
   }
-
   .book-card { margin: 0; }
 
-  .act-top {
-    grid-template-columns: repeat(3, 1fr);
-    margin: 16px;
-    gap: 12px;
-  }
-
+  .act-top { grid-template-columns: repeat(3, 1fr); margin: 16px; gap: 12px; }
   .badge-grid { padding: 0 16px; gap: 10px; }
   .stat-card { margin: 12px 16px; }
   .earth-banner { margin: 12px 16px; }
   .sec { padding: 16px 16px 8px; }
 
-  /* 모달: 중앙 팝업 */
-  .overlay {
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-  }
-
-  .modal {
-    border-radius: 20px;
-    max-width: 560px;
-    width: 100%;
-    max-height: 88vh;
-  }
+  .overlay { align-items: center; justify-content: center; padding: 24px; }
+  .modal { border-radius: 20px; max-width: 560px; width: 100%; max-height: 88vh; }
 
   #adminPage {
     max-width: 1300px;
@@ -343,210 +275,20 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
     gap: 8px;
     margin: 4px 16px 0;
   }
-
-  #airCard, #bikeCard {
-    margin-bottom: 0;
-  }
-
-  #incheonTransCard {
-    grid-column: 1 / 3;
-    margin-bottom: 0;
-  }
+  #airCard, #bikeCard { margin-bottom: 0; }
+  #incheonTransCard { grid-column: 1 / 3; margin-bottom: 0; }
 }
 
-/* 1024px+ */
 @media (min-width: 1024px) {
-
   #app { max-width: 1440px; }
-
   .tab-bar { max-width: 1440px; }
-
-  .chal-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
-
-  .mc {
-    width: calc(16.6% - 9px);
-    min-width: 140px;
-  }
-
-  #bookList {
-    grid-template-columns: 1fr 1fr 1fr;
-  }
-
-  #seoulDataBanner {
-    grid-template-columns: 1fr 1fr 1fr;
-  }
-
-  #incheonTransCard {
-    grid-column: auto;
-  }
-
-  #adminStatCards {
-    grid-template-columns: repeat(3, 1fr) !important;
-  }
+  .chal-grid { grid-template-columns: repeat(4, 1fr); }
+  .mc { width: calc(16.6% - 9px); min-width: 140px; }
+  #bookList { grid-template-columns: 1fr 1fr 1fr; }
+  #seoulDataBanner { grid-template-columns: 1fr 1fr 1fr; }
+  #incheonTransCard { grid-column: auto; }
+  #adminStatCards { grid-template-columns: repeat(3, 1fr) !important; }
 }
-
-  /* 헤더: 전체 너비 */
-  .hdr {
-    grid-column: 1 / 3;
-    grid-row: 1;
-  }
-
-  /* 하단 탭바 → 왼쪽 사이드바 */
-  .tab-bar {
-    grid-column: 1;
-    grid-row: 2;
-    position: sticky;
-    top: 66px;              /* 헤더 높이만큼 */
-    height: calc(100vh - 66px);
-    width: 220px;
-    max-width: 220px;
-    transform: none !important;
-    left: auto !important;
-    bottom: auto;
-    flex-direction: column;
-    align-items: stretch;
-    justify-content: flex-start;
-    border-top: none;
-    border-right: 1px solid var(--bdr);
-    padding: 16px 10px 20px;
-    overflow-y: auto;
-    background: #fff;
-  }
-
-  /* 탭 버튼: 아이콘 + 텍스트 가로 배치 */
-  .tb {
-    flex-direction: row;
-    justify-content: flex-start;
-    align-items: center;
-    gap: 12px;
-    padding: 13px 16px;
-    border-radius: 12px;
-    font-size: 13px;
-    font-weight: 700;
-    width: 100%;
-    text-align: left;
-    margin-bottom: 2px;
-    color: var(--sub);
-  }
-
-  .tb .ic {
-    font-size: 20px;
-    width: 26px;
-    text-align: center;
-    flex-shrink: 0;
-  }
-
-  .tb.on {
-    background: linear-gradient(135deg, #f0fbf4, #e4f5ea);
-    color: var(--g2);
-    transform: none;
-  }
-
-  .tb.on .ic { transform: none; }
-
-  /* 모든 페이지: 오른쪽 2번째 컬럼 */
-  .page {
-    grid-column: 2;
-    grid-row: 2;
-  }
-
-  /* 미션 스크롤 → 줄바꿈 */
-  .mscroll {
-    flex-wrap: wrap;
-    overflow-x: visible;
-    padding: 0 16px 8px;
-  }
-
-  .mc {
-    width: calc(20% - 9px);
-    min-width: 148px;
-    max-width: 180px;
-  }
-
-  /* 챌린지 그리드: 3열 */
-  .chal-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-
-  /* 도서 목록: 2열 */
-  #bookList {
-    display: grid !important;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    padding: 0 12px;
-  }
-
-  .book-card { margin: 0; }
-
-  /* 활동 카드: 가로 3열 유지 (더 여유있게) */
-  .act-top {
-    grid-template-columns: repeat(3, 1fr);
-    margin: 16px;
-    gap: 12px;
-  }
-
-  /* 뱃지 */
-  .badge-grid { padding: 0 16px; gap: 10px; }
-
-  /* 통계 카드 여백 */
-  .stat-card { margin: 12px 16px; }
-  .earth-banner { margin: 12px 16px; }
-  .sec { padding: 16px 16px 8px; }
-
-  /* 모달: 바텀시트 → 중앙 팝업으로 */
-  .overlay {
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-  }
-
-  .modal {
-    border-radius: 20px;
-    max-width: 560px;
-    width: 100%;
-    max-height: 88vh;
-  }
-
-  /* 관리자 페이지 */
-  #adminPage {
-    max-width: 1300px;
-    width: 100%;
-    left: 50% !important;
-    transform: translateX(-50%) !important;
-  }
-
-  /* 로그인 화면 */
-  #loginScreen { max-width: 100%; }
-
-  /* 지도/숲 페이지: 카드들 2열 배치 */
-  #page-map > div:not(:first-child):not(:last-child) {
-    display: inline-block;
-  }
-
-  /* 홈 데이터 배너: 가로 배치 */
-  #seoulDataBanner {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    margin: 4px 16px 0;
-  }
-
-  #airCard, #bikeCard {
-    margin-bottom: 0;
-  }
-
-  #incheonTransCard {
-    grid-column: 1 / 3;
-    margin-bottom: 0;
-  }
-}
-
-/* 1024px+ : 더 넓게 */
-@media (min-width: 1024px) {
-
-  #app { max-width: 1440px; }
 
   /* 챌린지 4열 */
   .chal-grid {

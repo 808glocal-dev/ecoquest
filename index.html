@@ -2690,37 +2690,7 @@ async function loadAdminStats(){
     if(b2b)b2b.innerHTML=`<div style="font-size:12px;margin-bottom:6px"><b>성별:</b> ${fmt(genderMap)}</div><div style="font-size:12px;margin-bottom:6px"><b>나이대:</b> ${fmt(ageMap)}</div><div style="font-size:12px;margin-bottom:6px"><b>지역 TOP5:</b> ${Object.entries(regionMap).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([k,v])=>`${k}(${v}명)`).join(" · ")||"데이터 없음"}</div><div style="font-size:12px;margin-bottom:6px"><b>직업:</b> ${fmt(jobMap)}</div><div style="font-size:12px;margin-bottom:6px"><b>자동차 보유:</b> ${fmt(carMap)}</div><div style="font-size:12px;margin-bottom:6px"><b>가구 형태:</b> ${fmt(householdMap)}</div><div style="font-size:12px;margin-bottom:6px"><b>환경 관심도:</b> ${fmt(ecoLevelMap)}</div><div style="font-size:12px;margin-bottom:6px"><b>관심분야:</b> ${fmt(interestMap)}</div><div style="font-size:12px"><b>활동 시간대:</b> ${Object.entries(timeMap).map(([k,v])=>`${k}(${v}건)`).join(" · ")||"데이터 없음"}</div>`;
     const timeEl=document.getElementById("timeDistChart");
     if(timeEl){const slots=["새벽","오전","오후","저녁"];const vals=slots.map(s=>timeMap[s]||0);timeEl.innerHTML=slots.map((s,i)=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><div style="font-size:12px;width:32px;color:#666">${s}</div><div style="flex:1;background:#f0f0f0;border-radius:8px;height:20px;overflow:hidden"><div style="width:${vals[i]?Math.max(5,vals[i]/Math.max(...vals)*100):0}%;background:var(--g1);height:100%;border-radius:8px;transition:width .5s"></div></div><div style="font-size:12px;font-weight:700;color:var(--g2);width:24px">${vals[i]}</div></div>`).join("");}
-   // 기업 참여 현황
-try {
-  const coSnap = await window.FB.getDocs(window.FB.collection(window.FB.db, 'companies'));
-  const companies = coSnap.docs.map(d => ({id: d.id, ...d.data()}));
-  
-  // 유저별 기업 매핑
-  const coMap = {};
-  users.forEach(u => { if (u.companyId) coMap[u.companyId] = (coMap[u.companyId]||0)+1; });
-  
-  const coReport = document.getElementById('b2bReport');
-  if (coReport) {
-    const coRows = companies.map(co => {
-      const members = users.filter(u => u.companyId === co.id);
-      const totalCo2 = members.reduce((s,u) => s+(u.co2||0), 0).toFixed(1);
-      const totalMission = members.reduce((s,u) => s+(u.missionCount||0), 0);
-      return `<div style="background:#f8fdf9;border-radius:10px;padding:10px 12px;margin-bottom:8px;border:1px solid var(--bdr)">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-          <div style="font-size:13px;font-weight:700;color:var(--txt)">${co.emoji||'🏢'} ${co.name}</div>
-          <div style="font-size:11px;color:var(--sub)">${co.type||''}</div>
-        </div>
-        <div style="display:flex;gap:12px;font-size:11px;color:var(--sub)">
-          <span>👥 ${members.length}명</span>
-          <span>🌍 CO₂ -${totalCo2}kg</span>
-          <span>✅ 미션 ${totalMission}건</span>
-        </div>
-      </div>`;
-    }).join('');
-    
-    coReport.innerHTML = (coRows ? `<div style="font-size:13px;font-weight:700;color:var(--txt);margin-bottom:8px">🏢 기업 참여 현황 (${companies.length}개)</div>${coRows}<div style="border-top:1px solid var(--bdr);margin:12px 0"></div>` : '') + coReport.innerHTML;
-  }
-} catch(e) {}
+
     // 기업 참여 현황 + 랭킹
 try {
   const coSnap = await window.FB.getDocs(window.FB.collection(window.FB.db, 'companies'));

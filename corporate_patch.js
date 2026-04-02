@@ -738,8 +738,7 @@
   /* 마이 페이지에 '소속 기업' 섹션 추가 */
   function injectCompanySection() {
     const myPage = document.getElementById('page-my');
-    if (!myPage || document.getElementById('companySec')) return;
-
+myPage.appendChild(sec);
     const sec = document.createElement('div');
     sec.id = 'companySec';
     sec.innerHTML = `
@@ -754,13 +753,7 @@
         <div style="text-align:center;color:var(--sub);font-size:12px;padding:8px">로딩 중...</div>
       </div>`;
 
-    /* adminArea 바로 앞에 삽입 */
-   const adminArea = document.getElementById('adminArea');
-if (adminArea && adminArea.parentNode === myPage) {
-  myPage.insertBefore(sec, adminArea);
-} else {
-  myPage.appendChild(sec);
-}
+myPage.appendChild(sec);
   }
 
   window.loadCompanySec = async function () {

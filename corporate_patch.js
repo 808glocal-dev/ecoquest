@@ -755,9 +755,12 @@
       </div>`;
 
     /* adminArea 바로 앞에 삽입 */
-    const adminArea = document.getElementById('adminArea');
-    if (adminArea) myPage.insertBefore(sec, adminArea);
-    else myPage.appendChild(sec);
+   const adminArea = document.getElementById('adminArea');
+if (adminArea && adminArea.parentNode === myPage) {
+  myPage.insertBefore(sec, adminArea);
+} else {
+  myPage.appendChild(sec);
+}
   }
 
   window.loadCompanySec = async function () {
@@ -1059,9 +1062,12 @@
         <div style="text-align:center;color:var(--sub);font-size:12px;padding:8px">로딩 중...</div>
       </div>`;
 
-    const adminArea = document.getElementById('adminArea');
-    if (adminArea) myPage.insertBefore(sec, adminArea);
-    else myPage.appendChild(sec);
+  const adminArea = document.getElementById('adminArea');
+if (adminArea && adminArea.parentNode === myPage) {
+  myPage.insertBefore(sec, adminArea);
+} else {
+  myPage.appendChild(sec);
+}
   }
 
 })();

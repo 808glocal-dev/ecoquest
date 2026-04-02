@@ -2691,42 +2691,53 @@ async function loadAdminStats(){
     const timeEl=document.getElementById("timeDistChart");
     if(timeEl){const slots=["새벽","오전","오후","저녁"];const vals=slots.map(s=>timeMap[s]||0);timeEl.innerHTML=slots.map((s,i)=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><div style="font-size:12px;width:32px;color:#666">${s}</div><div style="flex:1;background:#f0f0f0;border-radius:8px;height:20px;overflow:hidden"><div style="width:${vals[i]?Math.max(5,vals[i]/Math.max(...vals)*100):0}%;background:var(--g1);height:100%;border-radius:8px;transition:width .5s"></div></div><div style="font-size:12px;font-weight:700;color:var(--g2);width:24px">${vals[i]}</div></div>`).join("");}
 
-    // 기업 참여 현황 + 랭킹
+ 
+// 개인 랭킹 + 기업 랭킹
 try {
-  const coSnap = await window.FB.getDocs(window.FB.collection(window.FB.db, 'companies'));
-  const companies = coSnap.docs.map(d => ({id: d.id, ...d.data()}));
-  
-  const coStats = companies.map(co => {
-    const members = users.filter(u => u.companyId === co.id);
-    const totalCo2 = members.reduce((s,u) => s+(u.co2||0), 0);
-    const totalMission = members.reduce((s,u) => s+(u.missionCount||0), 0);
-    const totalPoint = members.reduce((s,u) => s+(u.point||0), 0);
-    return { co, members, totalCo2, totalMission, totalPoint };
-  }).sort((a,b) => b.totalCo2 - a.totalCo2);
-
+  // 개인 TOP5
+  const top5 = [...users].sort((a,b)=>(b.co2||0)-(a.co2||0)).slice(0,5);
   const medals = ['🥇','🥈','🥉','4️⃣','5️⃣'];
-  const rankRows = coStats.map((s,i) => `
-    <div style="display:flex;align-items:center;gap:10px;padding:10px;background:#f8fdf9;border-radius:10px;margin-bottom:6px;border:1px solid var(--bdr)">
-      <div style="font-size:18px">${medals[i]||'🏢'}</div>
-      <div style="font-size:22px">${s.co.emoji||'🏢'}</div>
+  const personalRows = top5.map((u,i)=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:8px;background:#f8fdf9;border-radius:10px;margin-bottom:6px;border:1px solid var(--bdr)">
+      <div style="font-size:16px">${medals[i]}</div>
       <div style="flex:1">
-        <div style="font-size:13px;font-weight:700;color:var(--txt)">${s.co.name}</div>
+        <div style="font-size:12px;font-weight:700;color:var(--txt)">${u.nickname||'익명'}</div>
+        <div style="font-size:11px;color:var(--sub)">✅ ${u.missionCount||0}건 · 💚 ${(u.point||0).toLocaleString()}P</div>
+      </div>
+      <div style="font-size:13px;font-weight:900;color:var(--g2)">${(u.co2||0).toFixed(1)}kg</div>
+    </div>`).join('');
+
+  // 기업 TOP5
+  const coSnap = await window.FB.getDocs(window.FB.collection(window.FB.db,'companies'));
+  const companies = coSnap.docs.map(d=>({id:d.id,...d.data()}));
+  const coStats = companies.map(co=>{
+    const members = users.filter(u=>u.companyId===co.id);
+    const totalCo2 = members.reduce((s,u)=>s+(u.co2||0),0);
+    const totalMission = members.reduce((s,u)=>s+(u.missionCount||0),0);
+    const totalPoint = members.reduce((s,u)=>s+(u.point||0),0);
+    return {co, members, totalCo2, totalMission, totalPoint};
+  }).sort((a,b)=>b.totalCo2-a.totalCo2);
+
+  const coRows = coStats.map((s,i)=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:8px;background:#f8fdf9;border-radius:10px;margin-bottom:6px;border:1px solid var(--bdr)">
+      <div style="font-size:16px">${medals[i]||'🏢'}</div>
+      <div style="font-size:20px">${s.co.emoji||'🏢'}</div>
+      <div style="flex:1">
+        <div style="font-size:12px;font-weight:700;color:var(--txt)">${s.co.name}</div>
         <div style="font-size:11px;color:var(--sub)">👥 ${s.members.length}명 · ✅ ${s.totalMission}건 · 💚 ${s.totalPoint.toLocaleString()}P</div>
       </div>
-      <div style="text-align:right">
-        <div style="font-size:14px;font-weight:900;color:var(--g2)">${s.totalCo2.toFixed(1)}kg</div>
-        <div style="font-size:10px;color:var(--sub)">CO₂ 절감</div>
-      </div>
+      <div style="font-size:13px;font-weight:900;color:var(--g2)">${s.totalCo2.toFixed(1)}kg</div>
     </div>`).join('');
 
   const coReport = document.getElementById('b2bReport');
-  if (coReport && coStats.length) {
-    coReport.innerHTML = `
-      <div style="font-size:13px;font-weight:700;color:var(--txt);margin-bottom:8px">🏆 기업 CO₂ 절감 랭킹 (${companies.length}개)</div>
-      ${rankRows}
+  if(coReport) {
+    coReport.innerHTML =
+      `<div style="font-size:13px;font-weight:700;color:var(--txt);margin-bottom:8px">🏆 기업 CO₂ 랭킹 (${companies.length}개)</div>${coRows||'<div style="font-size:12px;color:var(--sub)">등록된 기업 없음</div>'}
+      <div style="border-top:1px solid var(--bdr);margin:12px 0"></div>
+      <div style="font-size:13px;font-weight:700;color:var(--txt);margin-bottom:8px">👤 개인 CO₂ 랭킹</div>${personalRows}
       <div style="border-top:1px solid var(--bdr);margin:12px 0"></div>` + coReport.innerHTML;
   }
-} catch(e) {}
+} catch(e) { console.log('랭킹 오류',e); }
     window._adminData={users,orders,logs,ageMap,regionMap,interestMap,timeMap};
   }catch(e){console.log("통계 로딩 실패",e);}
 }

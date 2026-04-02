@@ -922,6 +922,17 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
         <div class="score-lbl" id="scoreLbl"></div>
       </div>
     </div>
+    <div id="treeCountWrap" style="display:none;margin-bottom:12px">
+  <div style="font-size:12px;color:var(--sub);margin-bottom:6px">🌳 몇 그루 심었나요?</div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <button onclick="if(_treeCount>1){_treeCount--;document.getElementById('treeCountDisp').textContent=_treeCount+'그루';document.getElementById('treeCo2Disp').textContent=(_treeCount*5.0).toFixed(1)+'kg';}" style="width:36px;height:36px;border-radius:50%;border:1.5px solid var(--bdr);background:#fff;font-size:18px;cursor:pointer;font-family:inherit">-</button>
+    <div style="flex:1;text-align:center">
+      <div style="font-size:22px;font-weight:900;color:var(--txt)" id="treeCountDisp">1그루</div>
+      <div style="font-size:11px;color:var(--g2)" id="treeCo2Disp">5.0kg CO₂ 절감</div>
+    </div>
+    <button onclick="_treeCount++;document.getElementById('treeCountDisp').textContent=_treeCount+'그루';document.getElementById('treeCo2Disp').textContent=(_treeCount*5.0).toFixed(1)+'kg';" style="width:36px;height:36px;border-radius:50%;border:1.5px solid var(--g1);background:var(--g1);color:#fff;font-size:18px;cursor:pointer;font-family:inherit">+</button>
+  </div>
+</div>
     <div id="pubToggle" style="display:none;margin-bottom:10px">
       <div style="font-size:12px;color:var(--sub);margin-bottom:6px">📸 인증샷 공개 설정</div>
       <div style="display:flex;gap:6px;margin-bottom:8px">
@@ -1728,7 +1739,7 @@ function renderHomeChalls(){
 window.renderHomeChalls=renderHomeChalls;
 
 const API_KEY="";
-let _curM=null,_curUid=null,_b64=null,_passed=false,_curChalId=null,_verifPub=true;
+let _curM=null,_curUid=null,_b64=null,_passed=false,_curChalId=null,_verifPub=true;let _curM=null,_curUid=null,_b64=null,_passed=false,_curChalId=null,_verifPub=true,_treeCount=1;
 
 function openAI(m,uid,chalId){
   _curChalId=chalId||null;
@@ -1751,6 +1762,9 @@ function openAI(m,uid,chalId){
   document.getElementById("btnDone").style.display="none";
   document.getElementById("pubToggle").style.display="none";
   document.getElementById("fileIn").value="";
+  _treeCount=1;
+const treeInput=document.getElementById("treeCountWrap");
+if(treeInput)treeInput.style.display=m.id==="m27"?"block":"none";
   openOv("ovAI");
 }
 window.openAI=openAI;
@@ -1833,7 +1847,10 @@ async function doComplete(){
   if(!_passed||!_curM||!_curUid)return;
   const btn=document.getElementById("btnDone");
   btn.disabled=true;btn.textContent="저장 중...";
-  const ok=await window.saveMission(_curUid,_curM);
+  const missionToSave=_curM.id==="m27"
+  ?{..._curM,co2:parseFloat((_treeCount*5.0).toFixed(2)),point:_treeCount*3000}
+  :_curM;
+const ok=await window.saveMission(_curUid,missionToSave);
   if(ok){
     if(_curChalId){
       const today=new Date().toISOString().split("T")[0];

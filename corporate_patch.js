@@ -738,7 +738,8 @@
   /* 마이 페이지에 '소속 기업' 섹션 추가 */
   function injectCompanySection() {
     const myPage = document.getElementById('page-my');
-myPage.appendChild(sec);
+    if (!myPage || document.getElementById('companySec')) return;
+
     const sec = document.createElement('div');
     sec.id = 'companySec';
     sec.innerHTML = `
@@ -753,7 +754,10 @@ myPage.appendChild(sec);
         <div style="text-align:center;color:var(--sub);font-size:12px;padding:8px">로딩 중...</div>
       </div>`;
 
-myPage.appendChild(sec);
+    /* adminArea 바로 앞에 삽입 */
+    const adminArea = document.getElementById('adminArea');
+    if (adminArea) myPage.insertBefore(sec, adminArea);
+    else myPage.appendChild(sec);
   }
 
   window.loadCompanySec = async function () {
@@ -1055,12 +1059,36 @@ myPage.appendChild(sec);
         <div style="text-align:center;color:var(--sub);font-size:12px;padding:8px">로딩 중...</div>
       </div>`;
 
-  const adminArea = document.getElementById('adminArea');
-if (adminArea && adminArea.parentNode === myPage) {
-  myPage.insertBefore(sec, adminArea);
-} else {
-  myPage.appendChild(sec);
-}
+    const adminArea = document.getElementById('adminArea');
+    if (adminArea) myPage.insertBefore(sec, adminArea);
+    else myPage.appendChild(sec);
   }
 
+})();
+
+/* ── 푸터 (마이 페이지 하단) ── */
+(function () {
+  function injectFooter() {
+    const page = document.getElementById('page-my');
+    if (!page || document.getElementById('appFooter')) return;
+    const f = document.createElement('div');
+    f.id = 'appFooter';
+    f.style.cssText =
+      'text-align:center;padding:20px 16px 44px;font-size:11px;' +
+      'color:var(--sub);line-height:2';
+    f.innerHTML =
+      '<button onclick="goPage(\'legal\')" ' +
+      'style="background:none;border:none;font-size:11px;color:var(--sub);' +
+      'cursor:pointer;font-family:inherit;text-decoration:underline">개인정보처리방침</button>' +
+      ' &nbsp;·&nbsp; ' +
+      '<button onclick="setLegalTab(\'terms\');goPage(\'legal\')" ' +
+      'style="background:none;border:none;font-size:11px;color:var(--sub);' +
+      'cursor:pointer;font-family:inherit;text-decoration:underline">이용약관</button>' +
+      ' &nbsp;·&nbsp; 문의: 808glocal@gmail.com<br/>© 2026 EcoQuest';
+    page.appendChild(f);
+  }
+  if (document.readyState === 'loading')
+    document.addEventListener('DOMContentLoaded', injectFooter);
+  else
+    injectFooter();
 })();

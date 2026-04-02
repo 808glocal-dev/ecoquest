@@ -2773,7 +2773,7 @@ function setAdminTab(t,el){
 }
 window.setAdminTab=setAdminTab;
 
-window.exportCSV=()=>{
+window.exportCSV=async()=>{
   const d=window._adminData;
   if(!d){toast("통계 탭에서 먼저 로딩해주세요!");return;}
   const rows=[["UID","미션수","포인트","CO2절감","성별","나이대","지역","직업","자동차","가구형태","환경관심도","관심분야"]];

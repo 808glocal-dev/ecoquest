@@ -5,13 +5,11 @@
 (function () {
   'use strict';
 
-  /* ── 빈도 힌트 텍스트 ── */
   function freqHint(n) {
     return ['','가볍게 시작','균형잡힌 페이스','추천 💚','활발하게','열심히!','거의 매일','매일! 🌍'][Math.min(n,7)] || '';
   }
-  window._fhintOf = freqHint; // overlay 버튼 onclick에서 참조
+  window._fhintOf = freqHint;
 
-  /* ── 총 필요 횟수 계산 (freqPerWeek 우선, 구버전 호환) ── */
   function calcTotal(ac) {
     const n = ac.freqPerWeek
       ?? (ac.freq === 'daily' ? 7
@@ -21,12 +19,8 @@
     return n * (ac.weeks || 2);
   }
 
-  /* ── 현재 선택 상태 ── */
   let _freq = 3, _weeks = 2;
 
-  /* =====================================================
-     openChal – 챌린지 상세 모달 (자유 빈도)
-     ===================================================== */
   window.openChal = function (id) {
     const c = CHALLENGES.find(x => x.id === id);
     if (!c) return;
@@ -130,9 +124,6 @@
     drawModal(CHALLENGES.find(x => x.id === cid));
   };
 
-  /* =====================================================
-     _doJoin – 챌린지 참여 저장
-     ===================================================== */
   window._doJoin = async function (title, cid) {
     if (!window.ME) { toast('로그인이 필요해요!'); return; }
     const ch = CHALLENGES.find(x => x.id === cid);
@@ -150,8 +141,8 @@
       challengeTitle: title,
       emoji:          ch.emoji,
       missionId:      ch.missionId,
-      freq:           _freq >= 7 ? 'daily' : 'w' + _freq,  // 구버전 호환
-      freqPerWeek:    _freq,                                 // 실제 숫자
+      freq:           _freq >= 7 ? 'daily' : 'w' + _freq,
+      freqPerWeek:    _freq,
       weeks:          _weeks,
       deposit:        0,
       startDate:      start,
@@ -178,9 +169,6 @@
     } catch(e) { toast('참여 실패: ' + e.message); }
   };
 
-  /* =====================================================
-     renderHomeChalls – 빈도·진행률 표시 패치
-     ===================================================== */
   window.renderHomeChalls = function () {
     const w = document.getElementById('homeChallList');
     if (!w) return;
@@ -251,9 +239,6 @@
     }).join('');
   };
 
-  /* =====================================================
-     renderTodayQuests – 빈도 배지 + 진행률 패치
-     ===================================================== */
   window.renderTodayQuests = function (uid) {
     const wrap = document.getElementById('missionScroll');
     if (!wrap) return;
@@ -312,9 +297,6 @@
     });
   };
 
-  /* =====================================================
-     openChangeFreq – 참여 후 빈도 변경 모달
-     ===================================================== */
   window.openChangeFreq = function (challengeId) {
     const ac = (window.UDATA?.activeChallenges || []).find(a => a.challengeId === challengeId);
     if (!ac) return;
@@ -407,14 +389,12 @@
 (function () {
   'use strict';
 
-  /* loadSeoulBike 완료 후 미션 버튼 영역을 2개로 교체 */
   const _origBike = window.loadSeoulBike;
   window.loadSeoulBike = async function () {
     if (_origBike) await _origBike();
     patchTransportButtons();
   };
 
-  /* incheon 카드도 같은 패턴으로 교체 */
   const _origIncheon = window.loadIncheonTransport;
   window.loadIncheonTransport = async function () {
     if (_origIncheon) await _origIncheon();
@@ -422,7 +402,6 @@
   };
 
   function patchTransportButtons() {
-    /* ── 따릉이(서울) 카드 ── */
     const bm = document.getElementById('bikeMission');
     if (bm && !bm._patched) {
       bm._patched = true;
@@ -450,7 +429,6 @@
         </div>`;
     }
 
-    /* ── 인천 교통 카드 ── */
     const im = document.getElementById('incheonTransMission');
     if (im && !im._patched) {
       im._patched = true;
@@ -479,7 +457,6 @@
     }
   }
 
-  /* startBikeMission / startBusMission 안전 보강 (원본에 이미 있지만 재선언으로 보강) */
   window.startBikeMission = function () {
     const uid = window.ME?.uid;
     if (!uid) { if (window.showLoginPrompt) window.showLoginPrompt('미션 인증은 로그인 후 가능해요! 🌱'); else toast('로그인이 필요해요!'); return; }
@@ -502,16 +479,10 @@
 (function () {
   'use strict';
 
-  /* ── Firebase 준비될 때까지 대기 ── */
   function waitForFB(cb) {
     const t = setInterval(() => { if (window.FB) { clearInterval(t); cb(); } }, 80);
   }
 
-  /* ================================================================
-     1. 오늘 참여자 · 누적 참여자 동적 업데이트
-     ================================================================ */
-
-  /** 로그인한 유저가 오늘 처음 접속인지 확인 → todayUsers 증가 */
   async function trackTodayVisit(uid) {
     if (!window.FB || !uid) return;
     try {
@@ -519,10 +490,7 @@
       const uRef    = window.FB.doc(window.FB.db, 'users', uid);
       const uSnap   = await window.FB.getDoc(uRef);
       if (!uSnap.exists()) return;
-
       const lastDate = uSnap.data().lastActiveDate || '';
-
-      /* 오늘 처음 방문이면 todayUsers 증가 & 날짜 저장 */
       if (lastDate !== today) {
         await window.FB.setDoc(
           window.FB.doc(window.FB.db, 'stats', 'global'),
@@ -535,7 +503,6 @@
     } catch (_) {}
   }
 
-  /** 자정 이후 첫 로드 시 todayUsers 리셋 */
   async function resetTodayIfNeeded() {
     if (!window.FB) return;
     try {
@@ -551,27 +518,23 @@
     } catch (_) {}
   }
 
-  /* loadUser 패치 – 방문 추적 추가 */
   const _origLoadUser = window.loadUser;
   window.loadUser = async function (uid) {
     if (_origLoadUser) await _origLoadUser(uid);
     waitForFB(() => trackTodayVisit(uid));
   };
 
-  /* 30초마다 통계 갱신 (숫자 실시간 변동) */
   setInterval(() => {
     if (window.loadGlobalStats) window.loadGlobalStats();
   }, 30000);
 
-  /* 앱 로드 시 당일 리셋 확인 */
   waitForFB(resetTodayIfNeeded);
 
   /* ================================================================
-     2. 게스트 모드 – 로그인 없이 둘러보기
+     2. 게스트 모드
      ================================================================ */
   window.GUEST_MODE = false;
 
-  /* 로그인 화면에 '둘러보기' 버튼 주입 */
   function injectGuestBtn() {
     const ls = document.getElementById('loginScreen');
     if (!ls || document.getElementById('btnGuest')) return;
@@ -607,7 +570,6 @@
     if (ls)  ls.style.display  = 'none';
     if (app) app.style.display = 'block';
 
-    /* auth 모듈이 null-user 감지 → 다시 loginScreen 보이려는 것 차단 */
     if (ls) {
       new MutationObserver(() => {
         if (window.GUEST_MODE && ls.style.display !== 'none')
@@ -623,7 +585,6 @@
 
     showGuestBanner();
 
-    /* 데이터 로드 */
     waitForFB(() => { if (window.loadGlobalStats) window.loadGlobalStats(); });
     ['updateUI','renderTodayQuests','renderHomeChalls','renderOfficialChallenges','renderBooks']
       .forEach(fn => { if (window[fn]) window[fn](null); });
@@ -665,7 +626,6 @@
     document.getElementById('loginScreen').style.display   = 'flex';
   };
 
-  /** 로그인이 필요한 액션 시 프롬프트 */
   window.showLoginPrompt = function (msg) {
     document.getElementById('loginPromptOv')?.remove();
     const d = document.createElement('div');
@@ -696,7 +656,6 @@
     d.addEventListener('click', e => { if (e.target === d) d.remove(); });
   };
 
-  /* openAI 패치 – 게스트면 로그인 안내 */
   const _origOpenAI = window.openAI;
   window.openAI = function (m, uid, chalId) {
     if (!window.ME) {
@@ -709,14 +668,12 @@
     if (_origOpenAI) _origOpenAI(m, uid, chalId);
   };
 
-  /* _doJoin 패치 – 게스트면 로그인 안내 */
   const _origDoJoin = window._doJoin;
   window._doJoin = function (title, cid) {
     if (!window.ME) { window.showLoginPrompt('챌린지 참여는 로그인 후 가능해요! 🏆'); return; }
     if (_origDoJoin) _origDoJoin(title, cid);
   };
 
-  /* DOM 준비 후 게스트 버튼 + loginScreen observer */
   function setupGuest() {
     injectGuestBtn();
     const ls = document.getElementById('loginScreen');
@@ -735,7 +692,6 @@
      3. 기업 이름 관리 (마이 페이지)
      ================================================================ */
 
-  /* 마이 페이지에 '소속 기업' 섹션 추가 */
   function injectCompanySection() {
     const myPage = document.getElementById('page-my');
     if (!myPage || document.getElementById('companySec')) return;
@@ -746,18 +702,16 @@
       <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 12px 8px">
         <div style="font-size:15px;font-weight:900;color:var(--txt)">🏢 소속 기업/단체</div>
         <button onclick="loadCompanySec()"
-          style="font-size:12px;color:var(--sub);background:none;border:none;
-                 cursor:pointer;font-family:inherit">새로고침</button>
+          style="font-size:12px;color:var(--sub);background:none;border:none;cursor:pointer;font-family:inherit">
+          새로고침
+        </button>
       </div>
       <div id="companyBox" style="margin:0 12px 12px;background:#fff;border-radius:14px;
                                    padding:14px;border:1px solid var(--bdr);min-height:60px">
         <div style="text-align:center;color:var(--sub);font-size:12px;padding:8px">로딩 중...</div>
       </div>`;
 
-    /* adminArea 바로 앞에 삽입 */
-    const adminArea = document.getElementById('adminArea');
-    if (adminArea) myPage.insertBefore(sec, adminArea);
-    else myPage.appendChild(sec);
+    myPage.appendChild(sec);
   }
 
   window.loadCompanySec = async function () {
@@ -771,7 +725,6 @@
 
     const cid = window.UDATA?.companyId;
 
-    /* ── 소속 없음 ── */
     if (!cid) {
       box.innerHTML = `
         <div style="text-align:center;margin-bottom:14px">
@@ -790,11 +743,9 @@
       return;
     }
 
-    /* ── 소속 있음 ── */
     try {
       const snap = await window.FB.getDoc(window.FB.doc(window.FB.db, 'companies', cid));
       if (!snap.exists()) {
-        /* 기업이 삭제됨 → 유저 데이터 정리 */
         await window.FB.updateDoc(window.FB.doc(window.FB.db, 'users', window.ME.uid), { companyId: null });
         window.UDATA.companyId = null;
         window.loadCompanySec(); return;
@@ -843,7 +794,6 @@
     }
   };
 
-  /* ── 기업 등록 ── */
   window.openCreateCompany = function () {
     document.getElementById('coCreateOv')?.remove();
     window._coEmoji = '🏢';
@@ -912,7 +862,6 @@
     } catch(e) { toast('등록 실패: ' + e.message); }
   };
 
-  /* ── 기업명 변경 ── */
   window.openEditCompany = function (cid) {
     document.getElementById('coEditOv')?.remove();
     const d = document.createElement('div');
@@ -946,7 +895,6 @@
     } catch(e) { toast('실패: ' + e.message); }
   };
 
-  /* ── 기업 삭제 (회원 있으면 이중 확인) ── */
   window.openDeleteCompany = function (cid, memberCount) {
     if (memberCount > 1) {
       const ok1 = confirm(
@@ -964,7 +912,6 @@
 
   async function deleteCompany(cid) {
     try {
-      /* 모든 멤버 companyId 제거 */
       const snap = await window.FB.getDoc(window.FB.doc(window.FB.db, 'companies', cid));
       if (snap.exists()) {
         const members = snap.data().members || [];
@@ -979,7 +926,6 @@
     } catch(e) { toast('삭제 실패: ' + e.message); }
   }
 
-  /* ── 기업 탈퇴 ── */
   window.leaveCompany = async function (cid) {
     if (!window.ME || !window.FB) return;
     if (!confirm('기업에서 탈퇴할까요?')) return;
@@ -1000,7 +946,6 @@
     } catch(e) { toast('실패: ' + e.message); }
   };
 
-  /* ── 코드로 기업 참여 ── */
   window.joinCompanyByCode = async function () {
     const code = document.getElementById('coCodeInp')?.value?.trim()?.toUpperCase();
     if (!code || code.length < 4) { toast('코드를 입력해주세요!'); return; }
@@ -1024,7 +969,6 @@
     } catch(e) { toast('참여 실패: ' + e.message); }
   };
 
-  /* ── showApp 패치: 로그인 후 기업 섹션 로드 ── */
   const _origShowApp = window.showApp;
   window.showApp = function () {
     if (_origShowApp) _origShowApp();
@@ -1034,61 +978,9 @@
     }, 400);
   };
 
-  /* DOM 준비 시 섹션 주입 (이미 로그인된 경우 대비) */
   if (document.readyState === 'loading')
     document.addEventListener('DOMContentLoaded', injectCompanySection);
   else
     injectCompanySection();
 
-  function injectCompanySection() {
-    const myPage = document.getElementById('page-my');
-    if (!myPage || document.getElementById('companySec')) return;
-
-    const sec = document.createElement('div');
-    sec.id = 'companySec';
-    sec.innerHTML = `
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 12px 8px">
-        <div style="font-size:15px;font-weight:900;color:var(--txt)">🏢 소속 기업/단체</div>
-        <button onclick="loadCompanySec()"
-          style="font-size:12px;color:var(--sub);background:none;border:none;cursor:pointer;font-family:inherit">
-          새로고침
-        </button>
-      </div>
-      <div id="companyBox" style="margin:0 12px 12px;background:#fff;border-radius:14px;
-                                   padding:14px;border:1px solid var(--bdr);min-height:60px">
-        <div style="text-align:center;color:var(--sub);font-size:12px;padding:8px">로딩 중...</div>
-      </div>`;
-
-    const adminArea = document.getElementById('adminArea');
-    if (adminArea) myPage.insertBefore(sec, adminArea);
-    else myPage.appendChild(sec);
-  }
-
-})();
-
-/* ── 푸터 (마이 페이지 하단) ── */
-(function () {
-  function injectFooter() {
-    const page = document.getElementById('page-my');
-    if (!page || document.getElementById('appFooter')) return;
-    const f = document.createElement('div');
-    f.id = 'appFooter';
-    f.style.cssText =
-      'text-align:center;padding:20px 16px 44px;font-size:11px;' +
-      'color:var(--sub);line-height:2';
-    f.innerHTML =
-      '<button onclick="goPage(\'legal\')" ' +
-      'style="background:none;border:none;font-size:11px;color:var(--sub);' +
-      'cursor:pointer;font-family:inherit;text-decoration:underline">개인정보처리방침</button>' +
-      ' &nbsp;·&nbsp; ' +
-      '<button onclick="setLegalTab(\'terms\');goPage(\'legal\')" ' +
-      'style="background:none;border:none;font-size:11px;color:var(--sub);' +
-      'cursor:pointer;font-family:inherit;text-decoration:underline">이용약관</button>' +
-      ' &nbsp;·&nbsp; 문의: 808glocal@gmail.com<br/>© 2026 EcoQuest';
-    page.appendChild(f);
-  }
-  if (document.readyState === 'loading')
-    document.addEventListener('DOMContentLoaded', injectFooter);
-  else
-    injectFooter();
 })();

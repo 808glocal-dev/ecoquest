@@ -542,45 +542,26 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
       <div class="act-card"><div class="act-num" id="actMission">0</div><div class="act-lbl">완료 미션</div></div>
     </div>
     <div class="analogy-card">
-      <details style="margin:0 12px 12px;background:#fff;border-radius:14px;border:1px solid var(--bdr);overflow:hidden">
+    <details style="margin:0 12px 12px;background:#fff;border-radius:14px;border:1px solid var(--bdr);overflow:hidden">
   <summary style="padding:14px 16px;font-size:13px;font-weight:700;color:var(--txt);cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between">
     <span>📐 CO₂ 절감량 계산 기준</span>
     <span style="font-size:11px;color:var(--sub);font-weight:400">탭해서 보기 ▾</span>
   </summary>
   <div style="padding:0 16px 16px;border-top:1px solid var(--bdr)">
-    <div style="font-size:11px;color:var(--sub);margin:10px 0 12px;line-height:1.7">
-      각 미션의 CO₂ 절감량은 <b>한국환경공단·IPCC 배출계수</b>를 기준으로 산출돼요.<br/>
-      "실천 시" vs "하지 않았을 때"의 탄소 차이값을 사용합니다.
-    </div>
+    <div style="font-size:11px;color:var(--sub);margin:10px 0 12px;line-height:1.7">각 미션의 CO₂ 절감량은 <b>한국환경공단·IPCC 배출계수</b>를 기준으로 산출해요.<br/>"실천 시" vs "하지 않았을 때"의 탄소 차이값을 사용합니다.</div>
     <div style="display:flex;flex-direction:column;gap:6px">
-      ${[
-        {emoji:"🧴",name:"텀블러 사용",co2:"0.332kg",basis:"일회용 종이컵 1개 제조+폐기 탄소 (환경부 LCA)"},
-        {emoji:"🚌",name:"대중교통 이용",co2:"1.17kg",basis:"승용차 10km 배출량 - 버스 동일거리 배출량 (국토부)"},
-        {emoji:"🥗",name:"채식 한 끼",co2:"0.8kg",basis:"육류 한 끼(200g) 대비 채식 식단 탄소 차이 (FAO)"},
-        {emoji:"🚲",name:"자전거/도보",co2:"1.05kg",basis:"승용차 10km 배출 회피량 (IPCC 0.21kgCO₂/km)"},
-        {emoji:"🚯",name:"줍깅",co2:"0.5kg",basis:"쓰레기 1kg 매립 회피 탄소 (환경부 폐기물 계수)"},
-        {emoji:"🔌",name:"멀티탭 절전",co2:"0.12kg",basis:"대기전력 10W × 12h 절감 (한전 배출계수 0.46kgCO₂/kWh)"},
-        {emoji:"🛍️",name:"장바구니",co2:"0.15kg",basis:"비닐봉지 1개 제조 탄소 (환경부 EPD)"},
-        {emoji:"🚿",name:"샤워 5분",co2:"0.38kg",basis:"온수 15분→5분 절감, 가스 보일러 기준"},
-        {emoji:"🫙",name:"용기내/리필",co2:"0.25~0.8kg",basis:"플라스틱 용기 제조 회피 탄소 (환경부 LCA)"},
-        {emoji:"🍽️",name:"음식 남김 없이",co2:"0.6kg",basis:"음식물쓰레기 300g 매립 회피 탄소 (IPCC CH₄ 계수)"},
-      ].map(m=>`
-        <div style="display:flex;align-items:flex-start;gap:10px;padding:8px 10px;background:#f8fdf9;border-radius:10px">
-          <span style="font-size:18px;flex-shrink:0">${m.emoji}</span>
-          <div style="flex:1;min-width:0">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">
-              <span style="font-size:12px;font-weight:700;color:var(--txt)">${m.name}</span>
-              <span style="font-size:12px;font-weight:900;color:var(--g2);flex-shrink:0;margin-left:8px">-${m.co2}</span>
-            </div>
-            <div style="font-size:10px;color:var(--sub);line-height:1.5">${m.basis}</div>
-          </div>
-        </div>`).join("")}
+      <div style="display:flex;gap:10px;padding:8px 10px;background:#f8fdf9;border-radius:10px"><span style="font-size:18px;flex-shrink:0">🧴</span><div style="flex:1"><div style="display:flex;justify-content:space-between"><span style="font-size:12px;font-weight:700">텀블러 사용</span><span style="font-size:12px;font-weight:900;color:var(--g2)">-0.332kg</span></div><div style="font-size:10px;color:var(--sub);margin-top:2px">일회용 종이컵 1개 제조+폐기 탄소 (환경부 LCA)</div></div></div>
+      <div style="display:flex;gap:10px;padding:8px 10px;background:#f8fdf9;border-radius:10px"><span style="font-size:18px;flex-shrink:0">🚌</span><div style="flex:1"><div style="display:flex;justify-content:space-between"><span style="font-size:12px;font-weight:700">대중교통 이용</span><span style="font-size:12px;font-weight:900;color:var(--g2)">-1.17kg</span></div><div style="font-size:10px;color:var(--sub);margin-top:2px">승용차 10km 배출량 - 버스 동일거리 배출량 (국토부)</div></div></div>
+      <div style="display:flex;gap:10px;padding:8px 10px;background:#f8fdf9;border-radius:10px"><span style="font-size:18px;flex-shrink:0">🥗</span><div style="flex:1"><div style="display:flex;justify-content:space-between"><span style="font-size:12px;font-weight:700">채식 한 끼</span><span style="font-size:12px;font-weight:900;color:var(--g2)">-0.8kg</span></div><div style="font-size:10px;color:var(--sub);margin-top:2px">육류 한 끼(200g) 대비 채식 식단 탄소 차이 (FAO)</div></div></div>
+      <div style="display:flex;gap:10px;padding:8px 10px;background:#f8fdf9;border-radius:10px"><span style="font-size:18px;flex-shrink:0">🚲</span><div style="flex:1"><div style="display:flex;justify-content:space-between"><span style="font-size:12px;font-weight:700">자전거/도보</span><span style="font-size:12px;font-weight:900;color:var(--g2)">-1.05kg</span></div><div style="font-size:10px;color:var(--sub);margin-top:2px">승용차 10km 배출 회피량 (IPCC 0.21kgCO₂/km)</div></div></div>
+      <div style="display:flex;gap:10px;padding:8px 10px;background:#f8fdf9;border-radius:10px"><span style="font-size:18px;flex-shrink:0">🚯</span><div style="flex:1"><div style="display:flex;justify-content:space-between"><span style="font-size:12px;font-weight:700">줍깅</span><span style="font-size:12px;font-weight:900;color:var(--g2)">-0.5kg</span></div><div style="font-size:10px;color:var(--sub);margin-top:2px">쓰레기 1kg 매립 회피 탄소 (환경부 폐기물 계수)</div></div></div>
+      <div style="display:flex;gap:10px;padding:8px 10px;background:#f8fdf9;border-radius:10px"><span style="font-size:18px;flex-shrink:0">🔌</span><div style="flex:1"><div style="display:flex;justify-content:space-between"><span style="font-size:12px;font-weight:700">멀티탭 절전</span><span style="font-size:12px;font-weight:900;color:var(--g2)">-0.12kg</span></div><div style="font-size:10px;color:var(--sub);margin-top:2px">대기전력 10W×12h 절감 (한전 배출계수 0.46kgCO₂/kWh)</div></div></div>
+      <div style="display:flex;gap:10px;padding:8px 10px;background:#f8fdf9;border-radius:10px"><span style="font-size:18px;flex-shrink:0">🚿</span><div style="flex:1"><div style="display:flex;justify-content:space-between"><span style="font-size:12px;font-weight:700">샤워 5분</span><span style="font-size:12px;font-weight:900;color:var(--g2)">-0.38kg</span></div><div style="font-size:10px;color:var(--sub);margin-top:2px">온수 15분→5분 절감, 가스 보일러 기준</div></div></div>
+      <div style="display:flex;gap:10px;padding:8px 10px;background:#f8fdf9;border-radius:10px"><span style="font-size:18px;flex-shrink:0">🍽️</span><div style="flex:1"><div style="display:flex;justify-content:space-between"><span style="font-size:12px;font-weight:700">음식 남김 없이</span><span style="font-size:12px;font-weight:900;color:var(--g2)">-0.6kg</span></div><div style="font-size:10px;color:var(--sub);margin-top:2px">음식물쓰레기 300g 매립 회피 탄소 (IPCC CH₄ 계수)</div></div></div>
     </div>
-    <div style="margin-top:10px;padding:8px 10px;background:#fff8e1;border-radius:10px;border:1px solid #f39c12">
-      <div style="font-size:10px;color:#8B5E04;line-height:1.7">
-        ⚠️ 절감량은 평균값 기반 추정치예요. 실제 상황에 따라 차이가 있을 수 있어요.<br/>
-        📚 참고: 한국환경공단 온실가스 배출계수, IPCC AR6, FAO 식품 탄소발자국 보고서
-      </div>
+    <div style="margin-top:10px;padding:8px 10px;background:#fff8e1;border-radius:10px;border:1px solid #f39c12;font-size:10px;color:#8B5E04;line-height:1.7">
+      ⚠️ 절감량은 평균값 기반 추정치예요. 실제 상황에 따라 차이가 있을 수 있어요.<br/>
+      📚 참고: 한국환경공단 온실가스 배출계수, IPCC AR6, FAO 식품 탄소발자국 보고서
     </div>
   </div>
 </details>

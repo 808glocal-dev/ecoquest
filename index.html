@@ -2801,7 +2801,7 @@ try {
   const cos = coSnap.docs.map(d=>({id:d.id,...d.data()}));
   rows.push([],['=== 기업 참여 현황 ==='],['기업명','업종','멤버수','CO2절감(kg)','미션건수','초대코드']);
   cos.forEach(co => {
-    const mbs = (d.users||[]).filter(u=>u.companyId===co.id);
+    const mbs = (window._adminData?.users||[]).filter(u=>u.companyId===co.id);
     rows.push([co.name||'', co.type||'', mbs.length, mbs.reduce((s,u)=>s+(u.co2||0),0).toFixed(1), mbs.reduce((s,u)=>s+(u.missionCount||0),0), co.inviteCode||'']);
   });
 } catch(e) {}

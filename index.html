@@ -2743,6 +2743,18 @@ window.exportCSV=()=>{
   const rows=[["UID","미션수","포인트","CO2절감","성별","나이대","지역","직업","자동차","가구형태","환경관심도","관심분야"]];
   d.users.forEach(u=>rows.push([u.id||"",u.missionCount||0,u.point||0,(u.co2||0).toFixed(2),u.gender||"",u.age||"",u.region||"",u.job||"",u.hasCar||"",u.household||"",u.ecoLevel||"",(u.interests||[]).join("|")]));
   const csv=rows.map(r=>r.join(",")).join("\n");
+ // 기업 시트 추가
+try {
+  const coSnap = await window.FB.getDocs(window.FB.collection(window.FB.db, 'companies'));
+  const cos = coSnap.docs.map(d => ({id: d.id, ...d.data()}));
+  const coRows = [['',''],['=== 기업 참여 현황 ===',''],['기업명','유형','멤버수','초대코드']];
+  cos.forEach(co => {
+    const members = d.users.filter(u => u.companyId === co.id);
+    const co2 = members.reduce((s,u) => s+(u.co2||0),0).toFixed(1);
+    coRows.push([co.name||'', co.type||'', members.length, co.inviteCode||'', co2+'kg']);
+  });
+  rows.push(...coRows);
+} catch(e) {}
   const blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8"});
   const a=document.createElement("a");
   a.href=URL.createObjectURL(blob);

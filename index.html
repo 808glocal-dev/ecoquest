@@ -2573,7 +2573,8 @@ async function loadTopContrib(){
     }).join("");// 기업 랭킹
 try {
   const crEl = document.getElementById('companyRank');
-  if (!crEl) return;
+if (!crEl) { /* skip */ }
+else {
   const [coSnap, uSnap] = await Promise.all([
     window.FB.getDocs(window.FB.collection(window.FB.db,'companies')),
     window.FB.getDocs(window.FB.collection(window.FB.db,'users'))
@@ -2602,7 +2603,6 @@ try {
         <div style="font-size:10px;color:var(--sub)">CO₂ 절감</div>
       </div>
     </div>`).join('');
-} catch(e) {}
 } catch(e) {}
   }catch(e){w.innerHTML='<div style="text-align:center;padding:16px;color:var(--sub);font-size:12px">불러오기 실패</div>';}
 }

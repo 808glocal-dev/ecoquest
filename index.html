@@ -1239,7 +1239,7 @@ window.saveTodayMissions=async(uid,ids)=>{
 // ★ 변경 1: userName 저장 시 닉네임 우선
 window.saveVerification=async(uid,m,b64,isPublic,comment)=>{
   try{
-    const thumb=await compressImage(b64,200);
+    const thumb=await compressImage(b64,400);
     await window.FB.addDoc(window.FB.collection(window.FB.db,"verifications"),{
       uid,userName:window.UDATA?.nickname||window.ME?.displayName||"익명",userPhoto:window.ME?.photoURL||"",
       missionId:m.id,missionName:m.name,missionEmoji:m.emoji,isPublic,thumb,
@@ -1515,7 +1515,7 @@ function compressImage(b64,maxW){
       const c=document.createElement("canvas");
       c.width=img.width*scale;c.height=img.height*scale;
       c.getContext("2d").drawImage(img,0,0,c.width,c.height);
-      res(c.toDataURL("image/jpeg",.6));
+      res(c.toDataURL("image/jpeg",.85));
     };
     img.src="data:image/jpeg;base64,"+b64;
   });

@@ -1914,7 +1914,7 @@ async function renderOfficialChallenges(){
       const counts=snap.data();
       CHALLENGES.forEach(c=>{
         const el=document.getElementById(`chal-cnt-${c.id}`);
-        if(el){const total=(counts[`c${c.id}`]||0)+c.baseParticipants;el.textContent=`👥 ${total.toLocaleString()}명`;}
+        if(el){const total=counts[`c${c.id}`]||0;el.textContent=`👥 ${total.toLocaleString()}명`;}
       });
     }
   }catch(e){}

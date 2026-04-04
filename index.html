@@ -1328,11 +1328,17 @@ window.loadUser=loadUser;
 function showApp(){
   document.getElementById("app").style.display="block";
   setTimeout(()=>{
+    if(!localStorage.getItem('eq_about_shown')){
+      openOv('ovAbout');
+      localStorage.setItem('eq_about_shown','1');
+    }
+  },800);
+  setTimeout(()=>{
     if(typeof loadSeoulAir==="function") loadSeoulAir();
     if(typeof loadSeoulBike==="function") loadSeoulBike();
     if(typeof loadIncheonTransport==="function") loadIncheonTransport();
     setTimeout(()=>{if(typeof renderMyContrib==="function")renderMyContrib();},1500);
-  }, 200);
+  },200);
 }
 window.showApp=showApp;
 

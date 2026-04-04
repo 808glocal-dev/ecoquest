@@ -320,13 +320,98 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
     grid-template-columns: repeat(3, 1fr) !important;
   }
 }
+
+#introScreen{position:fixed;inset:0;z-index:10000;background:#0a1a0f}
+.intro-page{position:absolute;inset:0;display:flex;flex-direction:column;overflow-y:auto}
+.intro-bg{position:fixed;inset:0;background:linear-gradient(160deg,#0a1a0f 0%,#0f3d20 40%,#1a6b3a 80%,#2ECC71 120%);z-index:0}
+.intro-bg::after{content:'🌍';position:fixed;right:-40px;bottom:-40px;font-size:280px;opacity:.04;pointer-events:none}
+.intro-bg-dark{background:linear-gradient(160deg,#050d08 0%,#0a1a0f 60%,#0f3d20 100%)}
+.intro-bg-green{background:linear-gradient(160deg,#0f3d20 0%,#1a6b3a 50%,#2ECC71 120%)}
+.intro-content{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;padding:48px 24px 40px;min-height:100vh}
+.intro-logo{font-size:48px;margin-bottom:6px;animation:introFloat 3s ease-in-out infinite}
+.intro-brand{font-size:28px;font-weight:900;color:#fff;margin-bottom:32px}
+.intro-q{font-size:22px;font-weight:700;color:rgba(255,255,255,.85);text-align:center;line-height:1.5;margin-bottom:6px}
+.intro-q-em{color:#2ECC71;font-weight:900}
+.intro-sub{font-size:13px;color:rgba(255,255,255,.5);margin-bottom:32px;text-align:center}
+.intro-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:360px;margin-bottom:28px}
+.intro-btn{background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.12);border-radius:16px;padding:16px 10px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;font-family:inherit;transition:all .2s;-webkit-tap-highlight-color:transparent}
+.intro-btn:active,.intro-btn.selected{background:rgba(46,204,113,.25);border-color:#2ECC71;transform:scale(.97)}
+.ib-emoji{font-size:32px;line-height:1}
+.ib-label{font-size:12px;font-weight:700;color:rgba(255,255,255,.85);text-align:center;line-height:1.5}
+.intro-skip{background:none;border:none;color:rgba(255,255,255,.35);font-size:13px;font-family:inherit;cursor:pointer;padding:8px;margin-top:4px}
+.intro-scan-bar{width:240px;height:6px;background:rgba(255,255,255,.1);border-radius:10px;overflow:hidden}
+.intro-scan-fill{height:100%;width:0%;background:linear-gradient(90deg,#2ECC71,#F39C12);border-radius:10px;transition:width .1s linear}
+.intro-result-badge{background:rgba(46,204,113,.2);border:1.5px solid #2ECC71;border-radius:20px;padding:6px 16px;font-size:13px;font-weight:700;color:#2ECC71;margin-bottom:8px}
+.intro-co2-card{background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.2);border-radius:20px;padding:20px 32px;margin-bottom:24px;width:100%;max-width:300px}
+.intro-co2-num{font-size:48px;font-weight:900;color:#2ECC71;line-height:1;margin-bottom:8px}
+.intro-co2-analogy{font-size:12px;color:rgba(255,255,255,.65);line-height:1.6}
+.intro-tree-row{margin-bottom:28px;text-align:center}
+#introTreeViz{font-size:52px;animation:introGrow .8s ease}
+.intro-cta-text{font-size:15px;font-weight:700;color:rgba(255,255,255,.8);text-align:center;line-height:1.6;margin-bottom:24px}
+.intro-cta-btn{background:linear-gradient(135deg,#2ECC71,#27AE60);border:none;border-radius:16px;padding:16px 32px;font-size:16px;font-weight:900;color:#fff;font-family:inherit;cursor:pointer;width:100%;max-width:300px;margin-bottom:12px;box-shadow:0 8px 24px rgba(46,204,113,.4);transition:transform .15s}
+.intro-cta-btn:active{transform:scale(.97)}
+@keyframes introFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes introPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+@keyframes introBounce{0%{transform:scale(.5);opacity:0}70%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
+@keyframes introGrow{0%{transform:scale(0) translateY(20px);opacity:0}100%{transform:scale(1) translateY(0);opacity:1}}  
 </style>
 </head>
 <script src="patch.js"></script>
 </body>
 
 <div id="loading"><div class="spin">🌍</div><p style="margin-top:12px;color:var(--sub);font-size:13px">잠시만요...</p></div>
+<div id="introScreen" style="display:none">
+  <div id="introStep1" class="intro-page">
+    <div class="intro-bg"></div>
+    <div class="intro-content">
+      <div class="intro-logo">🌍</div>
+      <div class="intro-brand">EcoQuest</div>
+      <div class="intro-q">오늘 이 중에<br/><span class="intro-q-em">하나라도 했나요?</span></div>
+      <div class="intro-sub">탭 하나로 내 행동의 가치를 확인해요</div>
+      <div class="intro-grid">
+        <button class="intro-btn" onclick="selectIntroMission('m2','🚌','버스·지하철 탑승',1.17)" data-id="m2"><span class="ib-emoji">🚌</span><span class="ib-label">버스·지하철<br/>타고 왔어요</span></button>
+        <button class="intro-btn" onclick="selectIntroMission('m3','🥗','채식 한 끼',0.8)" data-id="m3"><span class="ib-emoji">🥗</span><span class="ib-label">점심에<br/>채식 먹었어요</span></button>
+        <button class="intro-btn" onclick="selectIntroMission('m1','🧴','텀블러 사용',0.332)" data-id="m1"><span class="ib-emoji">🧴</span><span class="ib-label">텀블러<br/>썼어요</span></button>
+        <button class="intro-btn" onclick="selectIntroMission('m8','🚶','도보·자전거 이동',1.05)" data-id="m8"><span class="ib-emoji">🚶</span><span class="ib-label">걸어서<br/>이동했어요</span></button>
+        <button class="intro-btn" onclick="selectIntroMission('m5','♻️','분리수거',0.21)" data-id="m5"><span class="ib-emoji">♻️</span><span class="ib-label">분리수거<br/>했어요</span></button>
+        <button class="intro-btn" onclick="selectIntroMission('m15','🍽️','음식 다 먹기',0.6)" data-id="m15"><span class="ib-emoji">🍽️</span><span class="ib-label">음식<br/>다 먹었어요</span></button>
+      </div>
+      <button class="intro-skip" onclick="skipIntro()">구경만 할게요 →</button>
+    </div>
+  </div>
 
+  <div id="introStep2" class="intro-page" style="display:none">
+    <div class="intro-bg intro-bg-dark"></div>
+    <div class="intro-content" style="justify-content:center">
+      <div id="introSelEmoji" style="font-size:64px;margin-bottom:20px;animation:introPulse 1s ease-in-out infinite">🚌</div>
+      <div style="font-size:18px;font-weight:900;color:#fff;margin-bottom:8px">AI가 분석 중이에요...</div>
+      <div style="font-size:13px;color:rgba(255,255,255,.6);margin-bottom:40px" id="introSelName">버스·지하철 탑승</div>
+      <div class="intro-scan-bar"><div class="intro-scan-fill" id="introScanFill"></div></div>
+      <div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:16px" id="introAnalyzeMsg">행동 패턴 분석 중...</div>
+    </div>
+  </div>
+
+  <div id="introStep3" class="intro-page" style="display:none">
+    <div class="intro-bg intro-bg-green"></div>
+    <div class="intro-content" style="justify-content:center;text-align:center">
+      <div class="intro-result-badge">✅ 인증 완료!</div>
+      <div id="introResultEmoji" style="font-size:72px;margin:16px 0;animation:introBounce .6s ease">🚌</div>
+      <div id="introResultName" style="font-size:16px;font-weight:700;color:rgba(255,255,255,.8);margin-bottom:24px">버스·지하철 탑승</div>
+      <div class="intro-co2-card">
+        <div style="font-size:13px;color:rgba(255,255,255,.7);margin-bottom:4px">방금 절감한 CO₂</div>
+        <div class="intro-co2-num" id="introResultCo2">1.17kg</div>
+        <div class="intro-co2-analogy" id="introResultAnalogy">🌳 소나무 한 그루가 하루 흡수하는 양이에요</div>
+      </div>
+      <div class="intro-tree-row">
+        <div id="introTreeViz">🌱</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.6);margin-top:8px">오늘 내 나무</div>
+      </div>
+      <div class="intro-cta-text">매일 기록하면<br/><span style="color:#2ECC71;font-weight:900">1년에 나무 수십 그루</span>가 자라요</div>
+      <button class="intro-cta-btn" onclick="goToLogin()">🌱 기록 시작하기</button>
+      <button class="intro-skip" onclick="skipIntro()">일단 구경할게요 →</button>
+    </div>
+  </div>
+</div>
 <div id="loginScreen">
   <div class="login-earth">🌍</div>
   <div class="login-title">EcoQuest</div>
@@ -1111,10 +1196,15 @@ onAuthStateChanged(auth,async user=>{
     renderBooks();
     renderOfficialChallenges();
     drawMap();
-  }else{
+ }else{
     window.ME=null;
-    document.getElementById("loginScreen").style.display="flex";
+    document.getElementById("loading").style.display="none";
     document.getElementById("app").style.display="none";
+    if(shouldShowIntro()){
+      showIntroScreen();
+    }else{
+      document.getElementById("loginScreen").style.display="flex";
+    }
   }
 });
 
@@ -1507,6 +1597,18 @@ window.joinPub=async(rid)=>{
     loadMyRooms();loadPubRooms();
   }catch(e){toast("참여 실패");}
 };
+
+  const CO2_ANALOGY={'m1':'☕ 일회용 종이컵 3개를 안 쓴 것과 같아요','m2':'🌳 소나무 한 그루가 하루 흡수하는 양이에요','m3':'🚗 자동차로 4km 덜 달린 효과예요','m5':'💧 정수기 하루치 에너지를 아낀 것과 같아요','m8':'🛵 오토바이 5km 운행 배출량을 줄인 거예요','m15':'🍜 라면 두 봉지 생산 탄소를 줄인 거예요'};
+function getCo2Tree(co2){if(co2>=1.0)return'🌳';if(co2>=0.5)return'🌿';return'🌱';}
+function shouldShowIntro(){return!localStorage.getItem('eq_intro_done');}
+function showIntroScreen(){document.getElementById('introScreen').style.display='block';document.getElementById('loading').style.display='none';}
+function hideIntroScreen(){const el=document.getElementById('introScreen');el.style.transition='opacity .3s';el.style.opacity='0';setTimeout(()=>{el.style.display='none';},300);}
+function selectIntroMission(missionId,emoji,name,co2){document.querySelectorAll('.intro-btn').forEach(b=>b.classList.remove('selected'));const btn=document.querySelector(`.intro-btn[data-id="${missionId}"]`);if(btn)btn.classList.add('selected');setTimeout(()=>goIntroStep2(emoji,name,co2,missionId),200);}
+function goIntroStep2(emoji,name,co2,missionId){document.getElementById('introStep1').style.display='none';document.getElementById('introStep2').style.display='flex';document.getElementById('introSelEmoji').textContent=emoji;document.getElementById('introSelName').textContent=name;const fill=document.getElementById('introScanFill');const msg=document.getElementById('introAnalyzeMsg');const msgs=['행동 패턴 분석 중...','CO₂ 배출량 계산 중...','환경 기여도 측정 중...','데이터 처리 완료!'];let pct=0,msgIdx=0;const timer=setInterval(()=>{pct+=2;fill.style.width=pct+'%';if(pct%25===0&&msgIdx<msgs.length-1){msgIdx++;msg.textContent=msgs[msgIdx];}if(pct>=100){clearInterval(timer);setTimeout(()=>goIntroStep3(emoji,name,co2,missionId),300);}},30);}
+function goIntroStep3(emoji,name,co2,missionId){document.getElementById('introStep2').style.display='none';document.getElementById('introStep3').style.display='flex';document.getElementById('introResultEmoji').textContent=emoji;document.getElementById('introResultName').textContent=name;document.getElementById('introResultCo2').textContent=co2+'kg';document.getElementById('introResultAnalogy').textContent=CO2_ANALOGY[missionId]||'🌿 지구가 조금 더 건강해졌어요';document.getElementById('introTreeViz').textContent=getCo2Tree(co2);}
+function goToLogin(){localStorage.setItem('eq_intro_done','1');hideIntroScreen();document.getElementById('loginScreen').style.display='flex';}
+function skipIntro(){localStorage.setItem('eq_intro_done','1');hideIntroScreen();document.getElementById('loginScreen').style.display='flex';}
+window.selectIntroMission=selectIntroMission;window.goToLogin=goToLogin;window.skipIntro=skipIntro;
 </script>
 
 <script>

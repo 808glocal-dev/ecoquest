@@ -1,7 +1,7 @@
 /* =====================================================
-   EcoQuest – 기업 탭 독립 페이지 v3
-   - 상단: 소속/임직원현황/랭킹
-   - 하단: 인증피드
+   EcoQuest – 기업 탭 독립 페이지 v4
+   - 인증피드 제거
+   - 소속 / 임직원현황 / 랭킹만
    ===================================================== */
 (function () {
   'use strict';
@@ -14,7 +14,6 @@
     page.id = 'page-company';
     page.style.paddingTop = '8px';
     page.innerHTML = `
-      <!-- 내 소속 -->
       <div style="padding:0 12px;margin-bottom:12px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
           <div style="font-size:15px;font-weight:900;color:var(--txt)">🏢 내 소속</div>
@@ -25,7 +24,6 @@
         </div>
       </div>
 
-      <!-- 임직원 현황 -->
       <div id="companyMissionSec" style="padding:0 12px;margin-bottom:12px;display:none">
         <div style="font-size:15px;font-weight:900;color:var(--txt);margin-bottom:8px">📊 임직원 현황</div>
         <div id="companyMissionStats" style="background:#fff;border-radius:14px;padding:14px;border:1px solid var(--bdr)">
@@ -33,21 +31,9 @@
         </div>
       </div>
 
-      <!-- 기업 랭킹 -->
-      <div style="padding:0 12px;margin-bottom:12px">
+      <div style="padding:0 12px;margin-bottom:20px">
         <div style="font-size:15px;font-weight:900;color:var(--txt);margin-bottom:8px">🏆 기업 CO₂ 랭킹</div>
         <div id="companyRankPage">
-          <div style="text-align:center;color:var(--sub);font-size:12px;padding:16px">로딩 중...</div>
-        </div>
-      </div>
-
-      <!-- 인증 피드 (하단) -->
-      <div style="padding:0 12px;margin-bottom:4px">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-          <div style="font-size:15px;font-weight:900;color:var(--txt)">📸 인증 피드</div>
-          <div style="font-size:12px;color:var(--sub);cursor:pointer" onclick="loadCompanyFeed()">새로고침</div>
-        </div>
-        <div id="companyFeedList" style="padding-bottom:20px">
           <div style="text-align:center;color:var(--sub);font-size:12px;padding:16px">로딩 중...</div>
         </div>
       </div>
@@ -84,61 +70,12 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
         loadCompanyPage();
         loadCompanyRank();
-        loadCompanyFeed();
       } else {
         if (_orig) _orig(name);
       }
     };
   }
 
-  // ── 인증 피드 (기업 페이지용) ──
-  window.loadCompanyFeed = async function () {
-    const w = document.getElementById('companyFeedList');
-    if (!w || !window.FB) return;
-    try {
-      const snap = await window.FB.getDocs(window.FB.collection(window.FB.db, 'verifications'));
-      const items = snap.docs.map(d => ({ id: d.id, ...d.data() }))
-        .filter(d => d.isPublic)
-        .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
-
-      if (!items.length) {
-        w.innerHTML = '<div style="text-align:center;padding:20px;color:var(--sub);font-size:13px">아직 공개 인증샷이 없어요! 🌱</div>';
-        return;
-      }
-
-      // 닉네임 맵
-      const uids = [...new Set(items.map(v => v.uid).filter(Boolean))];
-      const nicknameMap = {};
-      await Promise.all(uids.map(async uid => {
-        try {
-          const usnap = await window.FB.getDoc(window.FB.doc(window.FB.db, 'users', uid));
-          if (usnap.exists()) { const d = usnap.data(); nicknameMap[uid] = d.nickname || d.userName || '익명'; }
-        } catch (e) {}
-      }));
-
-      const shown = items.slice(0, 9);
-      const hasMore = items.length > 9;
-
-      w.innerHTML = `
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px">
-          ${shown.map(v => `
-            <div style="position:relative;aspect-ratio:1;background:#f0f0f0;cursor:pointer;border-radius:4px;overflow:hidden"
-                 onclick="openFeedDetail('${v.id}')">
-              ${v.thumb
-                ? `<img src="${v.thumb}" style="width:100%;height:100%;object-fit:cover"/>`
-                : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:32px;background:linear-gradient(135deg,#f0fbf4,#e8f5e9)">${v.missionEmoji}</div>`}
-              <div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.55));padding:4px 5px">
-                <div style="font-size:9px;color:#fff;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${v.missionEmoji} ${v.missionName}</div>
-              </div>
-            </div>`).join('')}
-        </div>
-        ${hasMore ? `<div style="text-align:center;margin-top:8px;font-size:12px;color:var(--sub)">최근 9개만 표시돼요</div>` : ''}`;
-    } catch (e) {
-      w.innerHTML = '<div style="text-align:center;color:var(--sub);font-size:12px;padding:16px">불러오기 실패</div>';
-    }
-  };
-
-  // ── 소속 박스 ──
   window.loadCompanyPage = async function () {
     const box = document.getElementById('companyPageBox');
     if (!box) return;
@@ -260,7 +197,12 @@
       }).filter(s=>s.totalCo2>0).sort((a,b)=>b.totalCo2-a.totalCo2).slice(0,5);
 
       if (!coStats.length) {
-        el.innerHTML = `<div style="background:#fff;border-radius:14px;padding:20px;text-align:center;border:1px solid var(--bdr)"><div style="font-size:32px;margin-bottom:8px">🏢</div><div style="font-size:13px;font-weight:700;color:var(--txt)">아직 참여 기업이 없어요</div><div style="font-size:12px;color:var(--sub);margin-top:4px">기업을 등록하고 함께 도전해보세요!</div></div>`;
+        el.innerHTML = `
+          <div style="background:#fff;border-radius:14px;padding:20px;text-align:center;border:1px solid var(--bdr)">
+            <div style="font-size:32px;margin-bottom:8px">🏢</div>
+            <div style="font-size:13px;font-weight:700;color:var(--txt)">아직 참여 기업이 없어요</div>
+            <div style="font-size:12px;color:var(--sub);margin-top:4px">기업을 등록하고 함께 도전해보세요!</div>
+          </div>`;
         return;
       }
       el.innerHTML = coStats.map((s,i)=>`
@@ -295,7 +237,7 @@
       await window.FB.updateDoc(window.FB.doc(window.FB.db,'users',window.ME.uid),{companyId:found.id});
       window.UDATA.companyId = found.id;
       toast(`✅ "${co.name}" 참여 완료!`);
-      window.loadCompanyPage();loadCompanyRank();
+      window.loadCompanyPage(); loadCompanyRank();
     } catch(e){toast('참여 실패: '+e.message);}
   };
 
@@ -312,7 +254,7 @@
   if (document.readyState==='loading') {
     document.addEventListener('DOMContentLoaded',()=>{injectCompanyPage();fixCompanyTabBtn();patchGoPage();});
   } else {
-    injectCompanyPage();fixCompanyTabBtn();patchGoPage();
+    injectCompanyPage(); fixCompanyTabBtn(); patchGoPage();
   }
 
 })();

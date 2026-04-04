@@ -426,7 +426,7 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
 <div id="app">
   <div class="hdr">
     <div class="hdr-row">
-      <div class="logo" onclick="goPage('home')" style="cursor:pointer">🌍 EcoQuest</div>
+  <div class="logo" onclick="openOv('ovAbout')" style="cursor:pointer">🌍 EcoQuest</div>
       <div class="hdr-right">
         <div class="avatar" id="uAvatar">👤</div>
         <span class="uname" id="uName">-</span>
@@ -1109,7 +1109,73 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
     <div id="feedDetailContent"></div>
   </div>
 </div>
+<div class="overlay" id="ovAbout">
+  <div class="modal" style="padding:0;overflow:hidden;border-radius:24px 24px 0 0">
+    <div style="background:linear-gradient(135deg,#0f3d20,#1a6b3a,#2ECC71);padding:24px 20px 20px;color:#fff;position:relative;overflow:hidden">
+      <div style="position:absolute;right:-16px;bottom:-16px;font-size:120px;opacity:.07">🌍</div>
+      <button class="modal-close" onclick="closeOv('ovAbout')" style="position:absolute;top:12px;right:12px;background:rgba(255,255,255,.2);color:#fff">✕</button>
+      <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.55);letter-spacing:2px;margin-bottom:8px">ECO QUEST KOREA</div>
+      <div style="font-size:22px;font-weight:900;line-height:1.4;margin-bottom:10px">우리는 지식이 아닌<br/><span style="color:#a8f0c6">행동을 믿어요</span></div>
+      <div style="font-size:12px;color:rgba(255,255,255,.75);line-height:1.7">기후위기를 알면서도 뭘 해야 할지 모르는<br/>사람들을 위해 만들었어요</div>
+    </div>
 
+    <div style="padding:16px;overflow-y:auto;max-height:60vh">
+
+      <div style="background:#f0fbf4;border-radius:14px;padding:14px;margin-bottom:10px;border:1px solid var(--bdr)">
+        <div style="font-size:10px;font-weight:700;color:var(--g2);letter-spacing:1px;margin-bottom:8px">WHY</div>
+        <div style="font-size:14px;font-weight:900;color:var(--txt);margin-bottom:8px">왜 만들었나요?</div>
+        <div style="font-size:12px;color:#555;line-height:1.9">환경 정보는 넘쳐나요. 하지만 오늘 내가 뭘 해야 할지 알려주는 앱은 없었어요.<br/><br/>EcoQuest는 <span style="font-weight:700;color:var(--g2)">"알고 있는 것"</span>이 아닌 <span style="font-weight:700;color:var(--g2)">"실제로 한 것"</span>에 집중해요.</div>
+      </div>
+
+      <div style="background:#fff;border-radius:14px;padding:14px;margin-bottom:10px;border:1px solid var(--bdr)">
+        <div style="font-size:10px;font-weight:700;color:var(--g2);letter-spacing:1px;margin-bottom:8px">HOW</div>
+        <div style="font-size:14px;font-weight:900;color:var(--txt);margin-bottom:12px">어떻게 다른가요?</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;gap:10px;align-items:flex-start">
+            <div style="font-size:22px;flex-shrink:0">📸</div>
+            <div><div style="font-size:12px;font-weight:700;color:var(--txt);margin-bottom:2px">AI가 실제 행동을 확인해요</div><div style="font-size:11px;color:#777;line-height:1.7">사진 한 장으로 미션 완료를 인증해요. 선언이 아닌 증거예요.</div></div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:flex-start">
+            <div style="font-size:22px;flex-shrink:0">📊</div>
+            <div><div style="font-size:12px;font-weight:700;color:var(--txt);margin-bottom:2px">행동이 수치로 쌓여요</div><div style="font-size:11px;color:#777;line-height:1.7">텀블러 한 번이 CO₂ 0.33kg 절감. 매일 기록되고 나무로 자라요.</div></div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:flex-start">
+            <div style="font-size:22px;flex-shrink:0">🌍</div>
+            <div><div style="font-size:12px;font-weight:700;color:var(--txt);margin-bottom:2px">모이면 세상이 바뀌어요</div><div style="font-size:11px;color:#777;line-height:1.7">10만 명이 텀블러를 쓴다는 사실이 기업이 일회용컵을 줄이게 만들어요.</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:linear-gradient(135deg,#f0fbf4,#e8f5e9);border-radius:14px;padding:14px;margin-bottom:10px;border:1.5px solid var(--g1)">
+        <div style="font-size:10px;font-weight:700;color:var(--g2);letter-spacing:1px;margin-bottom:8px">PHILOSOPHY</div>
+        <div style="font-size:14px;font-weight:900;color:var(--txt);margin-bottom:10px">데이터 철학</div>
+        <div style="font-size:12px;color:#444;line-height:1.9;margin-bottom:12px">혼자 하면 작은 행동이지만, 모이면 사회를 움직이는 데이터가 돼요.<br/><br/>당신이 오늘 채식을 선택한 사실이, 수만 명의 데이터와 합쳐져 식품업계가 메뉴를 바꾸는 근거가 됩니다.</div>
+        <div style="background:rgba(46,204,113,.12);border-radius:10px;padding:10px 12px;border-left:3px solid var(--g1)">
+          <div style="font-size:11px;font-weight:700;color:var(--g2);margin-bottom:3px">우리의 믿음</div>
+          <div style="font-size:11px;color:#444;line-height:1.7">"시민의 행동 데이터가 축적될 때,<br/>기업과 정책은 따라올 수밖에 없어요."</div>
+        </div>
+      </div>
+
+      <div style="background:linear-gradient(135deg,#0f3d20,#1a6b3a);border-radius:14px;padding:14px;margin-bottom:10px;color:#fff">
+        <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.5);letter-spacing:1px;margin-bottom:8px">VISION</div>
+        <div style="font-size:14px;font-weight:900;margin-bottom:8px">우리가 꿈꾸는 세상</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.8);line-height:1.9">한국인의 일상 속 탄소 행동이 모두 기록되고, 그 데이터가 기업·정부·시민 모두에게 <span style="color:#a8f0c6;font-weight:700">더 나은 선택의 근거</span>가 되는 날을 만들고 있어요.</div>
+        <div style="margin-top:12px;display:flex;gap:6px;flex-wrap:wrap">
+          <span style="background:rgba(255,255,255,.12);border-radius:20px;padding:3px 10px;font-size:10px;font-weight:700">🌱 일상의 탄소 기록</span>
+          <span style="background:rgba(255,255,255,.12);border-radius:20px;padding:3px 10px;font-size:10px;font-weight:700">📊 공공 행동 데이터</span>
+          <span style="background:rgba(255,255,255,.12);border-radius:20px;padding:3px 10px;font-size:10px;font-weight:700">🔄 사회 구조 변화</span>
+        </div>
+      </div>
+
+      <div style="background:#fff;border-radius:14px;padding:14px;margin-bottom:8px;border:1px solid var(--bdr)">
+        <div style="font-size:10px;font-weight:700;color:var(--g2);letter-spacing:1px;margin-bottom:8px">COMPANY</div>
+        <div style="font-size:13px;font-weight:900;color:var(--txt);margin-bottom:8px">에코퀘스트코리아 유한회사</div>
+        <div style="font-size:11px;color:#777;line-height:2.2">📍 서울특별시 도봉구 도봉로 666<br/>✉️ 808glocal@gmail.com<br/>🌐 eco-quest.kr</div>
+      </div>
+
+    </div>
+  </div>
+</div>
 <div class="overlay" id="ovCert">
   <div class="modal">
     <div class="handle" onclick="closeOv('ovCert')"></div>

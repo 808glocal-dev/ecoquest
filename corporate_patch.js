@@ -714,8 +714,6 @@ page.innerHTML = `...기존 내용...`;
                                    padding:14px;border:1px solid var(--bdr);min-height:60px">
         <div style="text-align:center;color:var(--sub);font-size:12px;padding:8px">로딩 중...</div>
       </div>`;
-
-    myPage.appendChild(sec);
      // 탭바에 기업 버튼 추가
 const tabBar = document.querySelector('.tab-bar');
 if (tabBar && !document.getElementById('tb-company')) {

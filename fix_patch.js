@@ -1,10 +1,11 @@
 /* =====================================================
-   EcoQuest – 종합 수정 패치 v6
-   1. 오늘/누적 참여자 실시간 업데이트
-   2. 관리자 버튼 관리자만 표시
-   3. 내 인증기록/주문 전체 페이지에서 완전 삭제
-   4. 기업탭 상단 빈칸 제거
-   5. 로그아웃 즉시 UI 초기화
+   EcoQuest – 종합 수정 패치 v7
+   1. 마이 탭 → 스토어로 변환
+   2. 내활동에 증명서 발급 + 내 정보 버튼 추가
+   3. 인증기록 내활동에만
+   4. 관리자 버튼 관리자만
+   5. 로그아웃 UI 초기화
+   6. 참여자 실시간 업데이트
    ===================================================== */
 (function () {
   'use strict';
@@ -63,35 +64,45 @@
     adminArea.style.display = window.ME?.email === window.ADMIN ? 'block' : 'none';
   }
 
-  // ── 3. 전체 페이지에서 인증기록/주문 완전 삭제 ──
-  function removeVerifAndOrders() {
-    // 섹션 헤더 삭제
-    document.querySelectorAll('.sec').forEach(sec => {
-      const txt = sec.textContent || '';
-      if (txt.includes('인증 기록') || txt.includes('내 주문')) sec.remove();
-    });
-    // 내용 삭제
-    ['myVerifs', 'myOrders'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.remove();
-    });
-    // corporate_patch companySec 제거
-    const companySec = document.getElementById('companySec');
-    if (companySec) companySec.remove();
-  }
-
-  // ── 4. 기업 탭 버튼 + 페이지 패딩 제거 ──
-  function fixCompanyTab() {
-    const btn = document.getElementById('tb-company');
-    if (btn) {
-      btn.setAttribute('data-page', 'company');
-      btn.onclick = () => { if (window.goPage) window.goPage('company'); };
+  // ── 3. 마이 탭 → 스토어로 변환 ──
+  function convertMyToStore() {
+    // 탭 버튼 변경
+    const myTab = document.querySelector('.tb[data-page="my"]');
+    if (myTab) {
+      myTab.innerHTML = '<span class="ic">🛒</span>스토어';
+      myTab.setAttribute('data-page', 'shop');
+      myTab.onclick = () => window.goPage && window.goPage('shop');
     }
-    const pg = document.getElementById('page-company');
-    if (pg) { pg.style.paddingTop = '0'; pg.style.marginTop = '0'; }
+
+    // page-my 숨기고 page-shop으로 대체
+    const myPage = document.getElementById('page-my');
+    if (myPage) myPage.style.display = 'none';
+
+    // 관리자 버튼을 page-shop으로 이동
+    const adminArea = document.getElementById('adminArea');
+    const shopPage = document.getElementById('page-shop');
+    if (adminArea && shopPage && !shopPage.querySelector('#adminArea')) {
+      shopPage.appendChild(adminArea);
+    }
   }
 
-  // ── 5. 내활동에 인증기록 이동 ──
+  // ── 4. 내활동에 증명서 + 내 정보 버튼 추가 ──
+  function addCertToActivity() {
+    const actPage = document.getElementById('page-activity');
+    if (!actPage || actPage.querySelector('#actCertBtn')) return;
+
+    // 맨 위에 버튼 추가
+    const btnWrap = document.createElement('div');
+    btnWrap.id = 'actCertBtn';
+    btnWrap.style.cssText = 'display:flex;gap:8px;padding:12px 12px 0;';
+    btnWrap.innerHTML = `
+      <button class="btn btn-g" style="flex:1;padding:10px;font-size:13px" onclick="showCert()">🏆 증명서 발급</button>
+      <button class="btn btn-gray" style="flex:1;padding:10px;font-size:13px" onclick="openOnboardEdit()">✏️ 내 정보 수정</button>
+    `;
+    actPage.insertBefore(btnWrap, actPage.firstChild);
+  }
+
+  // ── 5. 인증기록 내활동에만 ──
   function moveVerifToActivity() {
     const actPage = document.getElementById('page-activity');
     if (!actPage || document.getElementById('actVerifSec')) return;
@@ -103,6 +114,31 @@
     actPage.appendChild(sec);
   }
 
+  // ── 6. 전체 페이지 인증기록/주문 삭제 ──
+  function removeVerifAndOrders() {
+    document.querySelectorAll('.sec').forEach(sec => {
+      const txt = sec.textContent || '';
+      if (txt.includes('인증 기록') || txt.includes('내 주문')) sec.remove();
+    });
+    ['myVerifs','myOrders'].forEach(id => {
+      const el = document.getElementById(id); if (el) el.remove();
+    });
+    const companySec = document.getElementById('companySec');
+    if (companySec) companySec.remove();
+  }
+
+  // ── 7. 기업 탭 패딩 제거 ──
+  function fixCompanyTab() {
+    const btn = document.getElementById('tb-company');
+    if (btn) {
+      btn.setAttribute('data-page', 'company');
+      btn.onclick = () => { if (window.goPage) window.goPage('company'); };
+    }
+    const pg = document.getElementById('page-company');
+    if (pg) { pg.style.paddingTop = '0'; pg.style.marginTop = '0'; }
+  }
+
+  // ── 8. 내활동 인증기록 로드 ──
   const _origRenderActivity = window.renderActivity;
   window.renderActivity = function () {
     if (_origRenderActivity) _origRenderActivity();
@@ -143,44 +179,36 @@
     } catch (e) {}
   }
 
-  // ── 6. 로그아웃 즉시 UI 초기화 ──
-  function resetUI() {
-    const map = {
-      uName: '-', sMission: '0', sStreak: '0',
-      sPoint: '0', sCo2: '0', myMission: '0',
-      myPoint: '0', myCo2: '0', shopPoint: '0 P',
-    };
-    Object.entries(map).forEach(([id, val]) => {
-      const el = document.getElementById(id);
-      if (el) el.textContent = val;
-    });
-    const uAvatar = document.getElementById('uAvatar');
-    if (uAvatar) uAvatar.innerHTML = '👤';
-    ['sName','myName'].forEach((id, i) => {
-      const el = document.getElementById(id);
-      if (el) el.textContent = i === 0 ? '🌱 지구지킴이' : '내 프로필';
-    });
-    ['sLv','myLv'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.textContent = 'Lv.1 씨앗';
-    });
-    const adminArea = document.getElementById('adminArea');
-    if (adminArea) adminArea.style.display = 'none';
-    window.ME    = null;
-    window.UDATA = null;
-  }
-
+  // ── 9. 로그아웃 UI 초기화 ──
   function setupLogout() {
-    // btnLogout에 직접 이벤트 대신 클릭 감지 (Firebase signOut 이후에도 동작하도록)
     const logoutBtn = document.getElementById('btnLogout');
     if (!logoutBtn || logoutBtn._fixPatched) return;
     logoutBtn._fixPatched = true;
-
-    // 클릭 즉시 + signOut 이후 두 번 실행해서 확실히 초기화
     logoutBtn.addEventListener('click', () => {
-      resetUI();
-      setTimeout(resetUI, 500);
-    }, true); // capture phase - Firebase 이전에 실행
+      ['uName','sMission','sStreak','sPoint','sCo2'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = id === 'uName' ? '-' : '0';
+      });
+      const uAvatar = document.getElementById('uAvatar');
+      if (uAvatar) uAvatar.innerHTML = '👤';
+      const sName  = document.getElementById('sName');
+      const myName = document.getElementById('myName');
+      if (sName)  sName.textContent  = '🌱 지구지킴이';
+      if (myName) myName.textContent = '내 프로필';
+      const sLv  = document.getElementById('sLv');
+      const myLv = document.getElementById('myLv');
+      if (sLv)  sLv.textContent  = 'Lv.1 씨앗';
+      if (myLv) myLv.textContent = 'Lv.1 씨앗';
+      window.ME    = null;
+      window.UDATA = null;
+      const adminArea = document.getElementById('adminArea');
+      if (adminArea) adminArea.style.display = 'none';
+    }, true);
+    // 500ms 후 한번 더
+    logoutBtn.addEventListener('click', () => setTimeout(() => {
+      const uName = document.getElementById('uName');
+      if (uName && uName.textContent !== '-') uName.textContent = '-';
+    }, 500));
   }
 
   // ── 전체 적용 ──
@@ -188,6 +216,8 @@
     fixAdminButton();
     removeVerifAndOrders();
     fixCompanyTab();
+    convertMyToStore();
+    addCertToActivity();
     moveVerifToActivity();
     setupLogout();
     waitForFB(() => { updateStats(); trackTodayUser(); });
@@ -212,7 +242,6 @@
       setTimeout(() => {
         const pg = document.getElementById('page-company');
         if (pg) { pg.style.paddingTop = '0'; pg.style.marginTop = '0'; }
-        // 혹시 인증기록/주문 글자 남아있으면 다시 제거
         removeVerifAndOrders();
       }, 80);
     }
@@ -220,17 +249,20 @@
 
   setInterval(() => waitForFB(updateStats), 30000);
 
+  // MutationObserver
+  const observer = new MutationObserver(() => {
+    const companySec = document.getElementById('companySec');
+    if (companySec) companySec.remove();
+  });
+
   function init() {
     removeVerifAndOrders();
     fixCompanyTab();
+    convertMyToStore();
+    addCertToActivity();
     moveVerifToActivity();
     setupLogout();
     waitForFB(updateStats);
-    // DOM 변경 감시 - 동적으로 추가되는 요소도 제거
-    const observer = new MutationObserver(() => {
-      const companySec = document.getElementById('companySec');
-      if (companySec) companySec.remove();
-    });
     observer.observe(document.body, { childList: true, subtree: true });
   }
 

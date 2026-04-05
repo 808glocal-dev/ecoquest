@@ -1,13 +1,12 @@
 /* =====================================================
-   EcoQuest – 기업 탭 v6
-   - HTML에 이미 있는 page-company에 내용 채움
-   - 내 소속 / 에코 스토어 / 임직원현황 / 랭킹
+   EcoQuest – 기업 탭 v7
+   - 내 소속 / 임직원현황 / 랭킹만
+   - 스토어/쿠폰함 제거
    ===================================================== */
 (function () {
   'use strict';
 
   function injectCompanyPage() {
-    // 이미 있는 page-company 사용, 없으면 생성
     let page = document.getElementById('page-company');
     if (!page) {
       page = document.createElement('div');
@@ -16,11 +15,8 @@
       const tabBar = document.querySelector('.tab-bar');
       if (tabBar) tabBar.parentElement.insertBefore(page, tabBar);
     }
-
     page.style.paddingTop = '0';
     page.style.marginTop = '0';
-
-    // 내용이 이미 있으면 스킵
     if (page.querySelector('#companyPageBox')) return;
 
     page.innerHTML = `
@@ -33,28 +29,6 @@
         <div id="companyPageBox" style="background:#fff;border-radius:14px;padding:14px;border:1px solid var(--bdr);min-height:60px">
           <div style="text-align:center;color:var(--sub);font-size:12px;padding:8px">로딩 중...</div>
         </div>
-      </div>
-
-      <!-- 에코 스토어 -->
-      <div style="padding:0 12px;margin-bottom:12px">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-          <div style="font-size:15px;font-weight:900;color:var(--txt)">🛒 에코 스토어</div>
-          <div style="font-size:10px;color:var(--sub)">포인트로 친환경 쿠폰 교환</div>
-        </div>
-        <div style="background:linear-gradient(135deg,#f0fbf4,#e8f5e9);border-radius:12px;padding:10px 12px;margin-bottom:8px;border:1px solid var(--bdr)">
-          <div style="font-size:11px;color:var(--g2);line-height:1.7">
-            🌱 친환경 제품 구매 = CO₂ 절감 기록 → 내 랭킹 상승!<br/>
-            🏢 소속 기업 랭킹도 함께 올라가요
-          </div>
-        </div>
-        <div style="background:#f0fbf4;border-radius:10px;padding:8px 12px;margin-bottom:10px;border:1px solid var(--bdr)">
-          <span style="font-size:12px;color:var(--sub)">내 포인트: </span>
-          <strong style="font-size:14px;color:var(--g2)" id="companyShopPoint">0 P</strong>
-        </div>
-        <div id="companyStoreList">
-          <div style="text-align:center;color:var(--sub);font-size:12px;padding:12px">로딩 중...</div>
-        </div>
-        <div id="companyMyCoupons"></div>
       </div>
 
       <!-- 임직원 현황 -->
@@ -95,7 +69,6 @@
         if (tb) tb.classList.add('on');
         window.scrollTo({ top: 0, behavior: 'smooth' });
         loadCompanyPage();
-        loadCompanyStore();
         loadCompanyRank();
       } else {
         if (_orig) _orig(name);
@@ -103,78 +76,6 @@
     };
   }
 
-  // ── 에코 스토어 ──
-  window.loadCompanyStore = async function () {
-    const el = document.getElementById('companyStoreList');
-    const pointEl = document.getElementById('companyShopPoint');
-    if (!el) return;
-    const myPoint = window.UDATA?.point || 0;
-    if (pointEl) pointEl.textContent = myPoint.toLocaleString() + ' P';
-    try {
-      const snap = await window.FB.getDocs(window.FB.collection(window.FB.db, 'coupons'));
-      const coupons = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(c => c.active !== false);
-      if (!coupons.length) {
-        el.innerHTML = `<div style="background:#fff;border-radius:12px;padding:16px;text-align:center;border:1px solid var(--bdr)"><div style="font-size:28px;margin-bottom:6px">🌱</div><div style="font-size:13px;font-weight:700;color:var(--txt)">제휴 쿠폰 준비 중이에요!</div></div>`;
-        return;
-      }
-      el.innerHTML = coupons.map(c => {
-        const remaining = (c.totalQty||0) - (c.usedQty||0);
-        const canAfford = myPoint >= c.pointCost;
-        const soldOut = remaining <= 0;
-        return `
-          <div style="background:#fff;border-radius:12px;padding:12px;margin-bottom:8px;border:1.5px solid ${soldOut?'#eee':'var(--bdr)'};opacity:${soldOut?0.6:1}">
-            <div style="display:flex;gap:10px;align-items:flex-start">
-              <div style="width:48px;height:48px;border-radius:10px;background:linear-gradient(135deg,#1a6b3a,#2ECC71);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0">${c.brandEmoji||'🎁'}</div>
-              <div style="flex:1;min-width:0">
-                <div style="font-size:11px;font-weight:700;background:#e8f5e9;color:var(--g2);padding:1px 6px;border-radius:6px;display:inline-block;margin-bottom:3px">${c.brandName}</div>
-                <div style="font-size:14px;font-weight:900;color:var(--txt)">${c.discount.toLocaleString()}원 할인</div>
-                <div style="font-size:10px;color:var(--g2);margin-top:2px">🌱 사용 시 CO₂ -${c.co2Value||0.3}kg 기록</div>
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px">
-                  <span style="font-size:13px;font-weight:900;color:var(--g2)">${c.pointCost.toLocaleString()}P</span>
-                  <button onclick="exchangeCoupon('${c.id}')"
-                    style="background:${soldOut?'#f0f0f0':canAfford?'linear-gradient(135deg,var(--g1),var(--g2))':'#f0f0f0'};color:${canAfford&&!soldOut?'#fff':'var(--sub)'};border:none;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit"
-                    ${soldOut?'disabled':''}>
-                    ${soldOut?'소진됨':canAfford?'교환하기':'P 부족'}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>`;
-      }).join('');
-    } catch (e) {
-      el.innerHTML = '<div style="text-align:center;color:var(--sub);font-size:12px;padding:12px">로딩 실패</div>';
-    }
-    if (window.ME?.uid && window.showMyCouponsInCompany) window.showMyCouponsInCompany(window.ME.uid);
-  };
-
-  window.showMyCouponsInCompany = async function(uid) {
-    const sec = document.getElementById('companyMyCoupons');
-    if (!sec || !window.FB) return;
-    try {
-      const snap = await window.FB.getDocs(window.FB.collection(window.FB.db, 'couponCodes'));
-      const codes = snap.docs.map(d=>({id:d.id,...d.data()}))
-        .filter(c=>c.issuedTo===uid)
-        .sort((a,b)=>(b.issuedAt?.seconds||0)-(a.issuedAt?.seconds||0));
-      if (!codes.length) { sec.innerHTML=''; return; }
-      sec.innerHTML = `
-        <div style="font-size:14px;font-weight:900;color:var(--txt);margin:12px 0 8px">🎟️ 내 쿠폰함</div>
-        ${codes.map(c=>`
-          <div style="background:${c.isUsed?'#f8f8f8':'#f0fbf4'};border-radius:10px;padding:10px 12px;margin-bottom:6px;border:1.5px solid ${c.isUsed?'#eee':'var(--g1)'}">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-              <div style="font-size:12px;font-weight:700">${c.brandEmoji||'🎁'} ${c.brandName} · ${c.discount.toLocaleString()}원</div>
-              <span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:6px;background:${c.isUsed?'#eee':'#e8f5e9'};color:${c.isUsed?'#aaa':'var(--g2)'}">
-                ${c.isUsed?'✅ 사용완료':'미사용'}
-              </span>
-            </div>
-            <div style="font-size:14px;font-weight:900;letter-spacing:2px;color:${c.isUsed?'#bbb':'var(--txt)'};text-align:center;background:${c.isUsed?'#eee':'#fff'};border-radius:6px;padding:6px;border:1px dashed ${c.isUsed?'#ddd':'var(--g1)'};margin-bottom:${c.isUsed?0:'6px'}">
-              ${c.code}
-            </div>
-            ${!c.isUsed?`<button onclick="useCouponNow('${c.id}')" style="width:100%;padding:8px;border:none;border-radius:8px;background:linear-gradient(135deg,var(--g1),var(--g2));color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">매장에서 사용하기 ✅</button>`:''}
-          </div>`).join('')}`;
-    } catch(e) {}
-  };
-
-  // ── 내 소속 ──
   window.loadCompanyPage = async function () {
     const box = document.getElementById('companyPageBox');
     if (!box) return;
@@ -278,9 +179,7 @@
             </div>
             <div style="font-size:13px;font-weight:900;color:var(--g2)">${(u.co2||0).toFixed(1)}kg</div>
           </div>`).join('')}`;
-    } catch(e) {
-      el.innerHTML = '<div style="text-align:center;color:var(--sub);font-size:12px;padding:8px">불러오기 실패</div>';
-    }
+    } catch(e) {}
   }
 
   async function loadCompanyRank() {
@@ -297,7 +196,7 @@
         return {co, members, totalCo2:members.reduce((s,u)=>s+(u.co2||0),0), totalMission:members.reduce((s,u)=>s+(u.missionCount||0),0)};
       }).filter(s=>s.totalCo2>0).sort((a,b)=>b.totalCo2-a.totalCo2).slice(0,5);
       if (!coStats.length) {
-        el.innerHTML = `<div style="background:#fff;border-radius:14px;padding:20px;text-align:center;border:1px solid var(--bdr)"><div style="font-size:32px;margin-bottom:8px">🏢</div><div style="font-size:13px;font-weight:700;color:var(--txt)">아직 참여 기업이 없어요</div><div style="font-size:12px;color:var(--sub);margin-top:4px">기업을 등록하고 함께 도전해보세요!</div></div>`;
+        el.innerHTML = `<div style="background:#fff;border-radius:14px;padding:20px;text-align:center;border:1px solid var(--bdr)"><div style="font-size:32px;margin-bottom:8px">🏢</div><div style="font-size:13px;font-weight:700;color:var(--txt)">아직 참여 기업이 없어요</div></div>`;
         return;
       }
       el.innerHTML = coStats.map((s,i)=>`
@@ -313,15 +212,13 @@
             <div style="font-size:10px;color:var(--sub)">CO₂</div>
           </div>
         </div>`).join('');
-    } catch(e) {
-      el.innerHTML = '<div style="text-align:center;color:var(--sub);font-size:12px;padding:12px">불러오기 실패</div>';
-    }
+    } catch(e) {}
   }
 
   window.joinCompanyByCodePage = async function () {
     const code = document.getElementById('coCodeInpPage')?.value?.trim()?.toUpperCase();
     if (!code||code.length<4){toast('코드를 입력해주세요!');return;}
-    if (!window.ME||!window.FB){window.showLoginPrompt&&window.showLoginPrompt('로그인 후 참여 가능해요!');return;}
+    if (!window.ME||!window.FB){return;}
     try {
       const allSnap = await window.FB.getDocs(window.FB.collection(window.FB.db,'companies'));
       const found = allSnap.docs.find(d=>d.data().inviteCode===code);
@@ -359,5 +256,4 @@
   } else {
     init();
   }
-
 })();

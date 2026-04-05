@@ -1,9 +1,10 @@
 /* =====================================================
-   EcoQuest – 종합 수정 패치 v3
+   EcoQuest – 종합 수정 패치 v5
    1. 오늘/누적 참여자 실시간 업데이트
    2. 관리자 버튼 관리자만 표시
-   3. 기업 탭 인증기록/주문 숨기기 + 상단 빈칸 제거
+   3. 기업 탭 정상작동 (게스트 모드 포함)
    4. 로그아웃 시 UI 완전 초기화
+   5. 내 인증기록/주문 DOM에서 완전 삭제
    ===================================================== */
 (function () {
   'use strict';
@@ -65,40 +66,39 @@
     adminArea.style.display = window.ME?.email === window.ADMIN ? 'block' : 'none';
   }
 
-  // ── 3. page-my 정리 ──
+  // ── 3. page-my 정리 - DOM에서 완전 삭제 ──
   function fixMyPage() {
     const myPage = document.getElementById('page-my');
     if (!myPage) return;
+
+    // 내 인증 기록 / 내 주문 섹션 헤더 삭제
     myPage.querySelectorAll('.sec').forEach(sec => {
-      if (sec.textContent.includes('인증 기록') || sec.textContent.includes('내 주문')) {
-        sec.style.display = 'none';
+      const txt = sec.textContent || '';
+      if (txt.includes('인증 기록') || txt.includes('내 주문')) {
+        sec.remove();
       }
     });
-    const myVerifs = document.getElementById('myVerifs');
-    if (myVerifs) myVerifs.style.display = 'none';
-    const myOrders = document.getElementById('myOrders');
-    if (myOrders) myOrders.style.display = 'none';
-  }
 
-  // ── 4. 기업 탭 정리 + 상단 빈칸 제거 ──
-  function fixCompanyPage() {
+    // 내용 삭제
+    ['myVerifs', 'myOrders'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.remove();
+    });
+
     // corporate_patch가 마이에 붙인 companySec 제거
     const companySec = document.getElementById('companySec');
-    if (companySec) companySec.remove();
+    if (companySec && companySec.closest('#page-my')) companySec.remove();
+  }
 
-    // 탭 버튼 연결 교정
-    const oldBtn = document.getElementById('tb-company');
-    if (oldBtn && oldBtn.getAttribute('data-page') === 'my') {
-      oldBtn.setAttribute('data-page', 'company');
-      oldBtn.onclick = () => window.goPage && window.goPage('company');
+  // ── 4. 기업 탭 버튼 + 페이지 교정 ──
+  function fixCompanyTab() {
+    const btn = document.getElementById('tb-company');
+    if (btn) {
+      btn.setAttribute('data-page', 'company');
+      btn.onclick = () => { if (window.goPage) window.goPage('company'); };
     }
-
-    // 기업 페이지 상단 패딩 제거
-    const companyPage = document.getElementById('page-company');
-    if (companyPage) {
-      companyPage.style.paddingTop = '0';
-      companyPage.style.marginTop = '0';
-    }
+    const pg = document.getElementById('page-company');
+    if (pg) { pg.style.paddingTop = '0'; pg.style.marginTop = '0'; }
   }
 
   // ── 5. 내활동에 인증기록 이동 ──
@@ -159,73 +159,65 @@
     if (!logoutBtn || logoutBtn._fixPatched) return;
     logoutBtn._fixPatched = true;
     logoutBtn.addEventListener('click', () => {
-      const uName   = document.getElementById('uName');
+      ['uName','sMission','sStreak','sPoint','sCo2'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = id === 'uName' ? '-' : '0';
+      });
       const uAvatar = document.getElementById('uAvatar');
-      const sName   = document.getElementById('sName');
-      const myName  = document.getElementById('myName');
-      if (uName)   uName.textContent  = '-';
-      if (uAvatar) uAvatar.innerHTML  = '👤';
-      if (sName)   sName.textContent  = '🌱 지구지킴이';
-      if (myName)  myName.textContent = '내 프로필';
-
-      const sMission = document.getElementById('sMission');
-      const sStreak  = document.getElementById('sStreak');
-      const sPoint   = document.getElementById('sPoint');
-      const sCo2     = document.getElementById('sCo2');
-      if (sMission) sMission.textContent = '0';
-      if (sStreak)  sStreak.textContent  = '0';
-      if (sPoint)   sPoint.textContent   = '0';
-      if (sCo2)     sCo2.textContent     = '0';
-
+      if (uAvatar) uAvatar.innerHTML = '👤';
+      const sName  = document.getElementById('sName');
+      const myName = document.getElementById('myName');
+      if (sName)  sName.textContent  = '🌱 지구지킴이';
+      if (myName) myName.textContent = '내 프로필';
       const sLv  = document.getElementById('sLv');
       const myLv = document.getElementById('myLv');
       if (sLv)  sLv.textContent  = 'Lv.1 씨앗';
       if (myLv) myLv.textContent = 'Lv.1 씨앗';
-
       window.ME    = null;
       window.UDATA = null;
-
       const adminArea = document.getElementById('adminArea');
       if (adminArea) adminArea.style.display = 'none';
     });
   }
 
-  // ── showApp 오버라이드 ──
+  // ── 전체 적용 ──
+  function applyFixes() {
+    fixAdminButton();
+    fixMyPage();
+    fixCompanyTab();
+    moveVerifToActivity();
+    setupLogout();
+    waitForFB(() => { updateStats(); trackTodayUser(); });
+  }
+
   const _origShowApp = window.showApp;
   window.showApp = function () {
     if (_origShowApp) _origShowApp();
-    setTimeout(() => {
-      fixAdminButton();
-      fixMyPage();
-      fixCompanyPage();
-      moveVerifToActivity();
-      setupLogout();
-      waitForFB(() => { updateStats(); trackTodayUser(); });
-    }, 600);
+    setTimeout(applyFixes, 600);
   };
 
-  // goPage 오버라이드 - company 탭 열 때도 빈칸 제거
+  const _origEnterGuest = window.enterGuest;
+  window.enterGuest = function () {
+    if (_origEnterGuest) _origEnterGuest();
+    setTimeout(applyFixes, 600);
+  };
+
   const _origGoPage = window.goPage;
   window.goPage = function(name) {
     if (_origGoPage) _origGoPage(name);
     if (name === 'company') {
       setTimeout(() => {
-        const companyPage = document.getElementById('page-company');
-        if (companyPage) {
-          companyPage.style.paddingTop = '0';
-          companyPage.style.marginTop  = '0';
-        }
+        const pg = document.getElementById('page-company');
+        if (pg) { pg.style.paddingTop = '0'; pg.style.marginTop = '0'; }
       }, 50);
     }
   };
 
-  // 30초마다 통계 갱신
   setInterval(() => waitForFB(updateStats), 30000);
 
-  // 초기 실행
   function init() {
     fixMyPage();
-    fixCompanyPage();
+    fixCompanyTab();
     moveVerifToActivity();
     setupLogout();
     waitForFB(updateStats);

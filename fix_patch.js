@@ -1,8 +1,8 @@
 /* =====================================================
-   EcoQuest – 종합 수정 패치 v2
+   EcoQuest – 종합 수정 패치 v3
    1. 오늘/누적 참여자 실시간 업데이트
    2. 관리자 버튼 관리자만 표시
-   3. 기업 탭 인증기록/주문 숨기기
+   3. 기업 탭 인증기록/주문 숨기기 + 상단 빈칸 제거
    4. 로그아웃 시 UI 완전 초기화
    ===================================================== */
 (function () {
@@ -80,14 +80,24 @@
     if (myOrders) myOrders.style.display = 'none';
   }
 
-  // ── 4. 기업 탭 정리 ──
+  // ── 4. 기업 탭 정리 + 상단 빈칸 제거 ──
   function fixCompanyPage() {
+    // corporate_patch가 마이에 붙인 companySec 제거
     const companySec = document.getElementById('companySec');
     if (companySec) companySec.remove();
+
+    // 탭 버튼 연결 교정
     const oldBtn = document.getElementById('tb-company');
     if (oldBtn && oldBtn.getAttribute('data-page') === 'my') {
       oldBtn.setAttribute('data-page', 'company');
       oldBtn.onclick = () => window.goPage && window.goPage('company');
+    }
+
+    // 기업 페이지 상단 패딩 제거
+    const companyPage = document.getElementById('page-company');
+    if (companyPage) {
+      companyPage.style.paddingTop = '0';
+      companyPage.style.marginTop = '0';
     }
   }
 
@@ -149,17 +159,15 @@
     if (!logoutBtn || logoutBtn._fixPatched) return;
     logoutBtn._fixPatched = true;
     logoutBtn.addEventListener('click', () => {
-      // 이름/아바타 초기화
       const uName   = document.getElementById('uName');
       const uAvatar = document.getElementById('uAvatar');
       const sName   = document.getElementById('sName');
       const myName  = document.getElementById('myName');
-      if (uName)   uName.textContent   = '-';
-      if (uAvatar) uAvatar.innerHTML   = '👤';
-      if (sName)   sName.textContent   = '🌱 지구지킴이';
-      if (myName)  myName.textContent  = '내 프로필';
+      if (uName)   uName.textContent  = '-';
+      if (uAvatar) uAvatar.innerHTML  = '👤';
+      if (sName)   sName.textContent  = '🌱 지구지킴이';
+      if (myName)  myName.textContent = '내 프로필';
 
-      // 포인트/미션 초기화
       const sMission = document.getElementById('sMission');
       const sStreak  = document.getElementById('sStreak');
       const sPoint   = document.getElementById('sPoint');
@@ -169,17 +177,14 @@
       if (sPoint)   sPoint.textContent   = '0';
       if (sCo2)     sCo2.textContent     = '0';
 
-      // 레벨 초기화
       const sLv  = document.getElementById('sLv');
       const myLv = document.getElementById('myLv');
       if (sLv)  sLv.textContent  = 'Lv.1 씨앗';
       if (myLv) myLv.textContent = 'Lv.1 씨앗';
 
-      // 상태 초기화
       window.ME    = null;
       window.UDATA = null;
 
-      // 관리자 버튼 숨기기
       const adminArea = document.getElementById('adminArea');
       if (adminArea) adminArea.style.display = 'none';
     });
@@ -199,12 +204,28 @@
     }, 600);
   };
 
+  // goPage 오버라이드 - company 탭 열 때도 빈칸 제거
+  const _origGoPage = window.goPage;
+  window.goPage = function(name) {
+    if (_origGoPage) _origGoPage(name);
+    if (name === 'company') {
+      setTimeout(() => {
+        const companyPage = document.getElementById('page-company');
+        if (companyPage) {
+          companyPage.style.paddingTop = '0';
+          companyPage.style.marginTop  = '0';
+        }
+      }, 50);
+    }
+  };
+
   // 30초마다 통계 갱신
   setInterval(() => waitForFB(updateStats), 30000);
 
   // 초기 실행
   function init() {
     fixMyPage();
+    fixCompanyPage();
     moveVerifToActivity();
     setupLogout();
     waitForFB(updateStats);

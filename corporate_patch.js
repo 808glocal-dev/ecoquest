@@ -397,7 +397,7 @@
 
   const _origIncheon = window.loadIncheonTransport;
   window.loadIncheonTransport = async function () {
-    if (_origIncheon) await _origIncheon();
+if (_origIncheon && document.getElementById('incheonTransStatus')) await _origIncheon();
     patchTransportButtons();
   };
 

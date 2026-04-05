@@ -598,7 +598,7 @@ if (_origIncheon && document.getElementById('incheonTransStatus')) await _origIn
   };
 
   function showGuestBanner() {
-    if (document.getElementById('guestBanner')) return;
+
     const b = document.createElement('div');
     b.id = 'guestBanner';
     b.style.cssText =
@@ -693,9 +693,15 @@ if (_origIncheon && document.getElementById('incheonTransStatus')) await _origIn
      ================================================================ */
 
   function injectCompanySection() {
-    const myPage = document.getElementById('page-my');
-    if (!myPage || document.getElementById('companySec')) return;
-
+ const page = document.getElementById('page-company') || document.createElement('div');
+if (!page.id) {
+  page.className = 'page';
+  page.id = 'page-company';
+  const tabBar = document.querySelector('.tab-bar');
+  if (tabBar) tabBar.parentElement.insertBefore(page, tabBar);
+}
+page.style.paddingTop = '0';
+page.innerHTML = `...기존 내용...`;
     const sec = document.createElement('div');
     sec.id = 'companySec';
     sec.innerHTML = `

@@ -1,10 +1,10 @@
 /* =====================================================
-   EcoQuest – 종합 수정 패치 v5
+   EcoQuest – 종합 수정 패치 v6
    1. 오늘/누적 참여자 실시간 업데이트
    2. 관리자 버튼 관리자만 표시
-   3. 기업 탭 정상작동 (게스트 모드 포함)
-   4. 로그아웃 시 UI 완전 초기화
-   5. 내 인증기록/주문 DOM에서 완전 삭제
+   3. 내 인증기록/주문 전체 페이지에서 완전 삭제
+   4. 기업탭 상단 빈칸 제거
+   5. 로그아웃 즉시 UI 초기화
    ===================================================== */
 (function () {
   'use strict';
@@ -26,14 +26,12 @@
       const total = d.totalUsers || 0;
       const co2 = Math.round((d.totalCo2 || 0) * 100) / 100;
       const co2Str = co2 >= 1000 ? (co2/1000).toFixed(1)+'t' : co2.toFixed(1)+'kg';
-
       const bToday = document.getElementById('bToday');
       const bTotal = document.getElementById('bTotal');
       const bCo2   = document.getElementById('bCo2');
       if (bToday) bToday.textContent = todayCount.toLocaleString();
       if (bTotal) bTotal.textContent = total.toLocaleString();
       if (bCo2)   bCo2.textContent   = co2Str;
-
       const fTotal = document.getElementById('forestTotal');
       const fCo2   = document.getElementById('forestCo2');
       if (fTotal) fTotal.textContent = total > 0 ? total.toLocaleString()+'명' : '0명';
@@ -46,8 +44,7 @@
     try {
       const today = new Date().toISOString().split('T')[0];
       const uSnap = await window.FB.getDoc(window.FB.doc(window.FB.db, 'users', window.ME.uid));
-      if (!uSnap.exists()) return;
-      if (uSnap.data().lastActiveDate === today) return;
+      if (!uSnap.exists() || uSnap.data().lastActiveDate === today) return;
       const gSnap = await window.FB.getDoc(window.FB.doc(window.FB.db, 'stats', 'global'));
       if (gSnap.exists() && gSnap.data().todayDate !== today) {
         await window.FB.setDoc(window.FB.doc(window.FB.db,'stats','global'),{todayUsers:1,todayDate:today},{merge:true});
@@ -66,31 +63,24 @@
     adminArea.style.display = window.ME?.email === window.ADMIN ? 'block' : 'none';
   }
 
-  // ── 3. page-my 정리 - DOM에서 완전 삭제 ──
-  function fixMyPage() {
-    const myPage = document.getElementById('page-my');
-    if (!myPage) return;
-
-    // 내 인증 기록 / 내 주문 섹션 헤더 삭제
-    myPage.querySelectorAll('.sec').forEach(sec => {
+  // ── 3. 전체 페이지에서 인증기록/주문 완전 삭제 ──
+  function removeVerifAndOrders() {
+    // 섹션 헤더 삭제
+    document.querySelectorAll('.sec').forEach(sec => {
       const txt = sec.textContent || '';
-      if (txt.includes('인증 기록') || txt.includes('내 주문')) {
-        sec.remove();
-      }
+      if (txt.includes('인증 기록') || txt.includes('내 주문')) sec.remove();
     });
-
     // 내용 삭제
     ['myVerifs', 'myOrders'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.remove();
     });
-
-    // corporate_patch가 마이에 붙인 companySec 제거
+    // corporate_patch companySec 제거
     const companySec = document.getElementById('companySec');
-    if (companySec && companySec.closest('#page-my')) companySec.remove();
+    if (companySec) companySec.remove();
   }
 
-  // ── 4. 기업 탭 버튼 + 페이지 교정 ──
+  // ── 4. 기업 탭 버튼 + 페이지 패딩 제거 ──
   function fixCompanyTab() {
     const btn = document.getElementById('tb-company');
     if (btn) {
@@ -153,37 +143,50 @@
     } catch (e) {}
   }
 
-  // ── 6. 로그아웃 UI 완전 초기화 ──
+  // ── 6. 로그아웃 즉시 UI 초기화 ──
+  function resetUI() {
+    const map = {
+      uName: '-', sMission: '0', sStreak: '0',
+      sPoint: '0', sCo2: '0', myMission: '0',
+      myPoint: '0', myCo2: '0', shopPoint: '0 P',
+    };
+    Object.entries(map).forEach(([id, val]) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = val;
+    });
+    const uAvatar = document.getElementById('uAvatar');
+    if (uAvatar) uAvatar.innerHTML = '👤';
+    ['sName','myName'].forEach((id, i) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = i === 0 ? '🌱 지구지킴이' : '내 프로필';
+    });
+    ['sLv','myLv'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = 'Lv.1 씨앗';
+    });
+    const adminArea = document.getElementById('adminArea');
+    if (adminArea) adminArea.style.display = 'none';
+    window.ME    = null;
+    window.UDATA = null;
+  }
+
   function setupLogout() {
+    // btnLogout에 직접 이벤트 대신 클릭 감지 (Firebase signOut 이후에도 동작하도록)
     const logoutBtn = document.getElementById('btnLogout');
     if (!logoutBtn || logoutBtn._fixPatched) return;
     logoutBtn._fixPatched = true;
+
+    // 클릭 즉시 + signOut 이후 두 번 실행해서 확실히 초기화
     logoutBtn.addEventListener('click', () => {
-      ['uName','sMission','sStreak','sPoint','sCo2'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = id === 'uName' ? '-' : '0';
-      });
-      const uAvatar = document.getElementById('uAvatar');
-      if (uAvatar) uAvatar.innerHTML = '👤';
-      const sName  = document.getElementById('sName');
-      const myName = document.getElementById('myName');
-      if (sName)  sName.textContent  = '🌱 지구지킴이';
-      if (myName) myName.textContent = '내 프로필';
-      const sLv  = document.getElementById('sLv');
-      const myLv = document.getElementById('myLv');
-      if (sLv)  sLv.textContent  = 'Lv.1 씨앗';
-      if (myLv) myLv.textContent = 'Lv.1 씨앗';
-      window.ME    = null;
-      window.UDATA = null;
-      const adminArea = document.getElementById('adminArea');
-      if (adminArea) adminArea.style.display = 'none';
-    });
+      resetUI();
+      setTimeout(resetUI, 500);
+    }, true); // capture phase - Firebase 이전에 실행
   }
 
   // ── 전체 적용 ──
   function applyFixes() {
     fixAdminButton();
-    fixMyPage();
+    removeVerifAndOrders();
     fixCompanyTab();
     moveVerifToActivity();
     setupLogout();
@@ -209,18 +212,26 @@
       setTimeout(() => {
         const pg = document.getElementById('page-company');
         if (pg) { pg.style.paddingTop = '0'; pg.style.marginTop = '0'; }
-      }, 50);
+        // 혹시 인증기록/주문 글자 남아있으면 다시 제거
+        removeVerifAndOrders();
+      }, 80);
     }
   };
 
   setInterval(() => waitForFB(updateStats), 30000);
 
   function init() {
-    fixMyPage();
+    removeVerifAndOrders();
     fixCompanyTab();
     moveVerifToActivity();
     setupLogout();
     waitForFB(updateStats);
+    // DOM 변경 감시 - 동적으로 추가되는 요소도 제거
+    const observer = new MutationObserver(() => {
+      const companySec = document.getElementById('companySec');
+      if (companySec) companySec.remove();
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
   }
 
   if (document.readyState === 'loading') {

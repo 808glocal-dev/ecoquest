@@ -1387,7 +1387,7 @@ window.saveMission=async(uid,m)=>{
   }catch(e){}
   await window.FB.updateDoc(window.FB.doc(window.FB.db,"users",uid),{doneMissions:done,point:p,missionCount:cnt,co2,lastAt:window.FB.serverTimestamp()});
   window.UDATA={...d,doneMissions:done,point:p,missionCount:cnt,co2};
- try{const _today=new Date().toISOString().split("T")[0];const _su={totalCo2:window.FB.increment(parseFloat(m.co2.toFixed(3)))};if(window.UDATA.lastMissionDate!==_today){_su.todayUsers=window.FB.increment(1);_su.todayDate=_today;window.UDATA.lastMissionDate=_today;await window.FB.updateDoc(window.FB.doc(window.FB.db,"users",uid),{lastMissionDate:_today});}if((d.missionCount||0)===0){_su.totalParticipants=window.FB.increment(1);}await window.FB.setDoc(window.FB.doc(window.FB.db,"stats","global"),_su,{merge:true});loadGlobalStats();}catch(e){}
+ try{const _today=new Date().toISOString().split("T")[0];const _su={totalCo2:window.FB.increment(parseFloat(m.co2.toFixed(3)))};if(window.UDATA.lastMissionDate!==_today){const _gs=await window.FB.getDoc(window.FB.doc(window.FB.db,"stats","global"));const _gd=_gs.exists()?_gs.data():{};_su.todayUsers=(_gd.todayDate===_today)?window.FB.increment(1):1;_su.todayDate=_today;window.UDATA.lastMissionDate=_today;await window.FB.updateDoc(window.FB.doc(window.FB.db,"users",uid),{lastMissionDate:_today});}if((d.missionCount||0)===0){_su.totalParticipants=window.FB.increment(1);}await window.FB.setDoc(window.FB.doc(window.FB.db,"stats","global"),_su,{merge:true});loadGlobalStats();}catch(e){}
   updateUI();
   return true;
 };

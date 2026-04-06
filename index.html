@@ -1272,7 +1272,7 @@ async function loadGlobalStats(){
     const s=await window.FB.getDoc(window.FB.doc(window.FB.db,"stats","global"));
     if(s.exists()){
       const d=s.data();
-      const t=d.totalUsers||0,td=d.todayUsers||0,co2=Math.round((d.totalCo2||0)*100)/100;
+      const t=d.totalParticipants||d.totalUsers||0,td=d.todayUsers||0,co2=Math.round((d.totalCo2||0)*100)/100;
       document.getElementById("bToday").textContent=td.toLocaleString();
       document.getElementById("bTotal").textContent=t.toLocaleString();
       document.getElementById("mapTotal")&&(document.getElementById("mapTotal").textContent=t>0?t.toLocaleString():"24,810");
@@ -1387,11 +1387,18 @@ window.saveMission=async(uid,m)=>{
   }catch(e){}
   await window.FB.updateDoc(window.FB.doc(window.FB.db,"users",uid),{doneMissions:done,point:p,missionCount:cnt,co2,lastAt:window.FB.serverTimestamp()});
   window.UDATA={...d,doneMissions:done,point:p,missionCount:cnt,co2};
-  try{await window.FB.setDoc(window.FB.doc(window.FB.db,"stats","global"),{totalCo2:window.FB.increment(parseFloat(m.co2.toFixed(3)))},{merge:true});loadGlobalStats();}catch(e){}
-  updateUI();
-  return true;
-};
-
+  try{
+  const _today=new Date().toISOString().split("T")[0];
+  const _su={totalCo2:window.FB.increment(parseFloat(m.co2.toFixed(3)))};
+  if(d.lastMissionDate!==_today){
+    _su.todayUsers=window.FB.increment(1);
+    window.FB.updateDoc(window.FB.doc(window.FB.db,"users",uid),{lastMissionDate:_today});
+    window.UDATA.lastMissionDate=_today;
+  }
+  if((d.missionCount||0)===0)_su.totalParticipants=window.FB.increment(1);
+  await window.FB.setDoc(window.FB.doc(window.FB.db,"stats","global"),_su,{merge:true});
+  loadGlobalStats();
+}catch(e){}
 window.saveOnboardData=async(uid,age,region,interests,extra={})=>{
   const data={age,region,interests,...extra};
   await window.FB.updateDoc(window.FB.doc(window.FB.db,"users",uid),data);

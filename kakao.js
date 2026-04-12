@@ -21,7 +21,7 @@ export default async function handler(req, res) {
   }
 
   const REST_API_KEY = '11604f4514f1708fe995de19960d0eab';
-  const REDIRECT_URI = 'https://eco-quest.kr';
+  const REDIRECT_URI = 'https://www.eco-quest.kr';
 
   try {
     // 1. 코드 → 액세스 토큰 교환

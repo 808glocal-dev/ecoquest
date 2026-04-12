@@ -1,13 +1,13 @@
 /* =====================================================
-   EcoQuest – 카카오 로그인 패치 v4
-   Vercel 서버리스 함수 방식
+   EcoQuest – 카카오 로그인 패치 v5
+   redirectUri www 포함 슬래시 포함으로 수정
    ===================================================== */
 (function () {
   'use strict';
 
   const KAKAO_JS_KEY = '649f9467c7050c5be787d09b97ed7023';
+  const REDIRECT_URI = 'https://www.eco-quest.kr';
 
-  // 카카오 SDK 로드
   function loadKakaoSDK() {
     return new Promise((res) => {
       if (window.Kakao && window.Kakao.isInitialized()) { res(); return; }
@@ -20,11 +20,9 @@
     });
   }
 
-  // 카카오 인증 코드로 Firebase 로그인
   async function handleKakaoCode(code) {
     toast('카카오 로그인 처리 중...');
     try {
-      // Vercel 서버리스로 유저 정보 요청
       const r = await fetch('/api/kakao', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -37,7 +35,6 @@
       const fakeEmail = `kakao_${kakaoId}@ecoquest.kakao`;
       const fakePassword = `kko_${kakaoId}_eq2024!`;
 
-      // Firebase Auth
       const mod = await import('https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js');
       const auth = mod.getAuth();
 
@@ -61,35 +58,26 @@
     }
   }
 
-  // 카카오 로그인 버튼 클릭 → 카카오 로그인 페이지로 이동
   async function doKakaoLogin() {
     await loadKakaoSDK();
-    // authorize: 카카오 로그인 페이지로 리다이렉트
     window.Kakao.Auth.authorize({
-      redirectUri: 'https://eco-quest.kr',
+      redirectUri: REDIRECT_URI,
     });
   }
 
-  // 페이지 로드 시 URL에 code 파라미터 있으면 처리
   async function checkKakaoRedirect() {
     const params = new URLSearchParams(window.location.search);
     const code = params.get('code');
     if (!code) return;
-
-    // URL 정리
     window.history.replaceState({}, '', window.location.pathname);
-
-    // Firebase 초기화 대기
     await new Promise(r => setTimeout(r, 1500));
     await handleKakaoCode(code);
   }
 
-  // 카카오 버튼 주입
   async function injectKakaoBtn() {
     if (document.getElementById('btnKakaoLogin')) return;
     const googleBtn = document.getElementById('btnLogin');
     if (!googleBtn) return;
-
     await loadKakaoSDK();
 
     const kakaoBtn = document.createElement('button');
@@ -114,7 +102,6 @@
     googleBtn.parentElement.insertBefore(kakaoBtn, googleBtn.nextSibling);
   }
 
-  // 로그인 화면 감지
   function watchLoginScreen() {
     const loginScreen = document.getElementById('loginScreen');
     if (!loginScreen) return;
@@ -125,7 +112,6 @@
     observer.observe(loginScreen, { attributes: true, attributeFilter: ['style'] });
   }
 
-  // 로그아웃 시 카카오도 같이
   const logoutBtn = document.getElementById('btnLogout');
   if (logoutBtn) {
     const origClick = logoutBtn.onclick;
@@ -137,7 +123,6 @@
     };
   }
 
-  // 초기화
   checkKakaoRedirect();
 
   if (document.readyState === 'loading') {

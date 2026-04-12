@@ -1,7 +1,8 @@
 /* =====================================================
-   EcoQuest – 기업 탭 v7
-   - 내 소속 / 임직원현황 / 랭킹만
-   - 스토어/쿠폰함 제거
+   EcoQuest – 기업 탭 v8
+   - 탭 이름 "기업" → "소속"
+   - 임직원현황 / 랭킹 catch 빈칸 버그 수정
+   - 새로고침 버튼에서 loadCompanyRank() 같이 호출
    ===================================================== */
 (function () {
   'use strict';
@@ -54,6 +55,15 @@
     if (btn) {
       btn.setAttribute('data-page', 'company');
       btn.onclick = () => window.goPage && window.goPage('company');
+      // 탭 라벨 텍스트 "기업" → "소속"
+      const label = btn.querySelector('div') || btn;
+      if (label && label.textContent.trim() === '기업') {
+        label.textContent = '소속';
+      }
+      // 자식 div 중 텍스트가 "기업"인 것 찾기
+      btn.querySelectorAll('div, span').forEach(el => {
+        if (el.textContent.trim() === '기업') el.textContent = '소속';
+      });
     }
   }
 
@@ -79,6 +89,9 @@
   window.loadCompanyPage = async function () {
     const box = document.getElementById('companyPageBox');
     if (!box) return;
+    // 새로고침 시 랭킹도 같이 갱신
+    loadCompanyRank();
+
     if (!window.ME || !window.FB) {
       box.innerHTML = `<div style="text-align:center;color:var(--sub);font-size:12px;padding:8px">로그인 후 이용 가능해요 🔑</div>`;
       return;
@@ -137,7 +150,7 @@
       if (ms) ms.style.display = 'block';
       loadCompanyMissionStats(cid);
     } catch(e) {
-      box.innerHTML = `<div style="text-align:center;color:var(--sub);font-size:12px;padding:8px">불러오기 실패</div>`;
+      box.innerHTML = `<div style="text-align:center;color:var(--sub);font-size:12px;padding:8px">불러오기 실패 😢<br><small>${e.message||''}</small></div>`;
     }
   };
 
@@ -147,7 +160,10 @@
     try {
       const uSnap = await window.FB.getDocs(window.FB.collection(window.FB.db,'users'));
       const members = uSnap.docs.map(d=>d.data()).filter(u=>u.companyId===cid);
-      if (!members.length) { el.innerHTML='<div style="text-align:center;color:var(--sub);font-size:12px;padding:8px">아직 멤버가 없어요</div>'; return; }
+      if (!members.length) {
+        el.innerHTML='<div style="text-align:center;color:var(--sub);font-size:12px;padding:8px">아직 멤버가 없어요</div>';
+        return;
+      }
       const totalCo2 = members.reduce((s,u)=>s+(u.co2||0),0);
       const totalMission = members.reduce((s,u)=>s+(u.missionCount||0),0);
       el.innerHTML = `
@@ -179,7 +195,9 @@
             </div>
             <div style="font-size:13px;font-weight:900;color:var(--g2)">${(u.co2||0).toFixed(1)}kg</div>
           </div>`).join('')}`;
-    } catch(e) {}
+    } catch(e) {
+      el.innerHTML = `<div style="text-align:center;color:var(--sub);font-size:12px;padding:8px">불러오기 실패 😢<br><small>${e.message||''}</small></div>`;
+    }
   }
 
   async function loadCompanyRank() {
@@ -212,8 +230,12 @@
             <div style="font-size:10px;color:var(--sub)">CO₂</div>
           </div>
         </div>`).join('');
-    } catch(e) {}
+    } catch(e) {
+      el.innerHTML = `<div style="background:#fff;border-radius:14px;padding:20px;text-align:center;border:1px solid var(--bdr)"><div style="font-size:13px;color:var(--sub)">불러오기 실패 😢<br><small>${e.message||''}</small></div></div>`;
+    }
   }
+
+  window.loadCompanyRank = loadCompanyRank;
 
   window.joinCompanyByCodePage = async function () {
     const code = document.getElementById('coCodeInpPage')?.value?.trim()?.toUpperCase();
@@ -229,7 +251,7 @@
       await window.FB.updateDoc(window.FB.doc(window.FB.db,'users',window.ME.uid),{companyId:found.id});
       window.UDATA.companyId = found.id;
       toast(`✅ "${co.name}" 참여 완료!`);
-      window.loadCompanyPage(); loadCompanyRank();
+      window.loadCompanyPage();
     } catch(e){toast('참여 실패: '+e.message);}
   };
 

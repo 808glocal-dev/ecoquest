@@ -1,6 +1,6 @@
 /* =====================================================
-   EcoQuest – 카카오 로그인 패치 v3
-   Kakao SDK v2 - authorize 방식
+   EcoQuest – 카카오 로그인 패치 v4
+   Vercel 서버리스 함수 방식
    ===================================================== */
 (function () {
   'use strict';
@@ -11,9 +11,7 @@
   function loadKakaoSDK() {
     return new Promise((res) => {
       if (window.Kakao && window.Kakao.isInitialized()) { res(); return; }
-      if (window.Kakao && !window.Kakao.isInitialized()) {
-        window.Kakao.init(KAKAO_JS_KEY); res(); return;
-      }
+      if (window.Kakao) { window.Kakao.init(KAKAO_JS_KEY); res(); return; }
       const s = document.createElement('script');
       s.src = 'https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js';
       s.crossOrigin = 'anonymous';
@@ -22,121 +20,68 @@
     });
   }
 
-  // 카카오 access token으로 유저 정보 가져오기
-  function getKakaoUserInfo(accessToken) {
-    return new Promise((res, rej) => {
-      window.Kakao.API.request({
-        url: '/v2/user/me',
-        success: res,
-        fail: rej
-      });
-    });
-  }
-
-  // Firebase 이메일/비밀번호로 카카오 계정 처리
-  async function handleKakaoUser(kakaoId, nickname, profileImg) {
-    const fakeEmail = `kakao_${kakaoId}@ecoquest.kakao`;
-    const fakePassword = `kko_${kakaoId}_eq2024!`;
-
+  // 카카오 인증 코드로 Firebase 로그인
+  async function handleKakaoCode(code) {
+    toast('카카오 로그인 처리 중...');
     try {
+      // Vercel 서버리스로 유저 정보 요청
+      const r = await fetch('/api/kakao', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code }),
+      });
+      const data = await r.json();
+      if (data.error) { toast('카카오 오류: ' + data.error); return; }
+
+      const { id: kakaoId, nickname, profileImage } = data;
+      const fakeEmail = `kakao_${kakaoId}@ecoquest.kakao`;
+      const fakePassword = `kko_${kakaoId}_eq2024!`;
+
+      // Firebase Auth
       const mod = await import('https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js');
       const auth = mod.getAuth();
 
       try {
-        // 로그인 시도
         await mod.signInWithEmailAndPassword(auth, fakeEmail, fakePassword);
         toast('🟡 카카오 로그인 성공!');
       } catch (e) {
-        if (e.code === 'auth/user-not-found' || e.code === 'auth/invalid-credential' || e.code === 'auth/wrong-password') {
-          // 신규 → 계정 생성
+        if (e.code === 'auth/user-not-found' || e.code === 'auth/invalid-credential') {
           const cred = await mod.createUserWithEmailAndPassword(auth, fakeEmail, fakePassword);
           await mod.updateProfile(cred.user, {
             displayName: nickname,
-            photoURL: profileImg || null
+            photoURL: profileImage || null,
           });
           toast('🎉 카카오로 가입됐어요!');
         } else {
           toast('Firebase 오류: ' + e.code);
         }
       }
-    } catch(e) {
-      toast('오류: ' + e.message);
-    }
-  }
-
-  // 카카오 로그인 버튼 클릭
-  async function doKakaoLogin() {
-    try {
-      await loadKakaoSDK();
-    } catch(e) {
-      toast('카카오 SDK 오류'); return;
-    }
-
-    // SDK v2: authorize 팝업 방식
-    window.Kakao.Auth.authorize({
-      redirectUri: window.location.origin,
-      prompt: 'login',
-      throughTalk: false,
-    });
-  }
-
-  // 페이지 로드 시 카카오 인증 코드 처리 (리다이렉트 후)
-  async function handleKakaoRedirect() {
-    const params = new URLSearchParams(window.location.search);
-    const code = params.get('code');
-    if (!code) return;
-
-    // URL에서 code 제거
-    window.history.replaceState({}, '', window.location.pathname);
-
-    toast('카카오 인증 처리 중...');
-
-    try {
-      await loadKakaoSDK();
-
-      // access token 교환 (REST API - CORS 문제로 직접 호출)
-      // 대신 SDK의 getAccessToken 방식 사용
-      // code를 받아서 Kakao.Auth.setAccessToken 없이
-      // REST API로 token 교환 필요
-      // Vercel 서버리스 함수 없이 하려면 팝업 방식 사용
-
-      // 팝업 방식으로 전환 안내
-      toast('리다이렉트 방식은 서버가 필요해요. 팝업 방식으로 다시 눌러주세요!');
-    } catch(e) {
+    } catch (e) {
       toast('처리 오류: ' + e.message);
     }
   }
 
-  // 팝업 방식으로 완전 전환
-  async function doKakaoLoginPopup() {
-    try {
-      await loadKakaoSDK();
-    } catch(e) {
-      toast('카카오 SDK 오류'); return;
-    }
-
-    // SDK v2 팝업 방식
-    window.Kakao.Auth.loginForm({
-      success: async function(authObj) {
-        toast('카카오 정보 불러오는 중...');
-        try {
-          const res = await getKakaoUserInfo(authObj.access_token);
-          const kakaoId = String(res.id);
-          const nickname = res.kakao_account?.profile?.nickname
-            || res.properties?.nickname
-            || '카카오유저';
-          const profileImg = res.kakao_account?.profile?.profile_image_url
-            || res.properties?.profile_image || '';
-          await handleKakaoUser(kakaoId, nickname, profileImg);
-        } catch(e) {
-          toast('유저 정보 오류: ' + e.message);
-        }
-      },
-      fail: function(err) {
-        console.log('카카오 로그인 실패', err);
-        toast('카카오 로그인 취소됐어요');
-      }
+  // 카카오 로그인 버튼 클릭 → 카카오 로그인 페이지로 이동
+  async function doKakaoLogin() {
+    await loadKakaoSDK();
+    // authorize: 카카오 로그인 페이지로 리다이렉트
+    window.Kakao.Auth.authorize({
+      redirectUri: 'https://eco-quest.kr',
     });
+  }
+
+  // 페이지 로드 시 URL에 code 파라미터 있으면 처리
+  async function checkKakaoRedirect() {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
+    if (!code) return;
+
+    // URL 정리
+    window.history.replaceState({}, '', window.location.pathname);
+
+    // Firebase 초기화 대기
+    await new Promise(r => setTimeout(r, 1500));
+    await handleKakaoCode(code);
   }
 
   // 카카오 버튼 주입
@@ -165,7 +110,7 @@
       </svg>
       카카오로 시작하기
     `;
-    kakaoBtn.onclick = doKakaoLoginPopup;
+    kakaoBtn.onclick = doKakaoLogin;
     googleBtn.parentElement.insertBefore(kakaoBtn, googleBtn.nextSibling);
   }
 
@@ -184,7 +129,7 @@
   const logoutBtn = document.getElementById('btnLogout');
   if (logoutBtn) {
     const origClick = logoutBtn.onclick;
-    logoutBtn.onclick = function() {
+    logoutBtn.onclick = function () {
       if (window.Kakao?.isInitialized() && window.Kakao?.Auth?.getAccessToken()) {
         window.Kakao.Auth.logout();
       }
@@ -193,6 +138,8 @@
   }
 
   // 초기화
+  checkKakaoRedirect();
+
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', watchLoginScreen);
   } else {

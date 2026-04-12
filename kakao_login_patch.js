@@ -1,12 +1,16 @@
 /* =====================================================
-   EcoQuest – 카카오 로그인 패치 v5
-   redirectUri www 포함 슬래시 포함으로 수정
+   EcoQuest – 카카오 로그인 패치 v6
+   redirectUri를 window.location.origin으로 동적 감지
    ===================================================== */
 (function () {
   'use strict';
 
   const KAKAO_JS_KEY = '649f9467c7050c5be787d09b97ed7023';
-  const REDIRECT_URI = 'https://www.eco-quest.kr/';
+
+  // 현재 도메인 기준으로 redirectUri 자동 설정
+  function getRedirectUri() {
+    return window.location.origin + '/';
+  }
 
   function loadKakaoSDK() {
     return new Promise((res) => {
@@ -22,14 +26,19 @@
 
   async function handleKakaoCode(code) {
     toast('카카오 로그인 처리 중...');
+    const redirectUri = getRedirectUri();
     try {
       const r = await fetch('/api/kakao', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code }),
+        body: JSON.stringify({ code, redirectUri }),
       });
       const data = await r.json();
-      if (data.error) { toast('카카오 오류: ' + data.error); return; }
+      if (data.error) {
+        toast('카카오 오류: ' + data.error);
+        console.error('카카오 에러 상세:', data);
+        return;
+      }
 
       const { id: kakaoId, nickname, profileImage } = data;
       const fakeEmail = `kakao_${kakaoId}@ecoquest.kakao`;
@@ -61,7 +70,7 @@
   async function doKakaoLogin() {
     await loadKakaoSDK();
     window.Kakao.Auth.authorize({
-      redirectUri: REDIRECT_URI,
+      redirectUri: getRedirectUri(),
     });
   }
 

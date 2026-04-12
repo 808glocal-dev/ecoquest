@@ -1,30 +1,21 @@
 // api/kakao.js - Vercel 서버리스 함수
-// 카카오 인증 코드 → 액세스 토큰 → 유저 정보 반환
 
 export default async function handler(req, res) {
-  // CORS 허용
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
-
-  const { code } = req.body;
-  if (!code) {
-    return res.status(400).json({ error: 'code required' });
-  }
+  const { code, redirectUri } = req.body;
+  if (!code) return res.status(400).json({ error: 'code required' });
 
   const REST_API_KEY = '11604f4514f1708fe995de19960d0eab';
-  const REDIRECT_URI = 'https://www.eco-quest.kr/';
+  // 클라이언트에서 보낸 redirectUri 그대로 사용 (불일치 방지)
+  const REDIRECT_URI = redirectUri || 'https://www.eco-quest.kr/';
 
   try {
-    // 1. 코드 → 액세스 토큰 교환
     const tokenRes = await fetch('https://kauth.kakao.com/oauth/token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -38,10 +29,13 @@ export default async function handler(req, res) {
     const tokenData = await tokenRes.json();
 
     if (tokenData.error) {
-      return res.status(400).json({ error: tokenData.error_description });
+      return res.status(400).json({
+        error: tokenData.error_description || tokenData.error,
+        kakao_error: tokenData.error,
+        redirect_uri_used: REDIRECT_URI,
+      });
     }
 
-    // 2. 액세스 토큰 → 유저 정보
     const userRes = await fetch('https://kapi.kakao.com/v2/user/me', {
       headers: { Authorization: `Bearer ${tokenData.access_token}` },
     });

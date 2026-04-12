@@ -1,8 +1,6 @@
 /* =====================================================
-   EcoQuest – 기업 탭 v8
-   - 탭 이름 "기업" → "소속"
-   - 임직원현황 / 랭킹 catch 빈칸 버그 수정
-   - 새로고침 버튼에서 loadCompanyRank() 같이 호출
+   EcoQuest – 소속 탭 v9
+   - "기업" → "소속" 전체 변경
    ===================================================== */
 (function () {
   'use strict';
@@ -40,9 +38,9 @@
         </div>
       </div>
 
-      <!-- 기업 CO₂ 랭킹 -->
+      <!-- 소속 CO₂ 랭킹 -->
       <div style="padding:0 12px;margin-bottom:20px">
-        <div style="font-size:15px;font-weight:900;color:var(--txt);margin-bottom:8px">🏆 기업 CO₂ 랭킹</div>
+        <div style="font-size:15px;font-weight:900;color:var(--txt);margin-bottom:8px">🏆 소속 CO₂ 랭킹</div>
         <div id="companyRankPage">
           <div style="text-align:center;color:var(--sub);font-size:12px;padding:16px">로딩 중...</div>
         </div>
@@ -55,12 +53,6 @@
     if (btn) {
       btn.setAttribute('data-page', 'company');
       btn.onclick = () => window.goPage && window.goPage('company');
-      // 탭 라벨 텍스트 "기업" → "소속"
-      const label = btn.querySelector('div') || btn;
-      if (label && label.textContent.trim() === '기업') {
-        label.textContent = '소속';
-      }
-      // 자식 div 중 텍스트가 "기업"인 것 찾기
       btn.querySelectorAll('div, span').forEach(el => {
         if (el.textContent.trim() === '기업') el.textContent = '소속';
       });
@@ -89,7 +81,6 @@
   window.loadCompanyPage = async function () {
     const box = document.getElementById('companyPageBox');
     if (!box) return;
-    // 새로고침 시 랭킹도 같이 갱신
     loadCompanyRank();
 
     if (!window.ME || !window.FB) {
@@ -103,11 +94,11 @@
       box.innerHTML = `
         <div style="text-align:center;margin-bottom:14px">
           <div style="font-size:28px;margin-bottom:6px">🏢</div>
-          <div style="font-size:13px;font-weight:700;color:var(--txt);margin-bottom:3px">소속 기업이 없어요</div>
+          <div style="font-size:13px;font-weight:700;color:var(--txt);margin-bottom:3px">소속이 없어요</div>
           <div style="font-size:12px;color:var(--sub);margin-bottom:14px">등록하거나 초대 코드로 참여하세요</div>
         </div>
         <div style="display:flex;flex-direction:column;gap:8px">
-          <button onclick="openCreateCompany()" class="btn btn-g" style="padding:11px">🏢 기업/단체 등록</button>
+          <button onclick="openCreateCompany()" class="btn btn-g" style="padding:11px">🏢 소속 등록하기</button>
           <div style="display:flex;gap:8px">
             <input id="coCodeInpPage" class="inp" placeholder="초대 코드 입력" maxlength="8" style="flex:1;text-transform:uppercase"/>
             <button onclick="joinCompanyByCodePage()" class="btn btn-b btn-sm">입장</button>
@@ -170,7 +161,7 @@
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
           <div style="background:#f0fbf4;border-radius:12px;padding:12px;text-align:center;border:1px solid var(--bdr)">
             <div style="font-size:20px;font-weight:900;color:var(--g2)">${members.length}명</div>
-            <div style="font-size:11px;color:var(--sub);margin-top:2px">참여 임직원</div>
+            <div style="font-size:11px;color:var(--sub);margin-top:2px">참여 인원</div>
           </div>
           <div style="background:#f0fbf4;border-radius:12px;padding:12px;text-align:center;border:1px solid var(--bdr)">
             <div style="font-size:20px;font-weight:900;color:var(--g2)">${totalMission}건</div>
@@ -214,7 +205,7 @@
         return {co, members, totalCo2:members.reduce((s,u)=>s+(u.co2||0),0), totalMission:members.reduce((s,u)=>s+(u.missionCount||0),0)};
       }).filter(s=>s.totalCo2>0).sort((a,b)=>b.totalCo2-a.totalCo2).slice(0,5);
       if (!coStats.length) {
-        el.innerHTML = `<div style="background:#fff;border-radius:14px;padding:20px;text-align:center;border:1px solid var(--bdr)"><div style="font-size:32px;margin-bottom:8px">🏢</div><div style="font-size:13px;font-weight:700;color:var(--txt)">아직 참여 기업이 없어요</div></div>`;
+        el.innerHTML = `<div style="background:#fff;border-radius:14px;padding:20px;text-align:center;border:1px solid var(--bdr)"><div style="font-size:32px;margin-bottom:8px">🏢</div><div style="font-size:13px;font-weight:700;color:var(--txt)">아직 참여 소속이 없어요</div></div>`;
         return;
       }
       el.innerHTML = coStats.map((s,i)=>`

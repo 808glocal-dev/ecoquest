@@ -8,7 +8,7 @@
   const KAKAO_JS_KEY = '649f9467c7050c5be787d09b97ed7023';
 
   function getRedirectUri() {
-    return window.location.origin + '/';
+    return 'https://www.eco-quest.kr';
   }
 
   function loadKakaoSDK() {

@@ -8,12 +8,12 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { code, redirectUri } = req.body;
+  const { code } = req.body;
   if (!code) return res.status(400).json({ error: 'code required' });
 
   const REST_API_KEY = '11604f4514f1708fe995de19960d0eab';
-  const CLIENT_SECRET = 'sPujJaMltzCDKT0Lg8vhAUB8vuNEQPPB';
-  const REDIRECT_URI = redirectUri || 'https://www.eco-quest.kr/';
+  // 카카오에 등록된 URI와 정확히 동일하게 고정
+  const REDIRECT_URI = 'https://www.eco-quest.kr';
 
   try {
     const tokenRes = await fetch('https://kauth.kakao.com/oauth/token', {
@@ -22,7 +22,6 @@ export default async function handler(req, res) {
       body: new URLSearchParams({
         grant_type: 'authorization_code',
         client_id: REST_API_KEY,
-        client_secret: CLIENT_SECRET,
         redirect_uri: REDIRECT_URI,
         code,
       }).toString(),

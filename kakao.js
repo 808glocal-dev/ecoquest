@@ -12,20 +12,22 @@ export default async function handler(req, res) {
   if (!code) return res.status(400).json({ error: 'code required' });
 
   const REST_API_KEY = '11604f4514f1708fe995de19960d0eab';
-  // 클라이언트에서 보낸 redirectUri 그대로 사용 (불일치 방지)
+  const CLIENT_SECRET = 'sPujJaMltzCDKT0Lg8vhAUB8vuNEQPPB';
   const REDIRECT_URI = redirectUri || 'https://www.eco-quest.kr/';
 
   try {
     const tokenRes = await fetch('https://kauth.kakao.com/oauth/token', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8' },
       body: new URLSearchParams({
         grant_type: 'authorization_code',
         client_id: REST_API_KEY,
+        client_secret: CLIENT_SECRET,
         redirect_uri: REDIRECT_URI,
         code,
-      }),
+      }).toString(),
     });
+
     const tokenData = await tokenRes.json();
 
     if (tokenData.error) {

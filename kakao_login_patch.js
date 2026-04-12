@@ -6,7 +6,7 @@
   'use strict';
 
   const KAKAO_JS_KEY = '649f9467c7050c5be787d09b97ed7023';
-  const REDIRECT_URI = 'https://www.eco-quest.kr';
+  const REDIRECT_URI = 'https://www.eco-quest.kr/';
 
   function loadKakaoSDK() {
     return new Promise((res) => {

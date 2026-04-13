@@ -139,7 +139,5 @@
   } else {
     watchLoginScreen();
   }
-  setTimeout(watchLoginScreen, 800);
-  setTimeout(watchLoginScreen, 2000);
 
 })();

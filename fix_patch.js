@@ -15,30 +15,9 @@
   }
 
   // ── 1. 참여자 숫자 실시간 업데이트 ──
-  async function updateStats() {
-    if (!window.FB) return;
-    try {
-      const snap = await window.FB.getDoc(window.FB.doc(window.FB.db, 'stats', 'global'));
-      if (!snap.exists()) return;
-      const d = snap.data();
-      const today = new Date().toISOString().split('T')[0];
-      let todayCount = d.todayUsers || 0;
-      if (d.todayDate !== today) todayCount = 0;
-     const total = d.totalParticipants || d.totalUsers || 0;
-      const co2 = Math.round((d.totalCo2 || 0) * 100) / 100;
-      const co2Str = co2 >= 1000 ? (co2/1000).toFixed(1)+'t' : co2.toFixed(1)+'kg';
-      const bToday = document.getElementById('bToday');
-      const bTotal = document.getElementById('bTotal');
-      const bCo2   = document.getElementById('bCo2');
-      if (bToday) bToday.textContent = todayCount.toLocaleString();
-      if (bTotal) bTotal.textContent = total.toLocaleString();
-      if (bCo2)   bCo2.textContent   = co2Str;
-      const fTotal = document.getElementById('forestTotal');
-      const fCo2   = document.getElementById('forestCo2');
-      if (fTotal) fTotal.textContent = total > 0 ? total.toLocaleString()+'명' : '0명';
-      if (fCo2)   fCo2.textContent   = co2Str;
-    } catch (e) {}
-  }
+ async function updateStats() {
+  if (window.loadGlobalStats) window.loadGlobalStats();
+}
 
   async function trackTodayUser() {
     if (!window.FB || !window.ME?.uid) return;

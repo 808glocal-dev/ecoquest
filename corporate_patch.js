@@ -702,6 +702,7 @@ if (!page.id) {
 }
 page.style.paddingTop = '0';
 page.innerHTML = `...기존 내용...`;
+     const sec = document.querySelector('.sec') || document.createElement('div');
     sec.innerHTML = `
       <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 12px 8px">
         <div style="font-size:15px;font-weight:900;color:var(--txt)">🏢 소속 기업/단체</div>

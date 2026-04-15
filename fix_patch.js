@@ -242,6 +242,8 @@
     moveVerifToActivity();
     setupLogout();
     waitForFB(updateStats);
+     waitForFB(updateStats);
+setTimeout(() => { if (window.loadGlobalStats) window.loadGlobalStats(); }, 2000);
     observer.observe(document.body, { childList: true, subtree: true });
   }
 

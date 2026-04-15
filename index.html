@@ -1272,7 +1272,7 @@ async function loadGlobalStats(){
    const {getDocFromServer}=await import("https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js");const s=await getDocFromServer(window.FB.doc(window.FB.db,"stats","global"));
     if(s.exists()){
       const d=s.data();
-      const _todayStr=new Date().toISOString().split("T")[0];const t=d.totalParticipants||0,td=(d.todayDate===_todayStr)?(d.todayUsers||0):0,co2=Math.round((d.totalCo2||0)*100)/100;
+      const _todayStr=new Date().toISOString().split("T")[0];const t=d.totalUsers||0,td=(d.todayDate===_todayStr)?(d.todayUsers||0):0,co2=Math.round((d.totalCo2||0)*100)/100;
       document.getElementById("bToday").textContent=td.toLocaleString();
       document.getElementById("bTotal").textContent=t.toLocaleString();
       document.getElementById("mapTotal")&&(document.getElementById("mapTotal").textContent=t>0?t.toLocaleString():"24,810");

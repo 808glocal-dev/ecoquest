@@ -1272,7 +1272,7 @@ async function loadGlobalStats(){
     const s=await window.FB.getDoc(window.FB.doc(window.FB.db,"stats","global"));
     if(s.exists()){
       const d=s.data();
-      const _todayStr=new Date().toISOString().split("T")[0];const t=d.totalParticipants||d.totalUsers||0,td=(d.todayDate===_todayStr)?(d.todayUsers||0):0,co2=Math.round((d.totalCo2||0)*100)/100;
+      const _todayStr=new Date().toISOString().split("T")[0];const t=d.totalParticipants||0,td=(d.todayDate===_todayStr)?(d.todayUsers||0):0,co2=Math.round((d.totalCo2||0)*100)/100;
       document.getElementById("bToday").textContent=td.toLocaleString();
       document.getElementById("bTotal").textContent=t.toLocaleString();
       document.getElementById("mapTotal")&&(document.getElementById("mapTotal").textContent=t>0?t.toLocaleString():"24,810");
@@ -1291,7 +1291,7 @@ async function loadUser(uid){
   if(!snap.exists()){
     await window.FB.setDoc(ref,{point:0,missionCount:0,streak:0,doneMissions:[],co2:0,todayMissions:[],activeChallenges:[],createdAt:window.FB.serverTimestamp()});
     window.UDATA={point:0,missionCount:0,streak:0,doneMissions:[],co2:0,todayMissions:[],activeChallenges:[]};
-    try{await window.FB.setDoc(window.FB.doc(window.FB.db,"stats","global"),{totalUsers:window.FB.increment(1),todayUsers:window.FB.increment(1),totalCo2:0},{merge:true});loadGlobalStats();}catch(e){}
+    try{await window.FB.setDoc(window.FB.doc(window.FB.db,"stats","global"),{totalUsers:window.FB.increment(1),todayUsers:window.FB.increment(1)},{merge:true});loadGlobalStats();}catch(e){}
     setTimeout(()=>{if(typeof openOv==="function")openOv("ovOnboard");},300);
   }else{
     window.UDATA=snap.data();

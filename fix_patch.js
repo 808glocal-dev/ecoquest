@@ -24,7 +24,7 @@
       const today = new Date().toISOString().split('T')[0];
       let todayCount = d.todayUsers || 0;
       if (d.todayDate !== today) todayCount = 0;
-      const total = d.totalUsers || 0;
+     const total = d.totalParticipants || d.totalUsers || 0;
       const co2 = Math.round((d.totalCo2 || 0) * 100) / 100;
       const co2Str = co2 >= 1000 ? (co2/1000).toFixed(1)+'t' : co2.toFixed(1)+'kg';
       const bToday = document.getElementById('bToday');

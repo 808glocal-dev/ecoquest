@@ -19,6 +19,6 @@
   // 기존 loadGlobalStats 덮어쓰기 (에러 방지)
   window.loadGlobalStats = updateGlobalCO2;
   
-  setTimeout(updateGlobalCO2, 2000);
+ setTimeout(updateGlobalCO2, 300);
   setInterval(updateGlobalCO2, 15000);
 })();

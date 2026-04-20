@@ -101,7 +101,7 @@
     if(kg < 485) return {icon:'🥗', main:`채식 ${Math.floor(kg/0.8)}끼`, sub:'선택한 효과'};
     if(kg < 490) return {icon:'🌳', main:`나무 ${(kg/21.4).toFixed(1)}그루`, sub:'평생 흡수량'};
     if(kg < 495) return {icon:'🏕️', main:'숲 하나 완성!', sub:'대단한 기여예요'};
-    if(kg < 500) return {icon:'🌳', main:`나무 ${Math.floor(kg/21.4)}그루`, sub:'평생 흡수량!`};
+    if(kg < 500) return {icon:'🌳', main:`나무 ${Math.floor(kg/21.4)}그루`, sub:'평생 흡수량!'};
     return {icon:'🌍', main:'거대한 숲!', sub:`나무 ${Math.floor(kg/21.4)}그루 분량`};
   }
 

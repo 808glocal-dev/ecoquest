@@ -141,3 +141,59 @@
   }
 
 })();
+
+// ── iPhone Safari 사용자에게만 안내 ──
+(function () {
+  function isIPhoneSafari() {
+    const ua = navigator.userAgent;
+    const isIOS = /iPhone|iPad|iPod/.test(ua);
+    const isSafari = /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS/.test(ua);
+    return isIOS && isSafari;
+  }
+  
+  function addKakaoNotice() {
+    if (!isIPhoneSafari()) return;
+    
+    let kakaoBtn = document.getElementById('btnKakao') 
+                || document.querySelector('.btn-kakao')
+                || Array.from(document.querySelectorAll('button')).find(b => 
+                     b.textContent.includes('카카오'));
+    
+    if (!kakaoBtn) {
+      setTimeout(addKakaoNotice, 500);
+      return;
+    }
+    
+    if (document.getElementById('kakaoNotice')) return;
+    
+    const notice = document.createElement('div');
+    notice.id = 'kakaoNotice';
+    notice.style.cssText = `
+      max-width: 320px;
+      width: 100%;
+      margin: 12px auto 0;
+      padding: 12px 14px;
+      background: rgba(255,193,7,.15);
+      border: 1.5px solid rgba(255,193,7,.5);
+      border-radius: 12px;
+      font-size: 12px;
+      color: #fff;
+      line-height: 1.7;
+      text-align: center;
+    `;
+    notice.innerHTML = `
+      ⚠️ <b>iPhone Safari에서 카카오 로그인이 안 되시나요?</b><br/>
+      <span style="color:#FFE082">→ Chrome 앱으로 접속하거나<br/>Google 로그인을 이용해주세요</span>
+    `;
+    
+    kakaoBtn.insertAdjacentElement('afterend', notice);
+  }
+  
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', addKakaoNotice);
+  } else {
+    addKakaoNotice();
+  }
+  setTimeout(addKakaoNotice, 1000);
+  setTimeout(addKakaoNotice, 2000);
+})();

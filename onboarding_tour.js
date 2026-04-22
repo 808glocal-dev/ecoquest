@@ -1,10 +1,8 @@
-// onboarding_tour.js - 첫 방문자용 풀코스 투어 (9단계)
+// onboarding_tour.js - 첫 방문자용 풀코스 투어 (수정: 팝업 최소화)
 (function(){
 
   const TOUR_STEPS = [
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━
-    // STEP 1: 환영 인사
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━
+    // STEP 1: 환영 인사 (팝업)
     {
       type: 'intro',
       title: '🌍 EcoQuest에 오신 걸 환영해요!',
@@ -12,9 +10,7 @@
       btnText: '시작하기! 🌱'
     },
 
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━
-    // STEP 2: 챌린지 탭
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━
+    // STEP 2: 챌린지 탭 클릭
     {
       type: 'click',
       target: '.tb[data-page="chal"]',
@@ -23,36 +19,27 @@
       position: 'top'
     },
 
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━
     // STEP 3: 챌린지 선택
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━
     {
       type: 'click',
       target: '.cg-card',
       title: '2️⃣ 챌린지 고르기',
-      desc: '마음에 드는 챌린지를<br/>하나 골라 눌러주세요!<br/><br/><span style="font-size:11px;color:#888">예: 텀블러 사용하기 🧴</span>',
+      desc: '👍 잘하셨어요!<br/>이제 마음에 드는 챌린지를<br/>하나 골라 눌러주세요!<br/><br/><span style="font-size:11px;color:#888">예: 텀블러 사용하기 🧴</span>',
       position: 'bottom',
       waitForPage: 'chal',
       scrollTo: true
     },
 
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━
     // STEP 4: 홈으로 이동
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━
     {
-      type: 'popup_then_click',
-      popupTitle: '👍 잘하셨어요!',
-      popupDesc: '챌린지에 참여했어요!\n이제 <b>매일 미션을 인증</b>하면 돼요.\n\n홈으로 돌아가서\n오늘의 미션을 확인해봐요!',
-      popupBtn: '다음 →',
+      type: 'click',
       target: '.tb[data-page="home"]',
       title: '3️⃣ 홈으로 돌아가기',
-      desc: '하단의 <b style="color:#2ECC71">🏠 홈</b> 탭을 눌러주세요!',
+      desc: '챌린지에 참여했어요! 🎉<br/>이제 <b style="color:#2ECC71">🏠 홈</b> 탭을 눌러<br/>오늘의 미션을 확인해봐요!',
       position: 'top'
     },
 
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━
-    // STEP 5: 미션 인증 (가짜 시연)
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━
+    // STEP 5: 가짜 사진 인증 시연
     {
       type: 'demo_upload',
       title: '4️⃣ 미션 인증하기',
@@ -65,65 +52,43 @@
       ]
     },
 
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━
-    // STEP 6: 지도 탭 (나무 확인)
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━
+    // STEP 6: 지도 탭
     {
-      type: 'popup_then_click',
-      popupTitle: '🌱 나무가 자랐어요!',
-      popupDesc: '여러분의 실천이\n<b>진짜 나무를 키워요!</b>\n\n얼마나 지구에 도움됐는지\n지도에서 확인해봐요 🌍',
-      popupBtn: '지도 보기 →',
+      type: 'click',
       target: '.tb[data-page="map"]',
       title: '5️⃣ 지도에서 확인',
-      desc: '<b style="color:#2ECC71">🌍 지도</b> 탭을 눌러주세요!',
+      desc: '여러분 실천이 진짜 나무를 키워요! 🌳<br/><b style="color:#2ECC71">🌍 지도</b> 탭을 눌러<br/>얼마나 지구에 도움됐는지 봐요!',
       position: 'top'
     },
 
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━
-    // STEP 7: 내 활동 (통계)
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━
+    // STEP 7: 내 활동
     {
-      type: 'popup_then_click',
-      popupTitle: '🌳 이렇게 자란답니다!',
-      popupDesc: '🌰 도토리 → 🌱 씨앗 → 🌿 새싹\n→ 🌳 나무 → 🌲 큰나무 → 🏕️ 숲\n\n꾸준히 하면 <b>진짜 숲</b>이 돼요!\n\n내 활동을 더 자세히 볼까요?',
-      popupBtn: '내 활동 보기 →',
+      type: 'click',
       target: '.tb[data-page="activity"]',
       title: '6️⃣ 내 활동 확인',
-      desc: '<b style="color:#2ECC71">📊 내활동</b> 탭을 눌러주세요!',
+      desc: '🌰→🌱→🌿→🌳→🌲→🏕️<br/>꾸준히 하면 진짜 숲이 돼요!<br/><br/><b style="color:#2ECC71">📊 내활동</b>에서<br/>자세한 통계를 볼 수 있어요!',
       position: 'top'
     },
 
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━
-    // STEP 8: 스토어 (쿠폰)
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━
+    // STEP 8: 스토어
     {
-      type: 'popup_then_click',
-      popupTitle: '💰 포인트로 쿠폰 받기!',
-      popupDesc: '미션 인증할 때마다\n<b>포인트가 쌓여요!</b>\n\n쌓인 포인트로\n제로웨이스트 상점,\n연계 브랜드 쿠폰을\n받을 수 있어요 🎁',
-      popupBtn: '스토어 보기 →',
+      type: 'click',
       target: '.tb[data-page="shop"]',
       title: '7️⃣ 스토어 확인',
-      desc: '<b style="color:#2ECC71">🛒 스토어</b> 탭을 눌러주세요!',
+      desc: '미션 인증하면 포인트 쌓여요! 💰<br/>쌓인 포인트로<br/>제로웨이스트 상점,<br/>연계 브랜드 쿠폰을 받을 수 있어요!<br/><br/><b style="color:#2ECC71">🛒 스토어</b>를 눌러봐요!',
       position: 'top'
     },
 
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━
-    // STEP 9: 소속 (커뮤니티)
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━
+    // STEP 9: 소속
     {
-      type: 'popup_then_click',
-      popupTitle: '👥 혼자보다 함께!',
-      popupDesc: '회사·학교·성당·동호회 등\n<b>우리 소속끼리</b>\n함께 환경 운동을 해봐요!\n\n✨ 소속 인증샷 피드\n✨ 우리 팀 CO₂ 기여도\n✨ 소속별 랭킹',
-      popupBtn: '소속 보기 →',
+      type: 'click',
       target: '.tb[data-page="company"]',
       title: '8️⃣ 소속 확인',
-      desc: '마지막으로<br/><b style="color:#2ECC71">🏢 소속</b> 탭을 눌러주세요!',
+      desc: '혼자보다 함께! 👥<br/>회사·학교·성당·동호회 등<br/>우리 소속끼리 함께 해봐요!<br/><br/>마지막으로<br/><b style="color:#2ECC71">🏢 소속</b> 탭을 눌러주세요!',
       position: 'top'
     },
 
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━
-    // STEP 10: 마지막 (회원가입 유도)
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━
+    // STEP 10: 완료 + 회원가입 유도
     {
       type: 'final',
       title: '🎉 이제 시작할 준비 완료!',
@@ -140,13 +105,8 @@
   let clickArea = null;
   let isLoggedIn = false;
 
-  // ━━━━━━━━━━━━━━━━━━━━━━━
-  // 시작 조건 체크
-  // ━━━━━━━━━━━━━━━━━━━━━━━
   function shouldStartTour(){
-    // 이미 투어 완료했으면 안 함
     if(localStorage.getItem('eq_onboarding_done')) return false;
-    // 인트로 화면 뜰 때는 나중에
     const intro = document.getElementById('introScreen');
     if(intro && intro.style.display !== 'none') return false;
     return true;
@@ -161,9 +121,6 @@
   }
   window.startOnboardingTour = startTour;
 
-  // ━━━━━━━━━━━━━━━━━━━━━━━
-  // 스타일 추가
-  // ━━━━━━━━━━━━━━━━━━━━━━━
   function addStyles(){
     if(document.getElementById('onboardTourStyle')) return;
     const style = document.createElement('style');
@@ -362,9 +319,6 @@
     document.head.appendChild(style);
   }
 
-  // ━━━━━━━━━━━━━━━━━━━━━━━
-  // 단계 표시
-  // ━━━━━━━━━━━━━━━━━━━━━━━
   function showStep(idx){
     currentStep = idx;
     const step = TOUR_STEPS[idx];
@@ -372,7 +326,6 @@
 
     cleanupCurrent();
 
-    // 상단 UI 추가 (한 번만)
     if(!document.querySelector('.ob-skip')){
       const skipBtn = document.createElement('button');
       skipBtn.className = 'ob-skip';
@@ -389,7 +342,6 @@
     const prog = document.getElementById('obProgress');
     if(prog) prog.textContent = `📖 ${idx+1} / ${TOUR_STEPS.length}`;
 
-    // 타입별 처리
     if(step.type === 'intro'){
       showIntroModal(step);
     } else if(step.type === 'click'){
@@ -398,8 +350,6 @@
       } else {
         showClickStep(step);
       }
-    } else if(step.type === 'popup_then_click'){
-      showPopup(step, () => showClickStep(step));
     } else if(step.type === 'demo_upload'){
       showDemoUpload(step);
     } else if(step.type === 'final'){
@@ -407,9 +357,6 @@
     }
   }
 
-  // ━━━━━━━━━━━━━━━━━━━━━━━
-  // 인트로 모달 (1번)
-  // ━━━━━━━━━━━━━━━━━━━━━━━
   function showIntroModal(step){
     const modal = document.createElement('div');
     modal.className = 'ob-modal';
@@ -437,34 +384,6 @@
     document.body.appendChild(modal);
   }
 
-  // ━━━━━━━━━━━━━━━━━━━━━━━
-  // 설명 팝업 (→ 클릭 단계)
-  // ━━━━━━━━━━━━━━━━━━━━━━━
-  function showPopup(step, callback){
-    const modal = document.createElement('div');
-    modal.className = 'ob-modal';
-    modal.id = 'obPopupModal';
-    modal.innerHTML = `
-      <div class="ob-modal-box">
-        <div style="font-size:20px;font-weight:900;color:#1a2e1a;margin-bottom:12px">
-          ${step.popupTitle}
-        </div>
-        <div style="font-size:13px;color:#555;line-height:1.8;margin-bottom:20px;white-space:pre-line">
-          ${step.popupDesc}
-        </div>
-        <button class="ob-btn-primary" id="obPopupNext">${step.popupBtn}</button>
-      </div>
-    `;
-    document.body.appendChild(modal);
-    document.getElementById('obPopupNext').onclick = () => {
-      modal.remove();
-      callback();
-    };
-  }
-
-  // ━━━━━━━━━━━━━━━━━━━━━━━
-  // 클릭 단계 (스포트라이트)
-  // ━━━━━━━━━━━━━━━━━━━━━━━
   function showClickStep(step){
     const el = document.querySelector(step.target);
     if(!el){
@@ -481,19 +400,16 @@
   function highlightElement(el, step){
     const rect = el.getBoundingClientRect();
     
-    // 스크롤 필요하면
     if(step.scrollTo || rect.top < 80 || rect.bottom > window.innerHeight - 80){
       el.scrollIntoView({behavior:'smooth', block:'center'});
       setTimeout(() => highlightElement(el, step), 600);
       return;
     }
 
-    // 어두운 오버레이
     darkOverlay = document.createElement('div');
     darkOverlay.className = 'ob-dark-overlay';
     document.body.appendChild(darkOverlay);
 
-    // 스포트라이트
     spotlight = document.createElement('div');
     spotlight.className = 'ob-spotlight';
     const pad = 6;
@@ -503,7 +419,6 @@
     spotlight.style.height = (rect.height + pad*2) + 'px';
     document.body.appendChild(spotlight);
 
-    // 클릭 가능 영역
     clickArea = document.createElement('div');
     clickArea.className = 'ob-click-area';
     clickArea.style.left = rect.left + 'px';
@@ -517,19 +432,16 @@
     };
     document.body.appendChild(clickArea);
 
-    // 손가락
     const finger = document.createElement('div');
     finger.className = 'ob-finger';
     finger.id = 'obFinger';
     finger.textContent = '👆';
     
-    // "여기를 눌러주세요!" 라벨
     const clickLabel = document.createElement('div');
     clickLabel.className = 'ob-click-here';
     clickLabel.id = 'obClickLabel';
     clickLabel.textContent = '👆 여기를 눌러주세요!';
     
-    // 툴팁
     tooltip = document.createElement('div');
     tooltip.className = 'ob-tooltip';
     tooltip.innerHTML = `
@@ -579,9 +491,6 @@
     document.body.appendChild(clickLabel);
   }
 
-  // ━━━━━━━━━━━━━━━━━━━━━━━
-  // 가짜 사진 인증 시연
-  // ━━━━━━━━━━━━━━━━━━━━━━━
   function showDemoUpload(step){
     const screen = document.createElement('div');
     screen.className = 'ob-demo-screen';
@@ -630,7 +539,6 @@
       
       if(txtEl) txtEl.textContent = s.text;
       
-      // 이미지 변화
       if(stepIdx === 1) imgEl.textContent = '🔍';
       else if(stepIdx === 2) imgEl.textContent = '✅';
       else if(stepIdx === 3) imgEl.textContent = '🎉';
@@ -645,9 +553,6 @@
     runStep();
   }
 
-  // ━━━━━━━━━━━━━━━━━━━━━━━
-  // 마지막 모달 (회원가입 유도)
-  // ━━━━━━━━━━━━━━━━━━━━━━━
   function showFinalModal(step){
     const modal = document.createElement('div');
     modal.className = 'ob-modal';
@@ -668,20 +573,15 @@
     document.body.appendChild(modal);
   }
 
-  // ━━━━━━━━━━━━━━━━━━━━━━━
-  // 다음 단계로
-  // ━━━━━━━━━━━━━━━━━━━━━━━
   window._obNext = () => {
     const intro = document.getElementById('obIntroModal');
     if(intro) intro.remove();
     showStep(currentStep + 1);
   };
 
-  // 로그인으로
   window._obGoLogin = () => {
     cleanup();
     localStorage.setItem('eq_onboarding_done', '1');
-    // 비로그인 상태면 로그인 화면으로
     if(!window.ME){
       const loginScreen = document.getElementById('loginScreen');
       const app = document.getElementById('app');
@@ -690,15 +590,11 @@
     }
   };
 
-  // 끝내기 (구경 계속)
   window._obFinish = () => {
     cleanup();
     localStorage.setItem('eq_onboarding_done', '1');
   };
 
-  // ━━━━━━━━━━━━━━━━━━━━━━━
-  // 정리
-  // ━━━━━━━━━━━━━━━━━━━━━━━
   function cleanupCurrent(){
     if(spotlight){ spotlight.remove(); spotlight = null; }
     if(darkOverlay){ darkOverlay.remove(); darkOverlay = null; }
@@ -717,26 +613,19 @@
 
   function cleanup(){
     cleanupCurrent();
-    document.querySelectorAll('.ob-skip, .ob-progress, #obIntroModal, #obPopupModal, #obDemoScreen, #obFinalModal').forEach(e => e.remove());
+    document.querySelectorAll('.ob-skip, .ob-progress, #obIntroModal, #obDemoScreen, #obFinalModal').forEach(e => e.remove());
   }
 
-  // ━━━━━━━━━━━━━━━━━━━━━━━
-  // 자동 시작 트리거
-  // ━━━━━━━━━━━━━━━━━━━━━━━
   function autoStart(){
     if(!shouldStartTour()) return;
     
-    // 앱이 보이는 상태 or 로그인 화면인 상태
     const app = document.getElementById('app');
     const login = document.getElementById('loginScreen');
     const intro = document.getElementById('introScreen');
     
-    // 인트로 화면이 떠있으면 대기
     if(intro && intro.style.display !== 'none') return;
     
-    // 앱이나 로그인 화면이 떠있으면 시작
     if((app && app.style.display === 'block') || (login && login.style.display === 'flex')){
-      // 비로그인 상태면 앱 강제로 띄우기 (탭 보게 하기)
       if(!window.ME){
         if(login) login.style.display = 'none';
         if(app) app.style.display = 'block';
@@ -745,14 +634,12 @@
     }
   }
 
-  // 페이지 로드 후 자동 체크
   if(document.readyState === 'complete'){
     setTimeout(autoStart, 2000);
   } else {
     window.addEventListener('load', () => setTimeout(autoStart, 2000));
   }
 
-  // 주기적으로 체크 (인트로 끝나고 로그인 화면 뜨면)
   const checkInterval = setInterval(() => {
     if(localStorage.getItem('eq_onboarding_done')){
       clearInterval(checkInterval);
@@ -761,10 +648,8 @@
     autoStart();
   }, 2000);
 
-  // 10초 후 interval 정리
   setTimeout(() => clearInterval(checkInterval), 15000);
 
-  // 헤더 📖 버튼 추가 (기존 튜토리얼이 이미 만들었으면 안 만듦)
   function addReplayButton(){
     if(document.getElementById('tutorialHeaderBtn')) return;
     if(document.getElementById('onboardReplayBtn')) return;

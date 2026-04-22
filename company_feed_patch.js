@@ -1,4 +1,4 @@
-// company_feed_patch.js - 소속 팀 인증 피드 (인스타 스타일)
+// company_feed_patch.js - 소속 팀 인증 피드 (반응형 + 좋아요)
 (function(){
 
   async function renderCompanyFeed(){
@@ -13,6 +13,37 @@
 
       const existing = document.getElementById('companyFeedSection');
       if(existing) existing.remove();
+
+      // 반응형 CSS 주입 (한 번만)
+      if(!document.getElementById('companyFeedStyle')){
+        const style = document.createElement('style');
+        style.id = 'companyFeedStyle';
+        style.textContent = `
+          #companyFeedGrid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+          }
+          @media (min-width: 768px) {
+            #companyFeedGrid {
+              grid-template-columns: 1fr 1fr 1fr;
+              gap: 14px;
+            }
+          }
+          @keyframes heartPop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.4); }
+            100% { transform: scale(1); }
+          }
+          .heart-btn {
+            transition: transform .15s;
+          }
+          .heart-btn.liked {
+            animation: heartPop .3s ease;
+          }
+        `;
+        document.head.appendChild(style);
+      }
 
       // 소속 멤버 UID 찾기 + 닉네임/아바타 맵
       const usersSnap = await window.FB.getDocs(window.FB.collection(window.FB.db, 'users'));
@@ -36,7 +67,7 @@
       const coName = coSnap.exists() ? coSnap.data().name : '우리 팀';
       const coEmoji = coSnap.exists() ? (coSnap.data().emoji || '🏢') : '🏢';
 
-      // 인증 데이터 (같은 소속 + 공개만)
+      // 인증 데이터
       const verifSnap = await window.FB.getDocs(window.FB.collection(window.FB.db, 'verifications'));
       const items = verifSnap.docs
         .map(d => ({id: d.id, ...d.data()}))
@@ -98,96 +129,10 @@
         return;
       }
 
-      // 인스타 스타일 피드
-      const feedHTML = items.map(v => {
-        const member = memberMap[v.uid] || {};
-        const nickname = member.nickname || v.userName || '익명';
-        const avatar = member.photo || v.userPhoto || '';
-        const isMe = v.uid === myUid;
-        const timeStr = window.timeAgo ? window.timeAgo(v.createdAt?.seconds) : '';
+      // 인스타 스타일 피드 (그리드 반응형)
+      const feedHTML = items.map(v => renderFeedCard(v, memberMap, myUid, 'company')).join('');
 
-        return `
-          <div onclick="window.openCompanyFeedDetail('${v.id}')" style="
-            background:#fff;border-radius:16px;
-            margin-bottom:12px;overflow:hidden;
-            border:1px solid var(--bdr);
-            cursor:pointer;transition:transform .15s, box-shadow .15s;
-            ${isMe ? 'border:2px solid var(--g1);' : ''}
-          " onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,.08)'"
-            onmouseout="this.style.boxShadow='none'">
-            
-            <!-- 헤더: 사용자 정보 -->
-            <div style="
-              padding:10px 12px;display:flex;
-              align-items:center;gap:10px;
-              border-bottom:1px solid #f5f5f5;
-            ">
-              <div style="
-                width:36px;height:36px;border-radius:50%;
-                overflow:hidden;flex-shrink:0;
-                background:linear-gradient(135deg,var(--g1),var(--g2));
-                display:flex;align-items:center;justify-content:center;
-                font-size:16px;color:#fff;font-weight:700;
-                ${isMe ? 'box-shadow:0 0 0 2px var(--g1);' : ''}
-              ">
-                ${avatar 
-                  ? `<img src="${avatar}" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none';this.parentElement.innerHTML='👤'"/>` 
-                  : (nickname[0] || '👤')}
-              </div>
-              <div style="flex:1;min-width:0">
-                <div style="
-                  font-size:13px;font-weight:700;color:var(--txt);
-                  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-                ">
-                  ${nickname}${isMe ? ' <span style="color:var(--g1);font-size:11px">(나)</span>' : ''}
-                </div>
-                <div style="font-size:11px;color:var(--sub);margin-top:1px">
-                  ${timeStr}
-                </div>
-              </div>
-              <div style="
-                background:#f0fbf4;border-radius:10px;
-                padding:4px 10px;font-size:11px;
-                font-weight:700;color:var(--g2);
-                white-space:nowrap;
-              ">
-                ${v.missionEmoji || '🌱'} ${v.missionName || ''}
-              </div>
-            </div>
-
-            <!-- 사진 -->
-            ${v.thumb 
-              ? `<div style="
-                  width:100%;aspect-ratio:1;
-                  background:#f0f0f0;overflow:hidden;
-                ">
-                  <img src="${v.thumb}" style="
-                    width:100%;height:100%;object-fit:cover;
-                  "/>
-                </div>` 
-              : `<div style="
-                  width:100%;aspect-ratio:1;
-                  display:flex;align-items:center;justify-content:center;
-                  font-size:72px;
-                  background:linear-gradient(135deg,#f0fbf4,#e8f5e9);
-                ">${v.missionEmoji || '🌱'}</div>`
-            }
-
-            <!-- 코멘트 -->
-            ${v.comment 
-              ? `<div style="padding:10px 14px;">
-                  <div style="font-size:13px;color:var(--txt);line-height:1.6">
-                    <b style="color:var(--g2)">${nickname}</b> 
-                    ${v.comment}
-                  </div>
-                </div>` 
-              : ''
-            }
-          </div>
-        `;
-      }).join('');
-
-      section.innerHTML = headerHTML + feedHTML;
+      section.innerHTML = headerHTML + `<div id="companyFeedGrid">${feedHTML}</div>`;
 
       // 상세 팝업용 데이터
       window._companyFeedItems = {};
@@ -207,13 +152,190 @@
     }
   }
 
-  // 상세 팝업
-  window.openCompanyFeedDetail = (id) => {
-    const v = window._companyFeedItems?.[id];
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━
+  // 공통 피드 카드 렌더러 (홈/소속 공용)
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━
+  window.renderFeedCard = function(v, memberMap, myUid, source){
+    const member = memberMap?.[v.uid] || {};
+    const nickname = member.nickname || v.userName || '익명';
+    const avatar = member.photo || v.userPhoto || '';
+    const isMe = v.uid === myUid;
+    const timeStr = window.timeAgo ? window.timeAgo(v.createdAt?.seconds) : '';
+    const likes = v.likes || [];
+    const likeCount = likes.length;
+    const iLiked = myUid && likes.includes(myUid);
+
+    return `
+      <div style="
+        background:#fff;border-radius:16px;
+        overflow:hidden;
+        border:${isMe ? '2px solid var(--g1)' : '1px solid var(--bdr)'};
+      ">
+        <!-- 헤더: 사용자 정보 -->
+        <div onclick="window.openFeedDetailFrom('${source}','${v.id}')" style="
+          padding:10px 12px;display:flex;
+          align-items:center;gap:10px;
+          border-bottom:1px solid #f5f5f5;
+          cursor:pointer;
+        ">
+          <div style="
+            width:36px;height:36px;border-radius:50%;
+            overflow:hidden;flex-shrink:0;
+            background:linear-gradient(135deg,var(--g1),var(--g2));
+            display:flex;align-items:center;justify-content:center;
+            font-size:16px;color:#fff;font-weight:700;
+            ${isMe ? 'box-shadow:0 0 0 2px var(--g1);' : ''}
+          ">
+            ${avatar 
+              ? `<img src="${avatar}" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none';this.parentElement.innerHTML='👤'"/>` 
+              : (nickname[0] || '👤')}
+          </div>
+          <div style="flex:1;min-width:0">
+            <div style="
+              font-size:13px;font-weight:700;color:var(--txt);
+              overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+            ">
+              ${nickname}${isMe ? ' <span style="color:var(--g1);font-size:11px">(나)</span>' : ''}
+            </div>
+            <div style="font-size:11px;color:var(--sub);margin-top:1px">
+              ${timeStr}
+            </div>
+          </div>
+          <div style="
+            background:#f0fbf4;border-radius:10px;
+            padding:4px 10px;font-size:11px;
+            font-weight:700;color:var(--g2);
+            white-space:nowrap;
+          ">
+            ${v.missionEmoji || '🌱'} ${v.missionName || ''}
+          </div>
+        </div>
+
+        <!-- 사진 -->
+        <div onclick="window.openFeedDetailFrom('${source}','${v.id}')" style="cursor:pointer">
+          ${v.thumb 
+            ? `<div style="
+                width:100%;aspect-ratio:1;
+                background:#f0f0f0;overflow:hidden;
+              ">
+                <img src="${v.thumb}" style="
+                  width:100%;height:100%;object-fit:cover;
+                "/>
+              </div>` 
+            : `<div style="
+                width:100%;aspect-ratio:1;
+                display:flex;align-items:center;justify-content:center;
+                font-size:72px;
+                background:linear-gradient(135deg,#f0fbf4,#e8f5e9);
+              ">${v.missionEmoji || '🌱'}</div>`
+          }
+        </div>
+
+        <!-- 하트 + 좋아요 수 -->
+        <div style="padding:8px 14px 4px;display:flex;align-items:center;gap:8px">
+          <button 
+            class="heart-btn ${iLiked ? 'liked' : ''}" 
+            onclick="event.stopPropagation();window.toggleLike('${v.id}','${source}')"
+            id="heart-${v.id}"
+            style="
+              background:none;border:none;cursor:pointer;
+              font-size:22px;padding:4px;
+              font-family:inherit;line-height:1;
+            ">
+            ${iLiked ? '❤️' : '🤍'}
+          </button>
+          <span id="likeCount-${v.id}" style="font-size:13px;font-weight:700;color:var(--txt)">
+            ${likeCount > 0 ? `좋아요 ${likeCount}개` : '첫 좋아요를 눌러주세요'}
+          </span>
+        </div>
+
+        <!-- 코멘트 -->
+        ${v.comment 
+          ? `<div style="padding:4px 14px 12px;">
+              <div style="font-size:13px;color:var(--txt);line-height:1.6">
+                <b style="color:var(--g2)">${nickname}</b> 
+                ${v.comment}
+              </div>
+            </div>` 
+          : `<div style="padding-bottom:10px"></div>`
+        }
+      </div>
+    `;
+  };
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━
+  // 좋아요 토글
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━
+  window.toggleLike = async (verifId, source) => {
+    const myUid = window.ME?.uid;
+    if(!myUid){
+      if(window.toast) window.toast('로그인이 필요해요!');
+      return;
+    }
+
+    try{
+      // 현재 상태 가져오기
+      const ref = window.FB.doc(window.FB.db, 'verifications', verifId);
+      const snap = await window.FB.getDoc(ref);
+      if(!snap.exists()) return;
+      
+      const data = snap.data();
+      const likes = data.likes || [];
+      const iLiked = likes.includes(myUid);
+      
+      let newLikes;
+      if(iLiked){
+        newLikes = likes.filter(uid => uid !== myUid);
+      } else {
+        newLikes = [...likes, myUid];
+      }
+      
+      await window.FB.updateDoc(ref, { likes: newLikes });
+      
+      // UI 즉시 업데이트
+      const heartBtn = document.getElementById(`heart-${verifId}`);
+      const countEl = document.getElementById(`likeCount-${verifId}`);
+      if(heartBtn){
+        heartBtn.innerHTML = !iLiked ? '❤️' : '🤍';
+        heartBtn.className = 'heart-btn' + (!iLiked ? ' liked' : '');
+      }
+      if(countEl){
+        const newCount = newLikes.length;
+        countEl.textContent = newCount > 0 ? `좋아요 ${newCount}개` : '첫 좋아요를 눌러주세요';
+      }
+
+      // 캐시된 데이터도 업데이트
+      if(window._companyFeedItems?.[verifId]){
+        window._companyFeedItems[verifId].likes = newLikes;
+      }
+      if(window._feedItems?.[verifId]){
+        window._feedItems[verifId].likes = newLikes;
+      }
+      if(window._allFeedItems){
+        const item = window._allFeedItems.find(i => i.id === verifId);
+        if(item) item.likes = newLikes;
+      }
+    } catch(e){
+      console.error('[toggleLike]', e);
+      if(window.toast) window.toast('좋아요 실패: ' + e.message);
+    }
+  };
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━
+  // 상세 팝업 (소속/홈 공용)
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━
+  window.openFeedDetailFrom = (source, id) => {
+    const v = source === 'company' 
+      ? window._companyFeedItems?.[id]
+      : window._feedItems?.[id];
     if(!v) return;
 
     const detailEl = document.getElementById('feedDetailContent');
     if(!detailEl) return;
+
+    const likes = v.likes || [];
+    const likeCount = likes.length;
+    const iLiked = window.ME?.uid && likes.includes(window.ME.uid);
 
     detailEl.innerHTML = `
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
@@ -236,6 +358,21 @@
         ? `<img src="${v.thumb}" style="width:100%;border-radius:12px;max-height:400px;object-fit:cover;margin-bottom:12px"/>` 
         : ''
       }
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+        <button 
+          onclick="window.toggleLikeDetail('${v.id}','${source}')"
+          id="detail-heart-${v.id}"
+          style="
+            background:none;border:none;cursor:pointer;
+            font-size:26px;padding:4px;
+            font-family:inherit;line-height:1;
+          ">
+          ${iLiked ? '❤️' : '🤍'}
+        </button>
+        <span id="detail-likeCount-${v.id}" style="font-size:14px;font-weight:700;color:var(--txt)">
+          ${likeCount > 0 ? `좋아요 ${likeCount}개` : '첫 좋아요를 눌러주세요'}
+        </span>
+      </div>
       <div style="background:#f0fbf4;border-radius:10px;padding:10px 14px;margin-bottom:10px;border:1px solid var(--bdr)">
         <span style="font-size:13px;font-weight:700;color:var(--g2)">
           ✅ ${v.missionEmoji} ${v.missionName}
@@ -252,6 +389,68 @@
     if(typeof window.openOv === 'function') window.openOv('ovFeedDetail');
   };
 
+  // 상세 팝업용 좋아요 토글
+  window.toggleLikeDetail = async (verifId, source) => {
+    const myUid = window.ME?.uid;
+    if(!myUid){
+      if(window.toast) window.toast('로그인이 필요해요!');
+      return;
+    }
+    try{
+      const ref = window.FB.doc(window.FB.db, 'verifications', verifId);
+      const snap = await window.FB.getDoc(ref);
+      if(!snap.exists()) return;
+      
+      const data = snap.data();
+      const likes = data.likes || [];
+      const iLiked = likes.includes(myUid);
+      
+      let newLikes;
+      if(iLiked){
+        newLikes = likes.filter(uid => uid !== myUid);
+      } else {
+        newLikes = [...likes, myUid];
+      }
+      
+      await window.FB.updateDoc(ref, { likes: newLikes });
+      
+      // 상세 팝업 UI 업데이트
+      const heartBtn = document.getElementById(`detail-heart-${verifId}`);
+      const countEl = document.getElementById(`detail-likeCount-${verifId}`);
+      if(heartBtn) heartBtn.innerHTML = !iLiked ? '❤️' : '🤍';
+      if(countEl){
+        const newCount = newLikes.length;
+        countEl.textContent = newCount > 0 ? `좋아요 ${newCount}개` : '첫 좋아요를 눌러주세요';
+      }
+      
+      // 그리드도 업데이트
+      const gridHeart = document.getElementById(`heart-${verifId}`);
+      const gridCount = document.getElementById(`likeCount-${verifId}`);
+      if(gridHeart){
+        gridHeart.innerHTML = !iLiked ? '❤️' : '🤍';
+        gridHeart.className = 'heart-btn' + (!iLiked ? ' liked' : '');
+      }
+      if(gridCount){
+        const newCount = newLikes.length;
+        gridCount.textContent = newCount > 0 ? `좋아요 ${newCount}개` : '첫 좋아요를 눌러주세요';
+      }
+
+      // 캐시 업데이트
+      if(window._companyFeedItems?.[verifId]){
+        window._companyFeedItems[verifId].likes = newLikes;
+      }
+      if(window._feedItems?.[verifId]){
+        window._feedItems[verifId].likes = newLikes;
+      }
+      if(window._allFeedItems){
+        const item = window._allFeedItems.find(i => i.id === verifId);
+        if(item) item.likes = newLikes;
+      }
+    } catch(e){
+      console.error(e);
+    }
+  };
+
   // 소속 탭 진입 시 자동 실행
   const origGoPage = window.goPage;
   if(typeof origGoPage === 'function'){
@@ -263,7 +462,6 @@
     };
   }
 
-  // 첫 로드 시 소속 탭이면 실행
   setTimeout(() => {
     const companyPage = document.getElementById('page-company');
     if(companyPage && companyPage.classList.contains('on')){

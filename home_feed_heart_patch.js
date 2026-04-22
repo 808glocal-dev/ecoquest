@@ -1,7 +1,10 @@
-// home_feed_heart_patch.js - 홈 탭 피드에 좋아요 하트 추가
+// home_feed_heart_patch.js - 홈 피드에 좋아요 하트 (심플)
 (function(){
 
-  function renderHomeFeedWithHeart(w){
+  // 기존 renderFeedGrid 백업
+  const origRender = window.renderFeedGrid;
+
+  window.renderFeedGrid = function(w){
     if(!w) w = document.getElementById("feedList");
     if(!w) return;
     
@@ -10,148 +13,138 @@
     const shown = all.slice(0, (page+1)*9);
     const hasMore = all.length > shown.length;
     const myUid = window.ME?.uid;
+    const nicknameMap = window._feedNicknameMap || {};
     
     shown.forEach(v => {
       window._feedItems[v.id] = {
         ...v,
-        userName: (window._feedNicknameMap||{})[v.uid] || v.userName || "익명"
+        userName: nicknameMap[v.uid] || v.userName || "익명"
       };
     });
 
-    // 소속 정보도 필요하면 가져오기 (아바타용)
-    const nicknameMap = window._feedNicknameMap || {};
-    const memberMap = {};
-    Object.keys(nicknameMap).forEach(uid => {
-      memberMap[uid] = { nickname: nicknameMap[uid], photo: '' };
-    });
-
-    // 카드 렌더링 (공통 함수 사용)
-    const cardsHTML = shown.map(v => {
-      if(typeof window.renderFeedCard === 'function'){
-        return window.renderFeedCard(v, memberMap, myUid, 'home');
-      }
-      // 폴백 (기존 방식)
-      return renderSimpleCard(v, myUid);
-    }).join('');
-
-    w.innerHTML = `
-      <div id="homeFeedGrid">${cardsHTML}</div>
-      ${hasMore 
-        ? `<button onclick="loadMoreFeed()" style="
-            width:100%;margin-top:10px;padding:10px;
-            background:#f0fbf4;border:1.5px solid var(--bdr);
-            border-radius:12px;font-size:13px;font-weight:700;
-            color:var(--g2);cursor:pointer;font-family:inherit;
-          ">더보기 (${all.length - shown.length}개 더) ↓</button>` 
-        : ''
-      }
-    `;
-
-    // 홈 피드 반응형 스타일
+    // 스타일
     if(!document.getElementById('homeFeedStyle')){
       const style = document.createElement('style');
       style.id = 'homeFeedStyle';
       style.textContent = `
         #homeFeedGrid {
           display: grid;
-          grid-template-columns: 1fr;
-          gap: 12px;
+          grid-template-columns: 1fr 1fr 1fr;
+          gap: 3px;
         }
         @media (min-width: 768px) {
           #homeFeedGrid {
-            grid-template-columns: 1fr 1fr 1fr;
             gap: 14px;
           }
         }
       `;
       document.head.appendChild(style);
     }
-  }
 
-  function renderSimpleCard(v, myUid){
-    const nickname = v.userName || '익명';
-    const isMe = v.uid === myUid;
-    const timeStr = window.timeAgo ? window.timeAgo(v.createdAt?.seconds) : '';
-    const likes = v.likes || [];
-    const likeCount = likes.length;
-    const iLiked = myUid && likes.includes(myUid);
-
-    return `
-      <div style="
-        background:#fff;border-radius:16px;
-        overflow:hidden;
-        border:${isMe ? '2px solid var(--g1)' : '1px solid var(--bdr)'};
-      ">
-        <div onclick="openFeedDetail('${v.id}')" style="
-          padding:10px 12px;display:flex;align-items:center;gap:10px;
-          border-bottom:1px solid #f5f5f5;cursor:pointer;
-        ">
-          <div style="
-            width:36px;height:36px;border-radius:50%;
-            background:linear-gradient(135deg,var(--g1),var(--g2));
-            display:flex;align-items:center;justify-content:center;
-            font-size:16px;color:#fff;font-weight:700;flex-shrink:0;
-          ">${nickname[0] || '👤'}</div>
-          <div style="flex:1;min-width:0">
-            <div style="font-size:13px;font-weight:700;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
-              ${nickname}${isMe ? ' <span style="color:var(--g1);font-size:11px">(나)</span>' : ''}
+    const html = shown.map(v => {
+      const nick = nicknameMap[v.uid] || v.userName || '익명';
+      const likes = v.likes || [];
+      const likeCount = likes.length;
+      const iLiked = myUid && likes.includes(myUid);
+      
+      return `
+        <div style="position:relative;background:#f0f0f0;aspect-ratio:1;border-radius:6px;overflow:hidden">
+          <div onclick="openFeedDetail('${v.id}')" style="width:100%;height:100%;cursor:pointer">
+            ${v.thumb 
+              ? `<img src="${v.thumb}" style="width:100%;height:100%;object-fit:cover"/>`
+              : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:32px;background:linear-gradient(135deg,#f0fbf4,#e8f5e9)">${v.missionEmoji||'🌱'}</div>`
+            }
+            <div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.7));padding:4px 6px 6px">
+              <div style="font-size:9px;color:#fff;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+                ${v.missionEmoji||''} ${nick}
+              </div>
+              <div style="font-size:8px;color:rgba(255,255,255,.85);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+                ${v.missionName||''}
+              </div>
             </div>
-            <div style="font-size:11px;color:var(--sub);margin-top:1px">${timeStr}</div>
           </div>
-          <div style="background:#f0fbf4;border-radius:10px;padding:4px 10px;font-size:11px;font-weight:700;color:var(--g2);white-space:nowrap">
-            ${v.missionEmoji || '🌱'} ${v.missionName || ''}
-          </div>
-        </div>
-        <div onclick="openFeedDetail('${v.id}')" style="cursor:pointer">
-          ${v.thumb 
-            ? `<div style="width:100%;aspect-ratio:1;background:#f0f0f0;overflow:hidden">
-                <img src="${v.thumb}" style="width:100%;height:100%;object-fit:cover"/>
-              </div>`
-            : `<div style="width:100%;aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:72px;background:linear-gradient(135deg,#f0fbf4,#e8f5e9)">${v.missionEmoji || '🌱'}</div>`
-          }
-        </div>
-        <div style="padding:8px 14px 4px;display:flex;align-items:center;gap:8px">
-          <button 
-            class="heart-btn ${iLiked ? 'liked' : ''}" 
-            onclick="event.stopPropagation();window.toggleLike('${v.id}','home')"
-            id="heart-${v.id}"
-            style="background:none;border:none;cursor:pointer;font-size:22px;padding:4px;font-family:inherit;line-height:1">
+          <button onclick="event.stopPropagation();window.toggleHomeLike('${v.id}')" 
+            id="homeHeart-${v.id}"
+            style="
+              position:absolute;top:4px;right:4px;
+              background:rgba(0,0,0,.4);border:none;
+              border-radius:50%;width:30px;height:30px;
+              cursor:pointer;font-size:16px;
+              display:flex;align-items:center;justify-content:center;
+              font-family:inherit;padding:0;
+            ">
             ${iLiked ? '❤️' : '🤍'}
           </button>
-          <span id="likeCount-${v.id}" style="font-size:13px;font-weight:700;color:var(--txt)">
-            ${likeCount > 0 ? `좋아요 ${likeCount}개` : '첫 좋아요를 눌러주세요'}
-          </span>
+          ${likeCount > 0 
+            ? `<div id="homeLikeCount-${v.id}" style="
+                position:absolute;top:4px;left:4px;
+                background:rgba(0,0,0,.6);
+                color:#fff;border-radius:10px;
+                padding:2px 7px;font-size:10px;font-weight:700;
+              ">❤️ ${likeCount}</div>`
+            : `<div id="homeLikeCount-${v.id}"></div>`
+          }
         </div>
-        ${v.comment 
-          ? `<div style="padding:4px 14px 12px">
-              <div style="font-size:13px;color:var(--txt);line-height:1.6">
-                <b style="color:var(--g2)">${nickname}</b> ${v.comment}
-              </div>
-            </div>`
-          : `<div style="padding-bottom:10px"></div>`
-        }
-      </div>
+      `;
+    }).join('');
+
+    w.innerHTML = `
+      <div id="homeFeedGrid">${html}</div>
+      ${hasMore 
+        ? `<button onclick="loadMoreFeed()" style="width:100%;margin-top:10px;padding:10px;background:#f0fbf4;border:1.5px solid var(--bdr);border-radius:12px;font-size:13px;font-weight:700;color:var(--g2);cursor:pointer;font-family:inherit">더보기 (${all.length-shown.length}개 더) ↓</button>`
+        : ''
+      }
     `;
-  }
+  };
 
-  // 기존 renderFeedGrid 덮어쓰기
-  const origRenderFeedGrid = window.renderFeedGrid;
-  window.renderFeedGrid = renderHomeFeedWithHeart;
+  // 홈 피드 좋아요
+  window.toggleHomeLike = async (verifId) => {
+    const myUid = window.ME?.uid;
+    if(!myUid){
+      if(window.toast) window.toast('로그인이 필요해요!');
+      return;
+    }
 
-  // 기존 openFeedDetail도 하트 포함 버전으로
-  const origOpenFeedDetail = window.openFeedDetail;
-  window.openFeedDetail = (id) => {
-    if(typeof window.openFeedDetailFrom === 'function'){
-      window.openFeedDetailFrom('home', id);
-    } else if(origOpenFeedDetail){
-      origOpenFeedDetail(id);
+    try{
+      const ref = window.FB.doc(window.FB.db, 'verifications', verifId);
+      const snap = await window.FB.getDoc(ref);
+      if(!snap.exists()) return;
+      
+      const likes = snap.data().likes || [];
+      const iLiked = likes.includes(myUid);
+      const newLikes = iLiked 
+        ? likes.filter(uid => uid !== myUid) 
+        : [...likes, myUid];
+      
+      await window.FB.updateDoc(ref, { likes: newLikes });
+      
+      // UI 업데이트
+      const heart = document.getElementById(`homeHeart-${verifId}`);
+      const count = document.getElementById(`homeLikeCount-${verifId}`);
+      if(heart) heart.innerHTML = !iLiked ? '❤️' : '🤍';
+      if(count){
+        if(newLikes.length > 0){
+          count.outerHTML = `<div id="homeLikeCount-${verifId}" style="position:absolute;top:4px;left:4px;background:rgba(0,0,0,.6);color:#fff;border-radius:10px;padding:2px 7px;font-size:10px;font-weight:700">❤️ ${newLikes.length}</div>`;
+        } else {
+          count.outerHTML = `<div id="homeLikeCount-${verifId}"></div>`;
+        }
+      }
+      
+      // 캐시 업데이트
+      if(window._feedItems?.[verifId]) window._feedItems[verifId].likes = newLikes;
+      if(window._allFeedItems){
+        const item = window._allFeedItems.find(i => i.id === verifId);
+        if(item) item.likes = newLikes;
+      }
+    } catch(e){
+      console.error(e);
     }
   };
 
-  // 피드 로딩 후 강제 리렌더
+  // 피드 로드 후 리렌더
   setTimeout(() => {
-    if(window._allFeedItems && window._allFeedItems.length > 0){
-      renderHomeFeedWithHeart();
+    if(window._allFeedItems && window._allFeedItems.length > 0 && window.renderFeedGrid){
+      window.renderFeedGrid();
     }
   }, 2000);
 

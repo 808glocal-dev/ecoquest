@@ -634,22 +634,21 @@
     }
   }
 
-  if(document.readyState === 'complete'){
-    setTimeout(autoStart, 2000);
-  } else {
-    window.addEventListener('load', () => setTimeout(autoStart, 2000));
-  }
-
-  const checkInterval = setInterval(() => {
-    if(localStorage.getItem('eq_onboarding_done')){
-      clearInterval(checkInterval);
-      return;
-    }
+// 한 번만 실행되도록
+  let _tourStarted = false;
+  
+  function autoStartOnce(){
+    if(_tourStarted) return;
+    if(localStorage.getItem('eq_onboarding_done')) return;
+    _tourStarted = true;
     autoStart();
-  }, 2000);
-
-  setTimeout(() => clearInterval(checkInterval), 15000);
-
+  }
+  
+  if(document.readyState === 'complete'){
+    setTimeout(autoStartOnce, 3000);
+  } else {
+    window.addEventListener('load', () => setTimeout(autoStartOnce, 3000));
+  }
   function addReplayButton(){
     if(document.getElementById('tutorialHeaderBtn')) return;
     if(document.getElementById('onboardReplayBtn')) return;

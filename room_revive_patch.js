@@ -1,8 +1,8 @@
-// room_revive_patch.js - 방 챌린지 부활 + 상세페이지 + 전용피드
+// room_revive_patch.js - 방 챌린지 부활 + 상세 + 전용피드 + 커스텀 챌린지
 (function(){
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━
-  // 1. "준비중" 토스트 제거 → 실제 탭 전환
+  // 1. "준비중" 제거 → 탭 활성화
   // ━━━━━━━━━━━━━━━━━━━━━━━━━
   function enableRoomTab(){
     const roomTab = document.getElementById('ctab-room');
@@ -38,7 +38,56 @@
   }
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━
-  // 3. 페이백 안내 → 방 챌린지 소개로 교체
+  // 3. "기타" 옵션 추가 - 커스텀 챌린지
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━
+  function addCustomChallengeOption(){
+    const sel = document.getElementById('rChalSel');
+    if(!sel) return;
+    if(sel.querySelector('option[value="custom"]')) return;
+    
+    const customOpt = document.createElement('option');
+    customOpt.value = 'custom';
+    customOpt.textContent = '✏️ 기타 (직접 입력)';
+    sel.appendChild(customOpt);
+    
+    sel.addEventListener('change', handleChalChange);
+  }
+
+  function handleChalChange(e){
+    const isCustom = e.target.value === 'custom';
+    const modal = document.getElementById('ovRoom');
+    if(!modal) return;
+    
+    const existing = document.getElementById('customChalGroup');
+    if(existing) existing.remove();
+    
+    if(isCustom){
+      const selParent = document.getElementById('rChalSel').closest('.form-group');
+      const customGroup = document.createElement('div');
+      customGroup.id = 'customChalGroup';
+      customGroup.className = 'form-group';
+      customGroup.innerHTML = `
+        <label>✏️ 챌린지 직접 입력</label>
+        <input class="inp" id="customChalInp" 
+          placeholder="예: 환경 실천 10계명"
+          maxlength="30"/>
+        <div style="
+          margin-top:6px;padding:8px 10px;
+          background:#fff8e1;border-radius:8px;
+          font-size:11px;color:#8B5E04;line-height:1.6;
+        ">
+          💡 <b>자유롭게 만들어 보세요!</b><br/>
+          예: 영종 성당 환경 실천 10계명<br/>
+          예: 우리 가족 탄소 줄이기<br/>
+          예: 회사 ESG 캠페인 Q4
+        </div>
+      `;
+      selParent.parentNode.insertBefore(customGroup, selParent.nextSibling);
+    }
+  }
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━
+  // 4. 방 소개 박스
   // ━━━━━━━━━━━━━━━━━━━━━━━━━
   function replacePaybackInfo(){
     const secRoom = document.getElementById('sec-room');
@@ -66,7 +115,7 @@
             font-size:11px;color:var(--sub);line-height:1.8;
           ">
             ✨ 초대 코드로 멤버 모집<br/>
-            💚 함께 완주 시 특별 뱃지<br/>
+            💚 기타 옵션으로 직접 챌린지 만들기<br/>
             📸 우리끼리 인증샷 공유<br/>
             🏆 방 전체 CO₂ 절감량 확인
           </div>
@@ -76,7 +125,7 @@
   }
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━
-  // 4. 방 만들기 (예치금 없이)
+  // 5. 방 만들기 (예치금 없이 + 커스텀 챌린지)
   // ━━━━━━━━━━━━━━━━━━━━━━━━━
   window.doCreateRoom = async () => {
     const name = document.getElementById("rNameInp")?.value.trim();
@@ -89,9 +138,26 @@
       return;
     }
     
-    const cid = parseInt(document.getElementById("rChalSel")?.value);
-    const chal = window.CHALLENGES?.find(c => c.id === cid) 
-              || {title:'환경 챌린지'};
+    const selVal = document.getElementById("rChalSel")?.value;
+    let chalTitle = '환경 챌린지';
+    let cid = 0;
+    let isCustom = false;
+    
+    if(selVal === 'custom'){
+      const customTitle = document.getElementById('customChalInp')?.value.trim();
+      if(!customTitle){
+        if(window.toast) window.toast('챌린지 이름을 입력해주세요!');
+        return;
+      }
+      chalTitle = customTitle;
+      cid = 0;
+      isCustom = true;
+    } else {
+      cid = parseInt(selVal);
+      const chal = window.CHALLENGES?.find(c => c.id === cid);
+      if(chal) chalTitle = chal.title;
+    }
+    
     const code = Math.random().toString(36).substring(2, 8).toUpperCase();
     
     try {
@@ -99,7 +165,8 @@
         name,
         code,
         challengeId: cid,
-        challengeTitle: chal.title || "",
+        challengeTitle: chalTitle,
+        isCustom,
         hostUid: window.ME.uid,
         hostName: window.UDATA?.nickname || window.ME.displayName || "익명",
         deposit: 0,
@@ -115,6 +182,8 @@
       if(typeof window.closeOv === 'function') window.closeOv("ovRoom");
       const nameInp = document.getElementById("rNameInp");
       if(nameInp) nameInp.value = "";
+      const customInp = document.getElementById("customChalInp");
+      if(customInp) customInp.value = "";
       
       navigator.clipboard.writeText(code).catch(() => {});
       
@@ -130,7 +199,7 @@
   };
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━
-  // 5. 내 방 목록 (클릭하면 상세 페이지)
+  // 6. 내 방 목록
   // ━━━━━━━━━━━━━━━━━━━━━━━━━
   window.loadMyRooms = async () => {
     if(!window.ME) return;
@@ -151,7 +220,10 @@
       
       w.innerHTML = mine.map(r => `
         <div class="room-card" style="cursor:pointer" onclick="window.openRoomDetail('${r.id}')">
-          <div class="room-name">👥 ${r.name}</div>
+          <div class="room-name">
+            👥 ${r.name}
+            ${r.isCustom ? '<span style="font-size:10px;background:#fff8e1;color:#8B5E04;padding:2px 6px;border-radius:6px;margin-left:4px">✏️ 직접</span>' : ''}
+          </div>
           <div class="room-meta">
             ${r.challengeTitle} · ${r.members?.length || 1}명 참여
           </div>
@@ -182,7 +254,7 @@
   };
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━
-  // 6. 공개 방 목록
+  // 7. 공개 방 목록
   // ━━━━━━━━━━━━━━━━━━━━━━━━━
   window.loadPubRooms = async () => {
     const w = document.getElementById("pubRoomList");
@@ -207,7 +279,10 @@
           <div class="room-card" 
             style="border-color:${joined ? 'var(--g1)' : 'var(--bdr)'};cursor:${joined ? 'pointer' : 'default'}"
             ${joined ? `onclick="window.openRoomDetail('${r.id}')"` : ''}>
-            <div class="room-name">👥 ${r.name}</div>
+            <div class="room-name">
+              👥 ${r.name}
+              ${r.isCustom ? '<span style="font-size:10px;background:#fff8e1;color:#8B5E04;padding:2px 6px;border-radius:6px;margin-left:4px">✏️ 직접</span>' : ''}
+            </div>
             <div class="room-meta">
               ${r.challengeTitle} · ${r.members?.length || 1}명 참여
             </div>
@@ -223,7 +298,7 @@
   };
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━
-  // 7. 방 상세 페이지
+  // 8. 방 상세 페이지
   // ━━━━━━━━━━━━━━━━━━━━━━━━━
   window.openRoomDetail = async (roomId) => {
     try {
@@ -286,7 +361,7 @@
         margin-bottom:12px;
       ">
         <div style="font-size:11px;font-weight:700;opacity:.8;margin-bottom:4px">
-          👥 방 챌린지
+          👥 방 챌린지 ${room.isCustom ? '· ✏️ 직접 만든' : ''}
         </div>
         <div style="font-size:18px;font-weight:900;margin-bottom:4px">
           ${room.name}
@@ -487,7 +562,7 @@
   }
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━
-  // 8. 방 피드 상세 팝업
+  // 9. 방 피드 상세 팝업
   // ━━━━━━━━━━━━━━━━━━━━━━━━━
   window.openRoomFeedDetail = (id) => {
     const v = window._roomFeedItems?.[id];
@@ -534,7 +609,7 @@
   };
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━
-  // 9. 방 나가기 / 삭제
+  // 10. 방 나가기 / 삭제
   // ━━━━━━━━━━━━━━━━━━━━━━━━━
   window.leaveRoom = async (roomId) => {
     if(!confirm('정말 방에서 나가시겠어요?')) return;
@@ -583,7 +658,10 @@
     const origOpenCreateRoom = window.openCreateRoom;
     window.openCreateRoom = () => {
       if(typeof origOpenCreateRoom === 'function') origOpenCreateRoom();
-      setTimeout(hideDepositInModal, 100);
+      setTimeout(() => {
+        hideDepositInModal();
+        addCustomChallengeOption();
+      }, 100);
     };
     
     const origSetCTab = window.setCTab;
@@ -606,5 +684,5 @@
     window.addEventListener('load', () => setTimeout(init, 1500));
   }
 
-  console.log('[room_revive_patch] 방 챌린지 부활 + 상세 + 피드 통합!');
+  console.log('[room_revive_patch] 방 챌린지 부활 + 기타 옵션 + 상세 + 피드');
 })();

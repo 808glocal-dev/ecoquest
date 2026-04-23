@@ -1,11 +1,8 @@
-// tag_filter_patch.js - 챌린지 태그 필터 (데이터 기반)
+// tag_filter_patch.js - 데이터 배열 기반 필터 (v3)
 (function(){
   
   let currentFilter = 'all';
   
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━
-  // 필터 버튼 추가
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━
   function addFilterButtons(){
     const secOfficial = document.getElementById('sec-official');
     if(!secOfficial) return;
@@ -34,13 +31,11 @@
           cursor: pointer;
           white-space: nowrap;
           font-family: inherit;
-          transition: all 0.2s;
         }
         .tag-btn.active {
           background: linear-gradient(135deg,#2ECC71,#27AE60);
           color: #fff;
           border-color: transparent;
-          box-shadow: 0 2px 8px rgba(46,204,113,.3);
         }
       </style>
       <button class="tag-btn active" data-tag="all" onclick="window._filterByTag('all')">전체</button>
@@ -58,13 +53,10 @@
     secOfficial.insertBefore(filterBar, secOfficial.firstChild);
   }
   
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━
-  // 필터 적용 (CHALLENGES 배열 기반!)
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━
   window._filterByTag = (tag) => {
     currentFilter = tag;
     
-    // 버튼 active 상태
+    // 버튼 active
     document.querySelectorAll('.tag-btn').forEach(btn => {
       if(btn.dataset.tag === tag){
         btn.classList.add('active');
@@ -73,31 +65,36 @@
       }
     });
     
-    // CHALLENGES 배열에서 해당 tag를 가진 id들 찾기
-    const matchingIds = new Set();
+    // CHALLENGES 배열에서 id → tag 매핑 만들기
+    const idToTag = {};
     if(window.CHALLENGES){
       window.CHALLENGES.forEach(c => {
-        if(tag === 'all' || c.tag === tag){
-          matchingIds.add(String(c.id));
-        }
+        idToTag[c.id] = c.tag;
       });
     }
     
-    // 모든 카드 검사
     const cards = document.querySelectorAll('#sec-official .cg-card');
     let visibleCount = 0;
     
-    cards.forEach(card => {
-      // 카드에서 challenge id 찾기
-      // onclick 속성에서 id 추출 (예: onclick="openChalDetail(26)")
-      const onclickAttr = card.getAttribute('onclick') || '';
-      const idMatch = onclickAttr.match(/\d+/);
-      const cardId = idMatch ? idMatch[0] : null;
+    cards.forEach((card, index) => {
+      // 카드 제목으로 CHALLENGES 배열과 매칭
+      const titleEl = card.querySelector('[class*="title"]') 
+                   || card.querySelector('h3') 
+                   || card.querySelectorAll('div')[3]; // 4번째 div가 보통 제목
+      
+      // 카드의 모든 텍스트 가져오기
+      const cardText = card.textContent || '';
+      
+      // CHALLENGES 배열에서 이 카드와 매칭되는 챌린지 찾기
+      let matchedChal = null;
+      if(window.CHALLENGES){
+        matchedChal = window.CHALLENGES.find(c => cardText.includes(c.title));
+      }
       
       if(tag === 'all'){
         card.style.display = '';
         visibleCount++;
-      } else if(cardId && matchingIds.has(cardId)){
+      } else if(matchedChal && matchedChal.tag === tag){
         card.style.display = '';
         visibleCount++;
       } else {
@@ -105,34 +102,7 @@
       }
     });
     
-    // HOT 섹션 헤더 숨기기/보이기 (전체가 아닐 때)
-    const hotSection = document.querySelector('#sec-official .hot-section, #sec-official > [data-section="hot"]');
-    
-    // 섹션 타이틀들 처리
-    const sectionTitles = document.querySelectorAll('#sec-official > div');
-    sectionTitles.forEach(el => {
-      const text = el.textContent || '';
-      // "🔥 인기" 또는 "📋 전체" 같은 타이틀
-      if(text.includes('🔥') || text.includes('📋') || text.includes('인기') || text.includes('전체 챌린지')){
-        if(tag === 'all'){
-          el.style.display = '';
-        } else {
-          // 이 섹션 안에 보이는 카드 있는지 확인
-          const nextCards = [];
-          let next = el.nextElementSibling;
-          while(next && !next.matches('div[style*="font-weight"]')){
-            if(next.classList.contains('cg-card')){
-              nextCards.push(next);
-            }
-            next = next.nextElementSibling;
-          }
-          const hasVisible = nextCards.some(c => c.style.display !== 'none');
-          el.style.display = hasVisible ? '' : 'none';
-        }
-      }
-    });
-    
-    // 결과 없을 때
+    // 빈 메시지
     let emptyMsg = document.getElementById('filterEmptyMsg');
     if(visibleCount === 0 && tag !== 'all'){
       if(!emptyMsg){
@@ -153,12 +123,18 @@
       emptyMsg.style.display = 'none';
     }
     
-    console.log(`[filter] ${tag} → ${visibleCount}개 카드 표시`);
+    // 공식 챌린지 헤더 (🔥 공식 챌린지) 숨기기/보이기
+    const headers = document.querySelectorAll('#sec-official > div');
+    headers.forEach(h => {
+      const txt = h.textContent || '';
+      if(txt.includes('🔥 공식') || txt.includes('공식 챌린지')){
+        h.style.display = tag === 'all' ? '' : 'none';
+      }
+    });
+    
+    console.log(`[filter v3] ${tag} → ${visibleCount}개 표시`);
   };
   
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━
-  // 초기화
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━
   function init(){
     const origSetCTab = window.setCTab;
     if(typeof origSetCTab === 'function'){
@@ -177,7 +153,6 @@
     
     setTimeout(addFilterButtons, 2000);
     
-    // renderChallenges 오버라이드
     const origRender = window.renderChallenges;
     if(typeof origRender === 'function'){
       window.renderChallenges = function(){
@@ -198,5 +173,5 @@
     window.addEventListener('load', () => setTimeout(init, 1500));
   }
   
-  console.log('[tag_filter_patch v2] 데이터 기반 필터');
+  console.log('[tag_filter_patch v3] 제목 기반 매칭');
 })();

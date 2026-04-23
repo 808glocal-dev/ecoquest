@@ -1,17 +1,16 @@
-// tag_filter_patch.js - 챌린지 태그 필터 버튼
+// tag_filter_patch.js - 챌린지 태그 필터 (데이터 기반)
 (function(){
   
-  let currentFilter = 'all'; // 현재 선택된 필터
+  let currentFilter = 'all';
   
   // ━━━━━━━━━━━━━━━━━━━━━━━━━
-  // 필터 버튼 UI 추가
+  // 필터 버튼 추가
   // ━━━━━━━━━━━━━━━━━━━━━━━━━
   function addFilterButtons(){
     const secOfficial = document.getElementById('sec-official');
     if(!secOfficial) return;
-    if(document.getElementById('tagFilterBar')) return; // 이미 있음
+    if(document.getElementById('tagFilterBar')) return;
     
-    // 필터 버튼 HTML
     const filterBar = document.createElement('div');
     filterBar.id = 'tagFilterBar';
     filterBar.style.cssText = `
@@ -19,7 +18,6 @@
       overflow-x:auto;overflow-y:hidden;
       scrollbar-width:none;-ms-overflow-style:none;
       background:#fff;border-bottom:1px solid var(--bdr);
-      position:sticky;top:0;z-index:10;
     `;
     filterBar.innerHTML = `
       <style>
@@ -57,17 +55,16 @@
       <button class="tag-btn" data-tag="✝️ 생태십계명" onclick="window._filterByTag('✝️ 생태십계명')">✝️ 생태십계명</button>
     `;
     
-    // 공식 챌린지 섹션 맨 위에 삽입
     secOfficial.insertBefore(filterBar, secOfficial.firstChild);
   }
   
   // ━━━━━━━━━━━━━━━━━━━━━━━━━
-  // 필터 적용
+  // 필터 적용 (CHALLENGES 배열 기반!)
   // ━━━━━━━━━━━━━━━━━━━━━━━━━
   window._filterByTag = (tag) => {
     currentFilter = tag;
     
-    // 버튼 active 상태 업데이트
+    // 버튼 active 상태
     document.querySelectorAll('.tag-btn').forEach(btn => {
       if(btn.dataset.tag === tag){
         btn.classList.add('active');
@@ -76,34 +73,62 @@
       }
     });
     
-    // 카드 필터링
+    // CHALLENGES 배열에서 해당 tag를 가진 id들 찾기
+    const matchingIds = new Set();
+    if(window.CHALLENGES){
+      window.CHALLENGES.forEach(c => {
+        if(tag === 'all' || c.tag === tag){
+          matchingIds.add(String(c.id));
+        }
+      });
+    }
+    
+    // 모든 카드 검사
     const cards = document.querySelectorAll('#sec-official .cg-card');
     let visibleCount = 0;
     
     cards.forEach(card => {
+      // 카드에서 challenge id 찾기
+      // onclick 속성에서 id 추출 (예: onclick="openChalDetail(26)")
+      const onclickAttr = card.getAttribute('onclick') || '';
+      const idMatch = onclickAttr.match(/\d+/);
+      const cardId = idMatch ? idMatch[0] : null;
+      
       if(tag === 'all'){
         card.style.display = '';
         visibleCount++;
+      } else if(cardId && matchingIds.has(cardId)){
+        card.style.display = '';
+        visibleCount++;
       } else {
-        // 카드 안의 태그 찾기
-        const tagEl = card.querySelector('[class*="tag"]') 
-                   || card.querySelector('span');
-        const cardText = card.textContent || '';
-        
-        if(cardText.includes(tag)){
-          card.style.display = '';
-          visibleCount++;
-        } else {
-          card.style.display = 'none';
-        }
+        card.style.display = 'none';
       }
     });
     
-    // HOT 섹션이나 다른 섹션 타이틀도 처리
-    const sections = document.querySelectorAll('#sec-official > div[style*="font-weight"]');
-    sections.forEach(sec => {
-      if(tag === 'all'){
-        sec.style.display = '';
+    // HOT 섹션 헤더 숨기기/보이기 (전체가 아닐 때)
+    const hotSection = document.querySelector('#sec-official .hot-section, #sec-official > [data-section="hot"]');
+    
+    // 섹션 타이틀들 처리
+    const sectionTitles = document.querySelectorAll('#sec-official > div');
+    sectionTitles.forEach(el => {
+      const text = el.textContent || '';
+      // "🔥 인기" 또는 "📋 전체" 같은 타이틀
+      if(text.includes('🔥') || text.includes('📋') || text.includes('인기') || text.includes('전체 챌린지')){
+        if(tag === 'all'){
+          el.style.display = '';
+        } else {
+          // 이 섹션 안에 보이는 카드 있는지 확인
+          const nextCards = [];
+          let next = el.nextElementSibling;
+          while(next && !next.matches('div[style*="font-weight"]')){
+            if(next.classList.contains('cg-card')){
+              nextCards.push(next);
+            }
+            next = next.nextElementSibling;
+          }
+          const hasVisible = nextCards.some(c => c.style.display !== 'none');
+          el.style.display = hasVisible ? '' : 'none';
+        }
       }
     });
     
@@ -127,13 +152,14 @@
     } else if(emptyMsg){
       emptyMsg.style.display = 'none';
     }
+    
+    console.log(`[filter] ${tag} → ${visibleCount}개 카드 표시`);
   };
   
   // ━━━━━━━━━━━━━━━━━━━━━━━━━
-  // 초기화 - 챌린지 탭 진입 시 적용
+  // 초기화
   // ━━━━━━━━━━━━━━━━━━━━━━━━━
   function init(){
-    // 공식 챌린지 탭 클릭 시 필터 버튼 추가
     const origSetCTab = window.setCTab;
     if(typeof origSetCTab === 'function'){
       window.setCTab = function(t){
@@ -141,8 +167,7 @@
         if(t === 'official'){
           setTimeout(() => {
             addFilterButtons();
-            // 이전 필터 유지
-            if(currentFilter && currentFilter !== 'all'){
+            if(currentFilter !== 'all'){
               window._filterByTag(currentFilter);
             }
           }, 300);
@@ -150,17 +175,16 @@
       };
     }
     
-    // 챌린지 페이지 진입 시에도 한 번
     setTimeout(addFilterButtons, 2000);
     
-    // 챌린지 다시 렌더될 때마다 필터 재적용
-    const origRenderChallenges = window.renderChallenges;
-    if(typeof origRenderChallenges === 'function'){
+    // renderChallenges 오버라이드
+    const origRender = window.renderChallenges;
+    if(typeof origRender === 'function'){
       window.renderChallenges = function(){
-        origRenderChallenges.apply(this, arguments);
+        origRender.apply(this, arguments);
         setTimeout(() => {
           addFilterButtons();
-          if(currentFilter && currentFilter !== 'all'){
+          if(currentFilter !== 'all'){
             window._filterByTag(currentFilter);
           }
         }, 200);
@@ -174,5 +198,5 @@
     window.addEventListener('load', () => setTimeout(init, 1500));
   }
   
-  console.log('[tag_filter_patch] 태그 필터 로드됨');
+  console.log('[tag_filter_patch v2] 데이터 기반 필터');
 })();

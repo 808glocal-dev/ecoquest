@@ -1,20 +1,19 @@
 /* ================================================================
-   EcoQuest – eco_story_card_v2.js  v2-FORCE-2 (모바일/PC 통일판)
+   EcoQuest – eco_story_card_v2.js  v2-FORCE-3 (전체통합 인스타피드)
    ----------------------------------------------------------------
-   - 모바일과 PC 모두 100% 동일한 인스타식 1열 카드
-   - 헤더 → 사진 → 좋아요 → 글(+더보기) 순서
-   - 강제 !important로 옛 CSS 완전 덮어쓰기
-   - PC에서만 가운데 정렬 (max-width 500px)
-   - 다중 후킹 + 중복 방지 가드
+   - "전체" 카테고리에서 글/사진 인증 모두 시간순으로 1열 인스타식 카드
+   - 글 없는 사진 인증도 헤더+사진+좋아요로 표시 → 댓글 patch가 자동으로 댓글 버튼 추가
+   - 모바일/PC 100% 동일 디자인
+   - 카테고리(책/영화/글/제품매장)는 해당 미션만 필터
+   - "사진만" 카테고리는 v3 그리드 그대로 유지
    ================================================================ */
 (function () {
   'use strict';
 
-  console.log('[eco_story_card v2-FORCE-2] 🚀 시작 - 모바일/PC 동일 인스타식');
+  console.log('[eco_story_card v2-FORCE-3] 🚀 시작 - 전체 시간순 인스타피드');
 
   /* ─── CSS (모바일/PC 동일, !important 강제) ─── */
   const css = `
-    /* 카드 컨테이너 - 모든 화면에서 동일 */
     .ehStoryCard {
       background: #fff !important;
       border-radius: 14px !important;
@@ -32,8 +31,6 @@
       box-shadow: none !important;
       transform: none !important;
     }
-
-    /* 헤더 */
     .ehStoryCard .ehSCHead {
       padding: 12px 14px !important;
       margin: 0 !important;
@@ -41,8 +38,6 @@
       align-items: center !important;
       gap: 10px !important;
     }
-
-    /* 사진 - 모바일/PC 동일 풀폭 */
     .ehStoryCard .ehSCImg {
       width: 100% !important;
       height: auto !important;
@@ -54,8 +49,6 @@
       cursor: pointer !important;
       background: #fafafa !important;
     }
-
-    /* 액션 (좋아요) - 사진 바로 아래 */
     .ehSCActions {
       padding: 8px 12px 4px !important;
       display: flex !important;
@@ -67,8 +60,6 @@
       font-size: 14px !important;
     }
     .ehSCActions .ehLikeBtn .ic { font-size: 18px !important; }
-
-    /* 콘텐츠 (제목+본문) - 좋아요 아래 */
     .ehSCContent {
       padding: 0 14px 14px !important;
     }
@@ -106,11 +97,9 @@
       display: block !important;
     }
     .ehSCExpandBtn:hover { color: var(--g1) !important; }
-
-    /* 옛 푸터 강제 숨김 */
     .ehStoryCard .ehSCFoot { display: none !important; }
 
-    /* PC만 가운데 정렬 (모바일은 풀폭) */
+    /* PC만 가운데 정렬 */
     @media (min-width: 768px) {
       #feedList {
         max-width: 500px !important;
@@ -119,8 +108,6 @@
       }
     }
   `;
-
-  // 옛 스타일 제거 후 새로 적용 (캐시 갱신)
   const oldStyle = document.getElementById('eco_story_card_v2_style');
   if (oldStyle) oldStyle.remove();
   const styleEl = document.createElement('style');
@@ -149,7 +136,7 @@
     if (btn)  btn.style.display = 'none';
   };
 
-  /* ─── 인스타식 카드 렌더링 ─── */
+  /* ─── 카드 렌더링 (글 없어도 OK) ─── */
   function renderInstaCard(v) {
     const { title, body } = splitTitleBody(v.comment || '');
     const time = window.timeAgo ? window.timeAgo(v.createdAt?.seconds) : '';
@@ -187,7 +174,21 @@
       </div>`;
   }
 
-  /* ─── rerenderToInsta (중복 방지 가드) ─── */
+  /* ─── 카테고리 필터 ─── */
+  function filterByCategory(items, cat) {
+    if (cat === 'all' || !cat) return items.slice();
+    if (cat === 'photo') return items.filter(v => v.thumb);
+    return items.filter(v => {
+      if (v.category) return v.category === cat;
+      if (cat === 'book')    return v.missionId === 'm43';
+      if (cat === 'movie')   return ['m41', 'm42'].includes(v.missionId);
+      if (cat === 'article') return ['m44', 'm45'].includes(v.missionId);
+      if (cat === 'review')  return ['m17', 'm18', 'm23'].includes(v.missionId);
+      return false;
+    });
+  }
+
+  /* ─── 통합 렌더링 (전체 시간순 + 글 유무 무관) ─── */
   let _isRerendering = false;
   function rerenderToInsta() {
     if (_isRerendering) return;
@@ -196,44 +197,59 @@
       const feedList = document.getElementById('feedList');
       if (!feedList) return;
 
-      const existingCards = feedList.querySelectorAll('.ehStoryCard');
-      if (!existingCards.length) return;
-
-      const items = window._feedItems || {};
       const all = window._allFeedItems || [];
+      if (!all.length) return;
 
-      const ids = [];
-      existingCards.forEach(card => {
-        const onclick = card.getAttribute('onclick') || '';
-        const m = onclick.match(/openFeedDetail\('([^']+)'\)/);
-        if (m) ids.push(m[1]);
-        else {
-          const likeBtn = card.querySelector('[data-like]');
-          if (likeBtn) ids.push(likeBtn.dataset.like);
-        }
+      const cat = window._ehStoryCurCat || 'all';
+
+      // "사진만" 카테고리는 v3 그리드 그대로 유지 (사용자가 따로 사진만 보고 싶을 때)
+      if (cat === 'photo') return;
+
+      // 카테고리 필터
+      const filtered = filterByCategory(all, cat);
+
+      // 시간순 정렬 (최신 먼저)
+      filtered.sort((a, b) => {
+        const tA = a.createdAt?.seconds || 0;
+        const tB = b.createdAt?.seconds || 0;
+        return tB - tA;
       });
 
-      const stories = ids
-        .map(id => items[id] || all.find(v => v.id === id))
-        .filter(Boolean);
+      // 빈 상태 처리
+      if (!filtered.length) {
+        feedList.querySelectorAll('.ehStoryCard').forEach(c => c.remove());
+        return;
+      }
 
-      if (!stories.length) return;
-
-      const newHTML = stories.map(renderInstaCard).join('');
+      // 새 카드 HTML 생성
+      const newHTML = filtered.slice(0, 30).map(renderInstaCard).join('');
       const tempDiv = document.createElement('div');
       tempDiv.innerHTML = newHTML;
+      const newCards = [...tempDiv.children];
 
-      const firstCard = existingCards[0];
-      const parent = firstCard.parentNode;
-      [...tempDiv.children].forEach(c => parent.insertBefore(c, firstCard));
-      existingCards.forEach(c => c.remove());
+      // 옛 카드(.ehStoryCard) 제거 후 새 카드 삽입
+      const oldCards = feedList.querySelectorAll('.ehStoryCard');
+      if (oldCards.length) {
+        const firstCard = oldCards[0];
+        const parent = firstCard.parentNode;
+        newCards.forEach(c => parent.insertBefore(c, firstCard));
+        oldCards.forEach(c => c.remove());
+      } else {
+        // 옛 카드 없으면 chip 다음에 삽입
+        const chips = feedList.querySelector('.ehSChips, .ehSecHead');
+        if (chips) {
+          newCards.reverse().forEach(c => chips.insertAdjacentElement('afterend', c));
+        } else {
+          newCards.forEach(c => feedList.appendChild(c));
+        }
+      }
     } finally {
       _isRerendering = false;
     }
   }
   window._rerenderToInsta = rerenderToInsta;
 
-  /* ─── 후킹 (다중 시점) ─── */
+  /* ─── 후킹 ─── */
   function setupHooks() {
     const _origRender = window._ehRenderFeed;
     if (typeof _origRender === 'function' && !window._ehInstaCardHooked) {
@@ -245,7 +261,6 @@
       window.renderFeedGrid = window._ehRenderFeed;
       window._ehInstaCardHooked = true;
     }
-
     const _origLoadFeed = window.loadFeed;
     if (typeof _origLoadFeed === 'function' && !window._ehInstaLoadHooked) {
       window.loadFeed = async function () {
@@ -263,7 +278,7 @@
     rerenderToInsta();
   }, t));
 
-  // 카테고리 chip 클릭 후 (모바일 터치 포함)
+  // chip 클릭 (PC + 모바일 터치)
   document.addEventListener('click', e => {
     if (e.target.closest('.ehSChip')) {
       setTimeout(rerenderToInsta, 100);
@@ -271,5 +286,5 @@
     }
   }, true);
 
-  console.log('[eco_story_card v2-FORCE-2] ✅ 인스타식 카드 적용 완료');
+  console.log('[eco_story_card v2-FORCE-3] ✅ 통합 인스타피드 적용 완료');
 })();

@@ -35,6 +35,23 @@
     return 'story';
   }
 
+  /* 기업/소속 필드 추출 (다양한 필드명 시도) */
+  function getCompany(u) {
+    return u.company || u.companyName || u.companyId || u.affiliation || u.org || u.corporateName || '';
+  }
+  function extractCompanyList(users) {
+    const map = {};
+    users.forEach(u => {
+      const c = getCompany(u);
+      const key = c || '_none';
+      if (!map[key]) map[key] = { name: c || '소속 없음', count: 0 };
+      map[key].count++;
+    });
+    return Object.entries(map)
+      .map(([key, v]) => ({ key, name: v.name, count: v.count }))
+      .sort((a, b) => b.count - a.count);
+  }
+
   /* 모든 데이터 fetch */
   async function fetchAllData() {
     const [usersSnap, logsSnap, verifsSnap] = await Promise.all([
@@ -264,7 +281,34 @@
       window.toast?.('데이터 수집 중...');
 
       // SheetJS 로드 + 데이터 fetch 동시
-      const [_, data] = await Promise.all([loadSheetJS(), fetchAllData()]);
+      const [_, allData] = await Promise.all([loadSheetJS(), fetchAllData()]);
+
+      // 기업 필터 적용
+      const sel = document.getElementById('ehCompanyFilter');
+      const selKey = sel?.value || 'all';
+      const selCompany = sel?.options[sel.selectedIndex]?.dataset.companyName || '';
+      let data = allData;
+      if (selKey !== 'all') {
+        let filteredUsers;
+        if (selKey === '_none') {
+          filteredUsers = allData.users.filter(u => !getCompany(u));
+        } else {
+          filteredUsers = allData.users.filter(u => getCompany(u) === selKey);
+        }
+        const userIdSet = new Set(filteredUsers.map(u => u.id));
+        data = {
+          users: filteredUsers,
+          logs:  allData.logs.filter(l => userIdSet.has(l.uid)),
+          verifs: allData.verifs.filter(v => userIdSet.has(v.uid)),
+        };
+        console.log(`[esg_stats] 기업 필터 적용: ${selCompany || '소속 없음'}, 회원 ${filteredUsers.length}명`);
+      }
+
+      if (!data.users.length) {
+        window.toast?.('해당 기업에 소속된 회원이 없어요');
+        setBtnText('📊 ESG 보고서 다운로드 (xlsx)', false);
+        return;
+      }
 
       setBtnText('🔄 보고서 생성 중...', true);
 
@@ -280,7 +324,6 @@
       ];
       sheets.forEach(([name, rows]) => {
         const ws = XLSX.utils.aoa_to_sheet(rows);
-        // 컬럼 너비 자동
         try {
           const colWidths = (rows[0] || []).map((_, i) => ({
             wch: Math.min(40, Math.max(...rows.map(r => String(r[i] ?? '').length)) + 2)
@@ -291,8 +334,11 @@
       });
 
       const today = new Date().toISOString().slice(0, 10);
-      XLSX.writeFile(wb, `EcoQuest_ESG보고서_${today}.xlsx`);
-      window.toast?.('✅ ESG 보고서 다운로드 완료!');
+      const tag = (selKey !== 'all')
+        ? `_${(selCompany || '소속없음').replace(/[\\/:*?"<>|]/g, '_')}`
+        : '';
+      XLSX.writeFile(wb, `EcoQuest_ESG보고서${tag}_${today}.xlsx`);
+      window.toast?.(`✅ ESG 보고서 다운로드 완료! (${data.users.length}명)`);
     } catch (e) {
       console.error('[esg_stats] 실패', e);
       window.toast?.('생성 실패: ' + (e.message || ''));
@@ -302,24 +348,76 @@
   }
   window.downloadESGReport = downloadESGReport;
 
-  /* ─── 어드민 회원 탭에 버튼 추가 ─── */
-  function addESGBtn() {
+  /* ─── 어드민 회원 탭에 버튼 + 기업 필터 추가 ─── */
+  async function addESGBtn() {
     const adminUsers = document.getElementById('adminUsers');
     if (!adminUsers) return;
-    if (document.getElementById('ehESGBtn')) return;
+    if (document.getElementById('ehESGBtn')) {
+      // 이미 있으면 기업 목록만 갱신
+      await refreshCompanyList();
+      return;
+    }
 
-    const btn = document.createElement('button');
-    btn.id = 'ehESGBtn';
-    btn.style.cssText = 'width:100%;background:linear-gradient(135deg,#2c3e50,#34495e);color:#fff;border:none;border-radius:10px;padding:11px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,.15)';
-    btn.textContent = '📊 ESG 보고서 다운로드 (xlsx)';
-    btn.onclick = downloadESGReport;
+    // 기업 필터 드롭다운 컨테이너
+    const wrap = document.createElement('div');
+    wrap.id = 'ehESGWrap';
+    wrap.style.cssText = 'background:#f7f9fb;border-radius:10px;padding:10px;margin-bottom:10px;border:1px solid #e0e7ee';
+    wrap.innerHTML = `
+      <div style="font-size:11px;font-weight:700;color:var(--sub);margin-bottom:6px">📊 ESG 보고서</div>
+      <div style="display:flex;gap:6px;align-items:stretch;margin-bottom:8px">
+        <select id="ehCompanyFilter" style="flex:1;padding:8px 10px;border:1.5px solid var(--bdr);border-radius:8px;background:#fff;font-size:12px;font-family:inherit;font-weight:600;color:var(--txt);cursor:pointer">
+          <option value="all">전체 회원</option>
+        </select>
+        <button id="ehCompanyRefresh" style="background:#fff;border:1.5px solid var(--bdr);border-radius:8px;padding:0 10px;font-size:11px;cursor:pointer;font-family:inherit" title="기업 목록 새로고침">🔄</button>
+      </div>
+      <button id="ehESGBtn" style="width:100%;background:linear-gradient(135deg,#2c3e50,#34495e);color:#fff;border:none;border-radius:10px;padding:11px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 2px 8px rgba(0,0,0,.15)">
+        📊 ESG 보고서 다운로드 (xlsx)
+      </button>
+    `;
 
     // 기존 CSV 버튼 위에 삽입
     const csvBtn = document.getElementById('ehUserExportBtn');
     if (csvBtn?.parentElement) {
-      csvBtn.parentElement.insertBefore(btn, csvBtn);
+      csvBtn.parentElement.insertBefore(wrap, csvBtn);
     } else {
-      adminUsers.insertBefore(btn, adminUsers.firstChild);
+      adminUsers.insertBefore(wrap, adminUsers.firstChild);
+    }
+
+    document.getElementById('ehESGBtn').onclick = downloadESGReport;
+    document.getElementById('ehCompanyRefresh').onclick = refreshCompanyList;
+
+    // 첫 로드
+    await refreshCompanyList();
+  }
+
+  /* 기업 목록 채우기 */
+  async function refreshCompanyList() {
+    const sel = document.getElementById('ehCompanyFilter');
+    if (!sel) return;
+    try {
+      const snap = await window.FB.getDocs(window.FB.collection(window.FB.db, 'users'));
+      const users = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      const list = extractCompanyList(users);
+
+      const cur = sel.value;
+      sel.innerHTML = `<option value="all">전체 회원 (${users.length}명)</option>`;
+
+      list.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.key;
+        opt.dataset.companyName = c.name;
+        opt.textContent = `${c.name} (${c.count}명)`;
+        sel.appendChild(opt);
+      });
+
+      // 이전 선택 복원
+      if (cur && Array.from(sel.options).some(o => o.value === cur)) {
+        sel.value = cur;
+      }
+
+      console.log('[esg_stats] 기업 목록:', list);
+    } catch (e) {
+      console.warn('[esg_stats] 기업 목록 로딩 실패', e);
     }
   }
 

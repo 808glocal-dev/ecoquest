@@ -1,10 +1,10 @@
 /* ================================================================
-   EcoQuest – eco_story_patch.js  v3
-   "에코 스토리" 통합 + 블로그 형식 + 좋아요
+   EcoQuest – eco_story_patch.js  v4
+   "에코 스토리" 통합 + 블로그 형식 + 좋아요 + 자유 작성
    1. 인증 모달 = 제목 + 본문(textarea) (모든 챌린지 통일)
-   2. 본문 30자 이상 → storyMode + 카테고리 자동 매핑 + 30P 보너스
+   2. 본문 있으면 → storyMode + 30P 보너스 (글자수 자유)
    3. 홈 피드 = 카테고리 chip + 블로그 카드 + 사진 그리드
-   4. ✏️ 글쓰기 버튼 (챌린지 인증 안 거치고 직접 글)
+   4. ✏️ 글쓰기 버튼 (사진만, 한 줄 메모, 긴 후기 자유)
    5. ❤️ 좋아요 (toggle, 카운트 표시)
    6. 상세 보기 = 전체 글 (제목·본문·이미지·좋아요)
    ================================================================ */
@@ -178,7 +178,7 @@
       const ta = document.createElement('textarea');
       ta.id = 'verifComment';
       ta.className = old.className || 'inp';
-      ta.placeholder = '본문을 자유롭게 작성해주세요...\n30자 이상 쓰면 에코 스토리에 게시되고 +30P!';
+      ta.placeholder = '본문을 자유롭게 작성해주세요... (선택)';
       ta.maxLength = 1000;
       ta.rows = 4;
       ta.style.cssText = 'font-size:13px;padding:10px 12px;resize:vertical;font-family:inherit;width:100%';
@@ -194,7 +194,7 @@
       if (!document.getElementById('ehStoryHint')) {
         const hint = document.createElement('div');
         hint.id = 'ehStoryHint';
-        hint.innerHTML = '💡 본문 <b>30자 이상</b> 쓰면 자동으로 <b>📚 에코 스토리</b>에 게시 + <b>30P 보너스</b>';
+        hint.innerHTML = '💡 본문이 있으면 자동으로 <b>📚 에코 스토리</b>에 게시돼요';
         ta.parentNode.insertBefore(hint, ta.nextSibling);
       }
 
@@ -207,8 +207,6 @@
       ta.addEventListener('input', () => {
         const len = ta.value.length;
         counter.textContent = `${len} / 1000`;
-        counter.style.color = len >= 30 ? 'var(--g2)' : 'var(--sub)';
-        counter.style.fontWeight = len >= 30 ? '700' : '400';
       });
     }
   }
@@ -220,7 +218,7 @@
       const title = (document.getElementById('verifTitle')?.value || '').trim();
       const body = (comment || '').trim();
       const fullText = combineTitleBody(title, body);
-      const storyMode = body.length >= 30;
+      const storyMode = body.length > 0;
       const category = storyMode ? categorize(m.id) : 'photo';
 
       await window.FB.addDoc(window.FB.collection(window.FB.db, 'verifications'), {
@@ -383,7 +381,7 @@
       window._feedItems[v.id] = { ...v, userName: nicknameMap[v.uid] || v.userName || '익명' };
     });
 
-    const isStory = v => v.storyMode || (v.comment && v.comment.length >= 30);
+    const isStory = v => v.storyMode || (v.comment && v.comment.length > 0);
     let stories, photos;
     if (cat === 'all') {
       stories = all.filter(isStory);
@@ -501,7 +499,7 @@
     if (!detail) return;
     const { title, body } = splitTitleBody(v.comment || '');
     const time = window.timeAgo ? window.timeAgo(v.createdAt?.seconds) : '';
-    const isStory = v.storyMode || (v.comment && v.comment.length >= 30);
+    const isStory = v.storyMode || (v.comment && v.comment.length > 0);
     const liked = (v.likes || []).includes(window.ME?.uid);
     const likeCount = (v.likes || []).length;
 
@@ -602,7 +600,7 @@
         <div class="handle" onclick="closeOv('ovWriteStory')"></div>
         <button class="modal-close" onclick="closeOv('ovWriteStory')">✕</button>
         <div class="modal-title">✏️ 에코 스토리 쓰기</div>
-        <div class="modal-desc">환경에 대한 글을 자유롭게! 30자 이상 쓰면 <b style="color:var(--g2)">+30P</b></div>
+        <div class="modal-desc">사진만, 한 줄 메모, 긴 후기 모두 자유롭게! 😊</div>
 
         <div class="form-group">
           <label>카테고리 <span style="color:var(--red)">*</span></label>
@@ -654,8 +652,6 @@
     body.addEventListener('input', () => {
       const len = body.value.length;
       count.textContent = `${len} / 1000`;
-      count.style.color = len >= 30 ? 'var(--g2)' : 'var(--sub)';
-      count.style.fontWeight = len >= 30 ? '700' : '400';
     });
 
     modal.querySelector('#ehWritePhoto').onchange = function (e) {
@@ -691,7 +687,10 @@
     const missionId = selBtn.dataset.mid;
     const title = document.getElementById('ehWriteTitle').value.trim();
     const body  = document.getElementById('ehWriteBody').value.trim();
-    if (body.length < 30) { window.toast?.('본문을 30자 이상 작성해주세요!'); return; }
+    if (!body && !window._ehWritePhotoB64) {
+      window.toast?.('사진이나 본문 중 하나는 입력해주세요!');
+      return;
+    }
     if (typeof MISSIONS === 'undefined') return;
     const m = MISSIONS.find(x => x.id === missionId);
     if (!m) { window.toast?.('카테고리 오류'); return; }

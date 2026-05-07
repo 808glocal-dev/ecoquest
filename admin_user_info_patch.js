@@ -266,20 +266,67 @@
   }
 
   async function exportUsersCSV() {
-    if (!_ehAllUsersCache.length) {
+    let users = _ehAllUsersCache;
+
+    // 1차: 같은 페이지 글로벌 스코프의 _allUsers 직접 참조 시도
+    if (!users.length) {
+      try {
+        if (typeof _allUsers !== 'undefined' && Array.isArray(_allUsers) && _allUsers.length) {
+          users = _allUsers;
+          _ehAllUsersCache = _allUsers;
+        }
+      } catch (e) {}
+    }
+
+    // 2차: loadAllUsers 호출
+    if (!users.length) {
       window.toast?.('회원 정보 로딩 중...');
-      if (typeof window.loadAllUsers === 'function') await window.loadAllUsers();
+      if (typeof window.loadAllUsers === 'function') {
+        await window.loadAllUsers();
+        users = _ehAllUsersCache;
+        // 다시 글로벌 변수도 시도
+        if (!users.length) {
+          try {
+            if (typeof _allUsers !== 'undefined' && _allUsers.length) {
+              users = _allUsers;
+              _ehAllUsersCache = _allUsers;
+            }
+          } catch (e) {}
+        }
+      }
     }
-    if (!_ehAllUsersCache.length) {
-      window.toast?.('먼저 [전체 회원 불러오기]를 눌러주세요'); return;
+
+    // 3차: 직접 Firestore fetch (마지막 fallback)
+    if (!users.length) {
+      try {
+        window.toast?.('직접 조회 중...');
+        const snap = await window.FB.getDocs(window.FB.collection(window.FB.db, 'users'));
+        users = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        _ehAllUsersCache = users;
+      } catch (e) {
+        console.error('[admin_user_info] 직접 fetch 실패', e);
+        window.toast?.('회원 조회 실패: ' + (e.message || ''));
+        return;
+      }
     }
+
+    console.log('[admin_user_info] CSV 시도:', {
+      cacheLen: _ehAllUsersCache.length,
+      usersLen: users.length,
+      globalAllUsers: (typeof _allUsers === 'undefined') ? 'undefined' : `array(${_allUsers?.length})`
+    });
+
+    if (!users.length) {
+      window.toast?.('회원이 한 명도 없어요'); return;
+    }
+
     await buildEmailMap();
     const emailMap = window._adminEmailMap || {};
 
     const rows = [
       ['UID','닉네임','이메일','휴대폰번호','나이대','성별','지역','직업','자동차','가구형태','환경관심도','관심분야','미션수','포인트','CO2절감(kg)','가입일']
     ];
-    _ehAllUsersCache.forEach(u => {
+    users.forEach(u => {
       const email = u.email || emailMap[u.id] || '';
       const phone = u.phoneNumber || u.phone || u.kakaoPhone || '';
       const created = u.createdAt?.toDate?.()?.toLocaleDateString('ko-KR') || '';

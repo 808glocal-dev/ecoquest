@@ -535,5 +535,129 @@
     window._ehESGGoPageHooked = true;
   }
 
+  /* ─── 원본 exportCSV 오버라이드 (어드민 통계 탭의 "B2B 데이터 리포트 CSV" 버튼) ─── */
+  window.exportCSV = async () => {
+    try {
+      window.toast?.('CSV 생성 중...');
+
+      // doc.id 포함해서 fetch (원본은 id 누락)
+      const [usersSnap, coSnap] = await Promise.all([
+        window.FB.getDocs(window.FB.collection(window.FB.db, 'users')),
+        window.FB.getDocs(window.FB.collection(window.FB.db, 'companies')),
+      ]);
+      const users = usersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      const coMap = {};
+      coSnap.docs.forEach(c => { coMap[c.id] = { id: c.id, ...c.data() }; });
+
+      // 1. 회원 명부 (기업명·닉네임·이메일·휴대폰·가입일 추가)
+      const rows = [
+        ['UID','닉네임','이메일','휴대폰','기업명','미션수','포인트','CO2(kg)','성별','나이대','지역','직업','자동차','가구형태','환경관심도','관심분야','가입일']
+      ];
+      users.forEach(u => {
+        const company = u.companyId ? (coMap[u.companyId]?.name || '') : '';
+        const created = u.createdAt?.toDate?.()?.toLocaleDateString('ko-KR') || '';
+        rows.push([
+          u.id || '',
+          u.nickname || '',
+          u.email || '',
+          u.phoneNumber || u.phone || u.kakaoPhone || '',
+          company,
+          u.missionCount || 0,
+          u.point || 0,
+          (u.co2 || 0).toFixed(2),
+          u.gender || '',
+          u.age || '',
+          u.region || '',
+          u.job || '',
+          u.hasCar || '',
+          u.household || '',
+          u.ecoLevel || '',
+          (u.interests || []).join('|'),
+          created
+        ]);
+      });
+
+      // 2. 기업별 요약 섹션
+      rows.push([]);
+      rows.push(['=== 기업별 요약 ===']);
+      rows.push(['기업명','유형','회원수','총 CO2(kg)','총 미션','총 포인트','평균 CO2/인','초대코드']);
+
+      const allCompanies = Object.values(coMap);
+      const coStats = allCompanies.map(co => {
+        const members = users.filter(u => u.companyId === co.id);
+        const totalCo2 = members.reduce((s, u) => s + (u.co2 || 0), 0);
+        const totalMission = members.reduce((s, u) => s + (u.missionCount || 0), 0);
+        const totalPoint = members.reduce((s, u) => s + (u.point || 0), 0);
+        return { co, members, totalCo2, totalMission, totalPoint };
+      }).sort((a, b) => b.totalCo2 - a.totalCo2);
+
+      coStats.forEach(({ co, members, totalCo2, totalMission, totalPoint }) => {
+        rows.push([
+          co.name || '',
+          co.type || '',
+          members.length,
+          totalCo2.toFixed(2),
+          totalMission,
+          totalPoint,
+          members.length ? (totalCo2 / members.length).toFixed(2) : 0,
+          co.inviteCode || ''
+        ]);
+      });
+
+      // 소속 없음 회원 통계
+      const noCompany = users.filter(u => !u.companyId);
+      if (noCompany.length) {
+        const noCo2 = noCompany.reduce((s, u) => s + (u.co2 || 0), 0);
+        const noMission = noCompany.reduce((s, u) => s + (u.missionCount || 0), 0);
+        const noPoint = noCompany.reduce((s, u) => s + (u.point || 0), 0);
+        rows.push([
+          '(소속 없음)','',
+          noCompany.length,
+          noCo2.toFixed(2),
+          noMission,
+          noPoint,
+          noCompany.length ? (noCo2 / noCompany.length).toFixed(2) : 0,
+          ''
+        ]);
+      }
+
+      // 3. 기업별 회원 명부 (각 기업 멤버를 따로 그룹핑해서 보여주기)
+      coStats.forEach(({ co, members }) => {
+        if (!members.length) return;
+        rows.push([]);
+        rows.push([`=== [${co.name || co.id}] 소속 회원 (${members.length}명) ===`]);
+        rows.push(['닉네임','이메일','미션수','CO2(kg)','포인트','지역','나이대']);
+        members.forEach(u => {
+          rows.push([
+            u.nickname || '',
+            u.email || '',
+            u.missionCount || 0,
+            (u.co2 || 0).toFixed(2),
+            u.point || 0,
+            u.region || '',
+            u.age || ''
+          ]);
+        });
+      });
+
+      // CSV 변환 (BOM 포함, 따옴표 escape)
+      const csv = rows.map(r => r.map(v => {
+        const s = String(v ?? '');
+        return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+      }).join(',')).join('\n');
+
+      const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `EcoQuest_데이터_${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+      window.toast?.(`✅ CSV 다운로드 완료! (회원 ${users.length}명 + 기업 ${allCompanies.length}개)`);
+    } catch (e) {
+      console.error('[esg_stats] exportCSV 실패', e);
+      window.toast?.('CSV 생성 실패: ' + (e.message || ''));
+    }
+  };
+
   console.log('[esg_stats_patch] ✅ ESG 보고서 다운로드 준비');
 })();

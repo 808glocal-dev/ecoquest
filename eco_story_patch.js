@@ -294,9 +294,39 @@
     let html = renderCategoryChips();
 
     if (!stories.length && !photos.length) {
-      html += `<div style="text-align:center;padding:30px;color:var(--sub);font-size:13px">
-        이 카테고리에 글이 없어요!<br/>챌린지 인증할 때 후기를 써보세요 📝
-      </div>`;
+      const isFirstWriter = cat === 'all';
+      html += isFirstWriter ? `
+        <div style="background:linear-gradient(135deg,#f0fbf4,#e8f5e9);border-radius:14px;padding:20px 18px;border:1.5px solid var(--g1);margin-top:8px">
+          <div style="text-align:center;margin-bottom:14px">
+            <div style="font-size:36px;margin-bottom:6px">📚</div>
+            <div style="font-size:14px;font-weight:900;color:var(--txt)">첫 작가가 되어주세요!</div>
+            <div style="font-size:12px;color:var(--sub);margin-top:4px;line-height:1.6">
+              아직 에코 스토리가 비어있어요.<br/>
+              당신의 첫 글이 다른 사람을 움직여요 🌱
+            </div>
+          </div>
+          <div style="background:#fff;border-radius:10px;padding:12px;margin-bottom:10px">
+            <div style="font-size:11px;font-weight:700;color:var(--g2);margin-bottom:6px">💡 이런 글을 기다리고 있어요</div>
+            <div style="font-size:12px;color:#555;line-height:1.9">
+              ✨ 환경 다큐 보고 받은 충격<br/>
+              ✨ 텀블러 한 달 사용 후기<br/>
+              ✨ 비건 식당 첫 방문기<br/>
+              ✨ 제로웨이스트 살림 팁
+            </div>
+          </div>
+          <div style="font-size:11px;color:var(--sub);text-align:center;line-height:1.6;margin-bottom:10px">
+            챌린지 인증할 때 <b style="color:var(--g2)">30자 이상 후기</b>를 쓰면<br/>
+            자동으로 게시되고 <b style="color:var(--g2)">+30P 보너스</b>!
+          </div>
+          <button onclick="window.goPage&&window.goPage('chal')"
+            style="width:100%;background:linear-gradient(135deg,var(--g1),var(--g2));color:#fff;border:none;border-radius:10px;padding:10px;font-size:13px;font-weight:900;cursor:pointer;font-family:inherit">
+            🏆 챌린지 둘러보기 →
+          </button>
+        </div>
+      ` : `
+        <div style="text-align:center;padding:30px;color:var(--sub);font-size:13px">
+          이 카테고리에 글이 없어요!<br/>챌린지 인증할 때 후기를 써보세요 📝
+        </div>`;
       w.innerHTML = html;
       bindChipClicks(w);
       return;
@@ -411,4 +441,220 @@
   }
 
   console.log('[eco_story_patch] ✅ 에코 스토리 통합 완료');
+
+  /* ================================================================
+     ✏️ 직접 글쓰기 (챌린지 인증 안 거치고)
+     ================================================================ */
+  const WRITE_CATS = [
+    { cat:'book',    mid:'m43', icon:'📖', label:'책' },
+    { cat:'movie',   mid:'m42', icon:'🎬', label:'영화·다큐' },
+    { cat:'article', mid:'m44', icon:'📰', label:'글·콘텐츠' },
+    { cat:'review',  mid:'m18', icon:'♻️', label:'제품·매장' },
+    { cat:'story',   mid:'m38', icon:'✨', label:'일반' },
+  ];
+
+  function ensureWriteModal() {
+    if (document.getElementById('ovWriteStory')) return;
+    const modal = document.createElement('div');
+    modal.className = 'overlay';
+    modal.id = 'ovWriteStory';
+    modal.innerHTML = `
+      <div class="modal">
+        <div class="handle" onclick="closeOv('ovWriteStory')"></div>
+        <button class="modal-close" onclick="closeOv('ovWriteStory')">✕</button>
+        <div class="modal-title">✏️ 에코 스토리 쓰기</div>
+        <div class="modal-desc">환경에 대한 글을 자유롭게! 30자 이상 쓰면 <b style="color:var(--g2)">+30P</b></div>
+
+        <div class="form-group">
+          <label>카테고리 <span style="color:var(--red)">*</span></label>
+          <div style="display:flex;gap:6px;flex-wrap:wrap" id="ehWriteCatSel">
+            ${WRITE_CATS.map(c => `
+              <button class="dep-btn" data-cat="${c.cat}" data-mid="${c.mid}">${c.icon} ${c.label}</button>
+            `).join('')}
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>제목 (선택)</label>
+          <input class="inp" id="ehWriteTitle" placeholder="예) 비포 더 플러드를 보고" maxlength="60"/>
+        </div>
+
+        <div class="form-group">
+          <label>본문 <span style="color:var(--red)">*</span></label>
+          <textarea class="inp" id="ehWriteBody" placeholder="자유롭게 후기/생각/팁을 적어주세요..."
+                    rows="8" style="font-family:inherit;resize:vertical;min-height:160px"></textarea>
+          <div id="ehWriteCount" style="font-size:11px;color:var(--sub);text-align:right;margin-top:4px">0 / 1000</div>
+        </div>
+
+        <div class="form-group">
+          <label>사진 첨부 (선택)</label>
+          <div id="ehWritePhotoArea" onclick="document.getElementById('ehWritePhoto').click()"
+               style="background:#f8f8f8;border:2px dashed var(--bdr);border-radius:14px;min-height:90px;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:14px;overflow:hidden">
+            <div id="ehWritePhotoPlaceholder" style="text-align:center">
+              <div style="font-size:28px">📷</div>
+              <div style="font-size:12px;color:var(--sub);margin-top:4px">탭하여 사진 추가</div>
+            </div>
+            <img id="ehWritePhotoPreview" style="display:none;max-width:100%;max-height:240px;border-radius:8px"/>
+          </div>
+          <input type="file" id="ehWritePhoto" accept="image/*" style="display:none"/>
+        </div>
+
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-gray" style="flex:1" onclick="closeOv('ovWriteStory')">취소</button>
+          <button class="btn btn-g" style="flex:2" onclick="submitStory()">📝 게시하기</button>
+        </div>
+      </div>`;
+    document.body.appendChild(modal);
+
+    // overlay 클릭으로 닫기
+    modal.addEventListener('click', e => { if (e.target === modal) window.closeOv?.('ovWriteStory'); });
+
+    // 카테고리 선택
+    modal.querySelectorAll('#ehWriteCatSel .dep-btn').forEach(b => {
+      b.onclick = () => {
+        modal.querySelectorAll('#ehWriteCatSel .dep-btn').forEach(x => x.classList.remove('on'));
+        b.classList.add('on');
+      };
+    });
+
+    // 글자수
+    const body = modal.querySelector('#ehWriteBody');
+    const count = modal.querySelector('#ehWriteCount');
+    body.addEventListener('input', () => {
+      const len = body.value.length;
+      count.textContent = `${len} / 1000`;
+      count.style.color = len >= 30 ? 'var(--g2)' : 'var(--sub)';
+      count.style.fontWeight = len >= 30 ? '700' : '400';
+    });
+
+    // 사진
+    modal.querySelector('#ehWritePhoto').onchange = function (e) {
+      const f = e.target.files[0];
+      if (!f) return;
+      const r = new FileReader();
+      r.onload = ev => {
+        window._ehWritePhotoB64 = ev.target.result.split(',')[1];
+        modal.querySelector('#ehWritePhotoPreview').src = ev.target.result;
+        modal.querySelector('#ehWritePhotoPreview').style.display = 'block';
+        modal.querySelector('#ehWritePhotoPlaceholder').style.display = 'none';
+      };
+      r.readAsDataURL(f);
+    };
+  }
+
+  window.openWriteModal = function () {
+    if (!window.ME) { window.toast?.('로그인이 필요해요!'); return; }
+    ensureWriteModal();
+    // 초기화
+    document.querySelectorAll('#ehWriteCatSel .dep-btn').forEach(b => b.classList.remove('on'));
+    document.querySelector('#ehWriteCatSel .dep-btn[data-cat="story"]')?.classList.add('on');
+    document.getElementById('ehWriteTitle').value = '';
+    document.getElementById('ehWriteBody').value = '';
+    document.getElementById('ehWriteCount').textContent = '0 / 1000';
+    document.getElementById('ehWritePhotoPreview').style.display = 'none';
+    document.getElementById('ehWritePhotoPreview').src = '';
+    document.getElementById('ehWritePhotoPlaceholder').style.display = 'block';
+    window._ehWritePhotoB64 = null;
+    window.openOv?.('ovWriteStory');
+  };
+
+  window.submitStory = async function () {
+    const selBtn = document.querySelector('#ehWriteCatSel .dep-btn.on');
+    if (!selBtn) { window.toast?.('카테고리를 선택해주세요!'); return; }
+    const cat = selBtn.dataset.cat;
+    const missionId = selBtn.dataset.mid;
+    const title = document.getElementById('ehWriteTitle').value.trim();
+    const body  = document.getElementById('ehWriteBody').value.trim();
+    if (body.length < 30) { window.toast?.('본문을 30자 이상 작성해주세요!'); return; }
+
+    if (typeof MISSIONS === 'undefined') return;
+    const m = MISSIONS.find(x => x.id === missionId);
+    if (!m) { window.toast?.('카테고리 오류'); return; }
+
+    const fullText = title ? `# ${title}\n\n${body}` : body;
+
+    try {
+      let thumb = '';
+      if (window._ehWritePhotoB64 && window.compressImage) {
+        thumb = await window.compressImage(window._ehWritePhotoB64, 400);
+      }
+
+      await window.FB.addDoc(window.FB.collection(window.FB.db, 'verifications'), {
+        uid: window.ME.uid,
+        userName: window.UDATA?.nickname || window.ME?.displayName || '익명',
+        userPhoto: window.ME?.photoURL || '',
+        missionId: m.id,
+        missionName: m.name,
+        missionEmoji: m.emoji,
+        isPublic: true,
+        thumb,
+        comment: fullText,
+        storyMode: true,
+        category: cat,
+        writeMode: true,
+        createdAt: window.FB.serverTimestamp(),
+      });
+
+      // +30P 보너스
+      try {
+        const newP = (window.UDATA?.point || 0) + 30;
+        await window.FB.updateDoc(window.FB.doc(window.FB.db, 'users', window.ME.uid), { point: newP });
+        if (window.UDATA) window.UDATA.point = newP;
+        window.updateUI?.();
+      } catch (e) {}
+
+      window.closeOv?.('ovWriteStory');
+      window.toast?.('✅ 에코 스토리 게시 완료! +30P');
+      if (window.loadFeed) window.loadFeed();
+    } catch (e) {
+      window.toast?.('게시 실패: ' + e.message);
+    }
+  };
+
+  /* "📚 에코 스토리" 섹션 헤더에 ✏️ 글쓰기 버튼 삽입 */
+  function addWriteButton() {
+    const home = document.getElementById('page-home');
+    if (!home) return;
+
+    let sectionT = null;
+    home.querySelectorAll('.sec-t').forEach(el => {
+      const t = (el.innerText || '').trim();
+      if (t === '📚 에코 스토리' || t === '📸 인증 피드') sectionT = el;
+    });
+    if (!sectionT) return;
+    const sec = sectionT.closest('.sec');
+    if (!sec || sec.querySelector('#ehWriteBtn')) return;
+
+    const btn = document.createElement('button');
+    btn.id = 'ehWriteBtn';
+    btn.style.cssText = `
+      background: linear-gradient(135deg, var(--g1), var(--g2));
+      color: #fff; border: none; border-radius: 16px;
+      padding: 7px 14px; font-size: 12px; font-weight: 800;
+      cursor: pointer; font-family: inherit;
+      box-shadow: 0 2px 8px rgba(46,204,113,.3);
+      margin-left: auto; margin-right: 8px;
+    `;
+    btn.textContent = '✏️ 글쓰기';
+    btn.onclick = () => window.openWriteModal();
+
+    const secM = sec.querySelector('.sec-m');
+    if (secM) sec.insertBefore(btn, secM);
+    else sec.appendChild(btn);
+  }
+
+  // 실행 + 후크
+  setTimeout(addWriteButton, 500);
+  [1500, 3000, 5000].forEach(t => setTimeout(addWriteButton, t));
+  const _origGoPage = window.goPage;
+  if (typeof _origGoPage === 'function' && !window._ehWriteBtnHooked) {
+    window.goPage = function (...a) {
+      const r = _origGoPage.apply(this, a);
+      setTimeout(addWriteButton, 200);
+      return r;
+    };
+    window._ehWriteBtnHooked = true;
+  }
+
+  console.log('[eco_story_patch] ✅ 글쓰기 버튼 + 모달 추가');
 })();

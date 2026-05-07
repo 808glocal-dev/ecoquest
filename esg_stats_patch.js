@@ -536,9 +536,10 @@
   }
 
   /* ─── 원본 exportCSV 오버라이드 (어드민 통계 탭의 "B2B 데이터 리포트 CSV" 버튼) ─── */
-  window.exportCSV = async () => {
+  async function ehExportCSV() {
     try {
       window.toast?.('CSV 생성 중...');
+      console.log('[esg_stats] ehExportCSV 시작');
 
       // doc.id 포함해서 fetch (원본은 id 누락)
       const [usersSnap, coSnap] = await Promise.all([
@@ -548,6 +549,7 @@
       const users = usersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
       const coMap = {};
       coSnap.docs.forEach(c => { coMap[c.id] = { id: c.id, ...c.data() }; });
+      console.log(`[esg_stats] 회원 ${users.length}명, 기업 ${Object.keys(coMap).length}개 fetch 완료`);
 
       // 1. 회원 명부 (기업명·닉네임·이메일·휴대폰·가입일 추가)
       const rows = [
@@ -604,7 +606,6 @@
         ]);
       });
 
-      // 소속 없음 회원 통계
       const noCompany = users.filter(u => !u.companyId);
       if (noCompany.length) {
         const noCo2 = noCompany.reduce((s, u) => s + (u.co2 || 0), 0);
@@ -621,7 +622,7 @@
         ]);
       }
 
-      // 3. 기업별 회원 명부 (각 기업 멤버를 따로 그룹핑해서 보여주기)
+      // 3. 기업별 회원 명부
       coStats.forEach(({ co, members }) => {
         if (!members.length) return;
         rows.push([]);
@@ -640,7 +641,6 @@
         });
       });
 
-      // CSV 변환 (BOM 포함, 따옴표 escape)
       const csv = rows.map(r => r.map(v => {
         const s = String(v ?? '');
         return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
@@ -653,11 +653,57 @@
       a.click();
       URL.revokeObjectURL(a.href);
       window.toast?.(`✅ CSV 다운로드 완료! (회원 ${users.length}명 + 기업 ${allCompanies.length}개)`);
+      console.log('[esg_stats] CSV 다운로드 완료');
     } catch (e) {
       console.error('[esg_stats] exportCSV 실패', e);
       window.toast?.('CSV 생성 실패: ' + (e.message || ''));
     }
-  };
+  }
+  window.exportCSV = ehExportCSV;
+  window.ehExportCSV = ehExportCSV;
 
-  console.log('[esg_stats_patch] ✅ ESG 보고서 다운로드 준비');
+  /* ─── 강력 후크: 통계 탭 진입 시 CSV 버튼의 onclick attribute 자체를 교체 ─── */
+  function hijackCSVButton() {
+    const btns = document.querySelectorAll('button[onclick*="exportCSV"]');
+    btns.forEach(btn => {
+      if (btn._ehCSVHijacked) return;
+      btn.removeAttribute('onclick');
+      btn.onclick = ehExportCSV;
+      btn._ehCSVHijacked = true;
+      console.log('[esg_stats] CSV 버튼 onclick 교체 완료');
+    });
+  }
+
+  // setAdminTab 후크 - stats 탭 진입 시 버튼 교체
+  const _origSetAdminTab = window.setAdminTab;
+  if (typeof _origSetAdminTab === 'function' && !window._ehSetAdminTabHooked) {
+    window.setAdminTab = function (tab, el) {
+      const r = _origSetAdminTab.call(this, tab, el);
+      if (tab === 'stats') {
+        [200, 600, 1500].forEach(t => setTimeout(hijackCSVButton, t));
+      }
+      return r;
+    };
+    window._ehSetAdminTabHooked = true;
+  }
+
+  // openAdmin 후크 - 어드민 진입 시도 시
+  const _origOpenAdmin = window.openAdmin;
+  if (typeof _origOpenAdmin === 'function' && !window._ehOpenAdminHooked) {
+    window.openAdmin = function () {
+      const r = _origOpenAdmin.apply(this, arguments);
+      [500, 1500, 3000].forEach(t => setTimeout(hijackCSVButton, t));
+      return r;
+    };
+    window._ehOpenAdminHooked = true;
+  }
+
+  // 주기적 체크 (어드민 페이지 열려있는 동안)
+  setInterval(() => {
+    if (document.getElementById('adminPage')?.style.display !== 'none') {
+      hijackCSVButton();
+    }
+  }, 2000);
+
+  console.log('[esg_stats_patch] ✅ ESG 보고서 다운로드 준비 (CSV 버튼 강제 후크 포함)');
 })();

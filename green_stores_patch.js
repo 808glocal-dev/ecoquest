@@ -1,16 +1,24 @@
 /**
- * EcoQuest 친환경 매장 지도 patch.js
+ * EcoQuest 친환경 매장 patch.js (v2)
  * ─────────────────────────────────────────────
- * 사용법: index.html 하단 다른 patch들 사이에 추가
+ * 변경: 지도 탭(page-map) → 스토어 탭(page-shop)으로 이동
+ *
+ * 사용법: 기존 green_stores_patch.js를 이 파일로 덮어쓰기
  *   <script src="green_stores_patch.js"></script>
  *
- * 동작: page-map (지도 탭)에 '친환경 매장' 섹션 자동 주입
- * 특징: 외부 링크 X (모든 정보 앱 내 표시) / 카테고리·지역 필터 / 기존 디자인 시스템 활용
- * 매장 추가/수정: 아래 STORES 배열만 수정
+ * 동작: 스토어 탭의 책 리스트 아래에 '친환경 매장' 섹션 자동 추가
+ *
+ * 💡 다시 지도 탭으로 옮기고 싶으면:
+ *    아래 MOUNT_PAGE_ID를 'page-map'으로 변경
  */
 
 (function () {
   'use strict';
+
+  // ═══════════════════════════════════════════
+  // 🎯 마운트 위치 (page-shop=스토어, page-map=지도)
+  // ═══════════════════════════════════════════
+  const MOUNT_PAGE_ID = 'page-shop';
 
   // ═══════════════════════════════════════════
   // 📍 매장 데이터 (여기만 수정해서 추가/제거)
@@ -34,15 +42,14 @@
     {id:"zerosystem-mungyeong",name:"제로시스템",cat:"zero_waste",region:"경북",district:"문경시",address:"경북 문경시 모전동 264-1",lat:36.588629,lng:128.188413,phone:"054-552-2285",hours:"매장 문의",description:"문경의 친환경 매장. 햇살상점과 함께 운영되는 지역 제로웨이스트 거점.",features:["지역 거점"]},
   ];
 
-  // ── 카테고리 매핑 ─────────────────
   const CAT_LABEL = {zero_waste:'제로웨이스트', vintage:'빈티지·친환경', upcycling:'업사이클링', workshop:'공방'};
   const CAT_EMOJI = {zero_waste:'🌱', vintage:'👕', upcycling:'♻️', workshop:'🛠️'};
 
-  // ── 스타일 주입 (기존 EcoQuest 디자인 시스템 활용) ─────
   function injectStyles() {
     if (document.getElementById('gs-styles')) return;
     const css = `
       .gs-wrap{margin:0 12px 12px}
+      .gs-info-banner{background:#f0fbf4;border:1px solid var(--bdr);border-radius:12px;padding:10px 12px;margin-bottom:10px;font-size:11px;color:var(--g2);line-height:1.6}
       .gs-filter{display:flex;gap:6px;overflow-x:auto;padding:8px 0 12px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
       .gs-filter::-webkit-scrollbar{display:none}
       .gs-chip{flex:0 0 auto;padding:6px 12px;border-radius:18px;background:#f0f5f1;color:var(--g2);font-size:12px;border:1.5px solid transparent;cursor:pointer;font-family:inherit;font-weight:600;white-space:nowrap;transition:all .15s}
@@ -72,7 +79,6 @@
     document.head.appendChild(style);
   }
 
-  // ── 유틸 ─────────────────
   function escapeHtml(s) {
     if (s == null) return '';
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
@@ -82,7 +88,6 @@
     return `<div class="gs-meta-row"><span class="gs-meta-label">${label}</span><span>${escapeHtml(value)}</span></div>`;
   }
 
-  // ── 카드 렌더링 ─────────────────
   function renderCard(store) {
     const catLabel = CAT_LABEL[store.cat] || '친환경';
     const catEmoji = CAT_EMOJI[store.cat] || '🌿';
@@ -109,7 +114,6 @@
     `;
   }
 
-  // ── 메인 ─────────────────
   let activeFilter = '전체';
 
   function renderList(wrap) {
@@ -144,43 +148,44 @@
   }
 
   function inject() {
-    const mapPage = document.getElementById('page-map');
-    if (!mapPage) {
-      console.warn('[GreenStores] #page-map not found');
+    const mountPage = document.getElementById(MOUNT_PAGE_ID);
+    if (!mountPage) {
+      console.warn(`[GreenStores] #${MOUNT_PAGE_ID} not found`);
       return;
     }
-    if (document.getElementById('green-stores-section')) return; // 중복 방지
+    if (document.getElementById('green-stores-section')) return;
 
     injectStyles();
 
-    // 섹션 헤더 추가 (기존 .sec 디자인 사용)
     const sectionHeader = document.createElement('div');
     sectionHeader.className = 'sec';
-    sectionHeader.innerHTML = `<div class="sec-t">🛒 친환경 매장 둘러보기 <span style="background:#e8f3ec;color:var(--g2);font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px;margin-left:6px">${STORES.length}곳</span></div>`;
-    mapPage.appendChild(sectionHeader);
+    sectionHeader.style.marginTop = '8px';
+    sectionHeader.innerHTML = `<div class="sec-t">🛒 친환경 매장 <span style="background:#e8f3ec;color:var(--g2);font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px;margin-left:6px">${STORES.length}곳</span></div>`;
+    mountPage.appendChild(sectionHeader);
 
-    // 컨텐츠 컨테이너
     const wrap = document.createElement('div');
     wrap.id = 'green-stores-section';
     wrap.className = 'gs-wrap';
     wrap.innerHTML = `
+      <div class="gs-info-banner">
+        💚 매장에서 미션 인증하면 EcoQuest 포인트가 적립돼요!<br/>
+        <span style="color:var(--sub);font-weight:500">(현재 자체 포인트 운영 · 정부 탄소중립포인트 연계 준비 중)</span>
+      </div>
       <div class="gs-filter" id="gs-filter"></div>
       <div class="gs-list" id="gs-list"></div>
       <div class="gs-info">💡 카드를 탭하면 자세한 정보를 볼 수 있어요</div>
     `;
-    mapPage.appendChild(wrap);
+    mountPage.appendChild(wrap);
 
     renderFilter(wrap);
     renderList(wrap);
   }
 
-  // ── 자동 초기화 ─────────────────
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', inject);
   } else {
     inject();
   }
 
-  // 외부 노출 (필요시 다시 호출 가능)
   window.GreenStoresPatch = { inject, STORES };
 })();

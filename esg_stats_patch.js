@@ -276,6 +276,43 @@
   }
 
   /* ─── 메인: ESG 보고서 다운로드 ─── */
+  /* JSZip 동적 로드 */
+  async function loadJSZip() {
+    if (window.JSZip) return;
+    return new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+      script.onload = resolve;
+      script.onerror = () => reject(new Error('JSZip 로드 실패'));
+      document.head.appendChild(script);
+    });
+  }
+
+  /* ESG workbook 생성 (단일/ZIP 공용) */
+  function _buildESGWorkbook(data) {
+    const wb = XLSX.utils.book_new();
+    const sheets = [
+      ['종합 임팩트',   buildOverview(data)],
+      ['미션별 통계',   buildMissionStats(data)],
+      ['시계열 추이',   buildTimeSeries(data)],
+      ['지역별 분포',   buildRegionStats(data)],
+      ['연령·성별',     buildDemographics(data)],
+      ['콘텐츠 임팩트', buildContentImpact(data)],
+      ['회원 명부',     buildUserDirectory(data)],
+    ];
+    sheets.forEach(([name, rows]) => {
+      const ws = XLSX.utils.aoa_to_sheet(rows);
+      try {
+        const colWidths = (rows[0] || []).map((_, i) => ({
+          wch: Math.min(40, Math.max(...rows.map(r => String(r[i] ?? '').length)) + 2)
+        }));
+        ws['!cols'] = colWidths;
+      } catch (e) {}
+      XLSX.utils.book_append_sheet(wb, ws, name);
+    });
+    return wb;
+  }
+
   async function downloadESGReport() {
     const btn = document.getElementById('ehESGBtn');
     const setBtnText = (t, dis = true) => {
@@ -288,7 +325,6 @@
       setBtnText('🔄 데이터 수집 중...', true);
       window.toast?.('데이터 수집 중...');
 
-      // SheetJS 로드 + 데이터 fetch 동시
       const [_, allData] = await Promise.all([loadSheetJS(), fetchAllData()]);
 
       // 기업 필터 적용 (users.companyId 기준)
@@ -309,7 +345,6 @@
           logs:  allData.logs.filter(l => userIdSet.has(l.uid)),
           verifs: allData.verifs.filter(v => userIdSet.has(v.uid)),
         };
-        console.log(`[esg_stats] 기업 필터 적용: ${selCompany || '소속 없음'}, 회원 ${filteredUsers.length}명`);
       }
 
       if (!data.users.length) {
@@ -319,27 +354,7 @@
       }
 
       setBtnText('🔄 보고서 생성 중...', true);
-
-      const wb = XLSX.utils.book_new();
-      const sheets = [
-        ['종합 임팩트',   buildOverview(data)],
-        ['미션별 통계',   buildMissionStats(data)],
-        ['시계열 추이',   buildTimeSeries(data)],
-        ['지역별 분포',   buildRegionStats(data)],
-        ['연령·성별',     buildDemographics(data)],
-        ['콘텐츠 임팩트', buildContentImpact(data)],
-        ['회원 명부',     buildUserDirectory(data)],
-      ];
-      sheets.forEach(([name, rows]) => {
-        const ws = XLSX.utils.aoa_to_sheet(rows);
-        try {
-          const colWidths = (rows[0] || []).map((_, i) => ({
-            wch: Math.min(40, Math.max(...rows.map(r => String(r[i] ?? '').length)) + 2)
-          }));
-          ws['!cols'] = colWidths;
-        } catch (e) {}
-        XLSX.utils.book_append_sheet(wb, ws, name);
-      });
+      const wb = _buildESGWorkbook(data);
 
       const today = new Date().toISOString().slice(0, 10);
       const tag = (selKey !== 'all')
@@ -355,6 +370,78 @@
     }
   }
   window.downloadESGReport = downloadESGReport;
+
+  /* ─── 기업별 일괄 ZIP 다운로드 ─── */
+  async function downloadAllCompaniesESG() {
+    const btn = document.getElementById('ehESGZipBtn');
+    const setBtnText = (t, dis = true) => {
+      if (!btn) return;
+      btn.disabled = dis;
+      btn.textContent = t;
+    };
+
+    try {
+      setBtnText('🔄 라이브러리 로드 중...', true);
+      window.toast?.('데이터 수집 중...');
+
+      const [_, __, allData] = await Promise.all([
+        loadSheetJS(), loadJSZip(), fetchAllData()
+      ]);
+      const coMap = await fetchCompaniesMap();
+
+      // 기업별 그룹핑 (소속 있는 회원만)
+      const byCompany = {};
+      allData.users.forEach(u => {
+        const cid = getCompanyId(u);
+        if (!cid) return;
+        const name = coMap[cid]?.name || cid;
+        if (!byCompany[cid]) byCompany[cid] = { name, users: [] };
+        byCompany[cid].users.push(u);
+      });
+
+      const entries = Object.entries(byCompany);
+      if (!entries.length) {
+        window.toast?.('소속 기업이 있는 회원이 없어요');
+        setBtnText('📦 기업별 일괄 다운로드 (ZIP)', false);
+        return;
+      }
+
+      setBtnText(`🔄 ${entries.length}개 기업 보고서 생성 중...`, true);
+
+      const zip = new JSZip();
+      const today = new Date().toISOString().slice(0, 10);
+
+      for (const [cid, { name, users: companyUsers }] of entries) {
+        const userIdSet = new Set(companyUsers.map(u => u.id));
+        const data = {
+          users: companyUsers,
+          logs:  allData.logs.filter(l => userIdSet.has(l.uid)),
+          verifs: allData.verifs.filter(v => userIdSet.has(v.uid)),
+        };
+        const wb = _buildESGWorkbook(data);
+        const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+        const safeName = name.replace(/[\\/:*?"<>|]/g, '_');
+        zip.file(`${safeName}_ESG보고서_${today}.xlsx`, wbout);
+      }
+
+      setBtnText('🔄 ZIP 압축 중...', true);
+      const zipBlob = await zip.generateAsync({ type: 'blob' });
+      const url = URL.createObjectURL(zipBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `EcoQuest_ESG_기업별_${today}.zip`;
+      a.click();
+      URL.revokeObjectURL(url);
+
+      window.toast?.(`✅ ${entries.length}개 기업 ESG 보고서 ZIP 다운로드 완료!`);
+    } catch (e) {
+      console.error('[esg_stats] ZIP 실패', e);
+      window.toast?.('ZIP 생성 실패: ' + (e.message || ''));
+    } finally {
+      setBtnText('📦 기업별 일괄 다운로드 (ZIP)', false);
+    }
+  }
+  window.downloadAllCompaniesESG = downloadAllCompaniesESG;
 
   /* ─── 어드민 회원 탭에 버튼 + 기업 필터 추가 ─── */
   async function addESGBtn() {
@@ -378,9 +465,15 @@
         </select>
         <button id="ehCompanyRefresh" style="background:#fff;border:1.5px solid var(--bdr);border-radius:8px;padding:0 10px;font-size:11px;cursor:pointer;font-family:inherit" title="기업 목록 새로고침">🔄</button>
       </div>
-      <button id="ehESGBtn" style="width:100%;background:linear-gradient(135deg,#2c3e50,#34495e);color:#fff;border:none;border-radius:10px;padding:11px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 2px 8px rgba(0,0,0,.15)">
+      <button id="ehESGBtn" style="width:100%;background:linear-gradient(135deg,#2c3e50,#34495e);color:#fff;border:none;border-radius:10px;padding:11px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 2px 8px rgba(0,0,0,.15);margin-bottom:6px">
         📊 ESG 보고서 다운로드 (xlsx)
       </button>
+      <button id="ehESGZipBtn" style="width:100%;background:linear-gradient(135deg,#1a6b3a,#2ECC71);color:#fff;border:none;border-radius:10px;padding:11px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 2px 8px rgba(46,204,113,.3)">
+        📦 기업별 일괄 다운로드 (ZIP)
+      </button>
+      <div style="font-size:10px;color:var(--sub);margin-top:6px;line-height:1.5">
+        💡 ZIP 안에 기업마다 별도 xlsx 파일이 들어있어 각 기업에 따로 전달 가능
+      </div>
     `;
 
     // 기존 CSV 버튼 위에 삽입
@@ -392,6 +485,7 @@
     }
 
     document.getElementById('ehESGBtn').onclick = downloadESGReport;
+    document.getElementById('ehESGZipBtn').onclick = downloadAllCompaniesESG;
     document.getElementById('ehCompanyRefresh').onclick = refreshCompanyList;
 
     // 첫 로드

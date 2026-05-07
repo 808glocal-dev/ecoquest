@@ -1,15 +1,15 @@
 /* ================================================================
-   EcoQuest – eco_story_card_v2.js  v2-FORCE-5 (중복 그리드 제거판)
+   EcoQuest – eco_story_card_v2.js  v2-FORCE-6 (전체 비우기판)
    ----------------------------------------------------------------
-   - 위에 뜨는 3x3 사진 그리드 자동 감지 + 숨김 (중복 제거)
-   - 모든 카테고리(전체/책/영화/글/사진) 1열 인스타식
+   ★ 핵심 변경: #feedList를 통째로 비우고 chip + 헤더만 보존
+   - 위 3x3 그리드, "더보기" 버튼, 다른 patch가 그린 카드 전부 제거
+   - 모든 카테고리 1열 인스타식으로 통일
    - 글 없는 사진 인증도 좋아요/댓글 동일
-   - 모바일/PC 100% 동일
    ================================================================ */
 (function () {
   'use strict';
 
-  console.log('[eco_story_card v2-FORCE-5] 🚀 시작 - 중복 그리드 제거 + 1열 인스타피드');
+  console.log('[eco_story_card v2-FORCE-6] 🚀 시작 - feedList 완전 비우기 모드');
 
   /* ─── PWA SW 자동 갱신 ─── */
   if ('serviceWorker' in navigator) {
@@ -20,25 +20,18 @@
 
   /* ─── CSS ─── */
   const css = `
-    /* feedList 그리드 강제 차단 */
-    #feedList,
-    .feedList,
-    .feed-list {
+    #feedList {
       display: block !important;
       grid-template-columns: none !important;
-      grid-template-rows: none !important;
-      gap: 0 !important;
       column-count: 1 !important;
+      gap: 0 !important;
     }
-    #feedList > *,
-    .feedList > *,
-    .feed-list > * {
+    #feedList > * {
       width: auto !important;
       max-width: 100% !important;
       grid-column: auto !important;
     }
 
-    /* 카드 컨테이너 */
     .ehStoryCard {
       background: #fff !important;
       border-radius: 14px !important;
@@ -85,9 +78,7 @@
       font-size: 14px !important;
     }
     .ehSCActions .ehLikeBtn .ic { font-size: 18px !important; }
-    .ehSCContent {
-      padding: 0 14px 14px !important;
-    }
+    .ehSCContent { padding: 0 14px 14px !important; }
     .ehStoryCard .ehSCTitle {
       font-size: 16px !important;
       font-weight: 800 !important;
@@ -124,7 +115,6 @@
     .ehSCExpandBtn:hover { color: var(--g1) !important; }
     .ehStoryCard .ehSCFoot { display: none !important; }
 
-    /* PC 가운데 정렬 */
     @media (min-width: 768px) {
       #feedList {
         max-width: 500px !important;
@@ -213,7 +203,7 @@
     });
   }
 
-  /* ─── 통합 렌더링 ─── */
+  /* ─── ★ 통합 렌더링: feedList 통째로 비우고 다시 그리기 ─── */
   let _isRerendering = false;
   function rerenderToInsta() {
     if (_isRerendering) return;
@@ -234,105 +224,31 @@
         return tB - tA;
       });
 
-      if (!filtered.length) {
-        feedList.querySelectorAll('.ehStoryCard').forEach(c => c.remove());
-        return;
-      }
-
-      const newHTML = filtered.slice(0, 30).map(renderInstaCard).join('');
-      const tempDiv = document.createElement('div');
-      tempDiv.innerHTML = newHTML;
-      const newCards = [...tempDiv.children];
-
-      const oldCards = feedList.querySelectorAll(
-        '.ehStoryCard, .ehPhotoCard, .ehSCard, .ehFeedCard, .feed-card, .ehFeedItem, [data-feed-item]'
+      // ★ 보존할 요소만 골라내기 (chip, 섹션 헤더)
+      const preserve = [...feedList.children].filter(el =>
+        el.classList.contains('ehSChips') ||
+        el.classList.contains('ehSecHead') ||
+        el.classList.contains('ehSecHeader') ||
+        el.classList.contains('ehSectionHead') ||
+        ['H1', 'H2', 'H3'].includes(el.tagName)
       );
 
-      if (oldCards.length) {
-        const firstCard = oldCards[0];
-        const parent = firstCard.parentNode;
-        newCards.forEach(c => parent.insertBefore(c, firstCard));
-        oldCards.forEach(c => c.remove());
-      } else {
-        const chips = feedList.querySelector('.ehSChips, .ehSecHead');
-        if (chips) {
-          newCards.reverse().forEach(c => chips.insertAdjacentElement('afterend', c));
-        } else {
-          newCards.forEach(c => feedList.appendChild(c));
-        }
-      }
+      // ★ feedList 통째로 비움 (위 그리드, 더보기, 다른 카드 모두 제거)
+      feedList.innerHTML = '';
 
-      // 렌더링 후 중복 그리드 자동 감지/숨김
-      setTimeout(hideRedundantGrids, 50);
+      // 보존 요소 다시 추가
+      preserve.forEach(el => feedList.appendChild(el));
+
+      // 새 인스타 카드 추가
+      if (filtered.length) {
+        const newHTML = filtered.slice(0, 30).map(renderInstaCard).join('');
+        feedList.insertAdjacentHTML('beforeend', newHTML);
+      }
     } finally {
       _isRerendering = false;
     }
   }
   window._rerenderToInsta = rerenderToInsta;
-
-  /* ─── 중복 사진 그리드 자동 감지 + 숨김 ─── */
-  function hideRedundantGrids() {
-    const feedList = document.getElementById('feedList');
-    if (!feedList) return;
-
-    // 1. feedList 부모의 형제 중 그리드+이미지3개+이상 있는 영역 숨김
-    const parent = feedList.parentElement;
-    if (parent) {
-      [...parent.children].forEach(el => {
-        if (el === feedList) return;
-        if (el.dataset.v5Hidden === '1') return;
-        const cs = getComputedStyle(el);
-        const isGrid = cs.display === 'grid' || cs.display === 'inline-grid';
-        if (isGrid) {
-          const imgs = el.querySelectorAll('img');
-          if (imgs.length >= 3) {
-            el.style.display = 'none';
-            el.dataset.v5Hidden = '1';
-            console.log('[v5] 중복 사진 그리드 숨김 (외부):', el.className || el.id || el.tagName);
-          }
-        }
-      });
-    }
-
-    // 2. feedList 안의 그리드 자식 (보존 영역 제외) 숨김
-    [...feedList.children].forEach(el => {
-      if (el.dataset.v5Hidden === '1') return;
-      // 보존: chip, 헤더, 우리 인스타 카드
-      if (el.classList.contains('ehSChips')) return;
-      if (el.classList.contains('ehSecHead')) return;
-      if (el.classList.contains('ehStoryCard')) return;
-      if (el.tagName === 'H1' || el.tagName === 'H2' || el.tagName === 'H3') return;
-
-      const cs = getComputedStyle(el);
-      const isGrid = cs.display === 'grid' || cs.display === 'inline-grid';
-      if (isGrid) {
-        const imgs = el.querySelectorAll('img');
-        if (imgs.length >= 3) {
-          el.style.display = 'none';
-          el.dataset.v5Hidden = '1';
-          console.log('[v5] 중복 사진 그리드 숨김 (내부):', el.className || el.id);
-        }
-      }
-    });
-
-    // 3. 의심되는 셀렉터들 직접 숨김
-    const suspects = [
-      '.ehPhotoGrid', '.photoGrid', '#photoGrid',
-      '.feedPhotos', '.miniPhotos', '.photoPreview',
-      '.ehMiniGallery', '.ehFeedPreview',
-      '[class*="photo-grid"]', '[class*="photoGrid"]', '[class*="mini-gallery"]'
-    ];
-    suspects.forEach(sel => {
-      try {
-        document.querySelectorAll(sel).forEach(el => {
-          if (el.dataset.v5Hidden === '1') return;
-          el.style.display = 'none';
-          el.dataset.v5Hidden = '1';
-          console.log('[v5] 의심 셀렉터 숨김:', sel);
-        });
-      } catch (e) {}
-    });
-  }
 
   /* ─── 후킹 ─── */
   function setupHooks() {
@@ -357,20 +273,18 @@
     }
   }
 
-  setTimeout(() => { setupHooks(); rerenderToInsta(); hideRedundantGrids(); }, 500);
+  setTimeout(() => { setupHooks(); rerenderToInsta(); }, 500);
   [1500, 3000, 5000, 8000].forEach(t => setTimeout(() => {
     setupHooks();
     rerenderToInsta();
-    hideRedundantGrids();
   }, t));
 
   document.addEventListener('click', e => {
     if (e.target.closest('.ehSChip')) {
       setTimeout(rerenderToInsta, 100);
       setTimeout(rerenderToInsta, 400);
-      setTimeout(hideRedundantGrids, 500);
     }
   }, true);
 
-  console.log('[eco_story_card v2-FORCE-5] ✅ 중복 그리드 제거 + 1열 인스타피드 적용');
+  console.log('[eco_story_card v2-FORCE-6] ✅ feedList 완전 비우기 + 1열 인스타피드 적용');
 })();

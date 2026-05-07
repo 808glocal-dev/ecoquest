@@ -188,6 +188,161 @@
     if (el && el.parentElement) el.parentElement.style.display = 'none';
   }
 
+  /* ─── 신규 회원 섹션 (TOP 기여자 아래) ─── */
+  async function renderNewcomers() {
+    const topEl = document.getElementById('topContrib');
+    if (!topEl || !window.FB?.getDocs) return;
+    try {
+      const snap = await window.FB.getDocs(window.FB.collection(window.FB.db, 'users'));
+      const now = Date.now();
+      const SEVEN = 7 * 86400 * 1000;
+
+      const recent = snap.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .filter(u => u.createdAt?.seconds && (now - u.createdAt.seconds * 1000) < SEVEN)
+        .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0))
+        .slice(0, 8);
+
+      // 기존 섹션 있으면 제거 후 다시 그리기
+      const existing = document.getElementById('ehNewcomers');
+      if (existing) existing.remove();
+      if (!recent.length) return;
+
+      const wrap = document.createElement('div');
+      wrap.id = 'ehNewcomers';
+      wrap.style.cssText = 'padding:0 12px 20px';
+      wrap.innerHTML = `
+        <div style="font-size:15px;font-weight:900;color:var(--txt);margin:18px 0 8px">
+          🌱 새로 가입한 멤버 (최근 7일)
+        </div>
+        ${recent.map(u => {
+          const co2 = u.co2 || 0;
+          const tree = co2 >= 1 ? '🌿' : '🌱';
+          const days = Math.floor((now - u.createdAt.seconds * 1000) / 86400000);
+          const daysLbl = days === 0 ? '오늘 가입' : `${days}일 전 가입`;
+          const isMe = u.id === window.ME?.uid;
+          return `
+            <div style="display:flex;align-items:center;gap:10px;padding:10px;background:#fff;border-radius:12px;margin-bottom:6px;border:1px solid var(--bdr)">
+              <div style="font-size:24px">${tree}</div>
+              <div style="flex:1;min-width:0">
+                <div style="font-size:13px;font-weight:700;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+                  ${u.nickname || '익명 지구지킴이'}${isMe ? ' 🌟' : ''}
+                </div>
+                <div style="font-size:11px;color:var(--sub)">${daysLbl} · 미션 ${u.missionCount || 0}개</div>
+              </div>
+              <div style="text-align:right;flex-shrink:0">
+                <div style="font-size:12px;font-weight:900;color:var(--g2)">${co2.toFixed(1)}kg</div>
+                <div style="font-size:10px;color:var(--sub)">CO₂ 절감</div>
+              </div>
+            </div>`;
+        }).join('')}
+      `;
+      topEl.parentNode.insertBefore(wrap, topEl.nextSibling);
+    } catch (e) { console.warn('[home_mission_patch] newcomer 실패', e); }
+  }
+
+  /* loadTopContrib 후크 */
+  const _origLoadTopContrib = window.loadTopContrib;
+  if (typeof _origLoadTopContrib === 'function' && !window._ehNewcomerHooked) {
+    window.loadTopContrib = async function () {
+      const r = await _origLoadTopContrib.apply(this, arguments);
+      setTimeout(renderTodayActivity, 100);
+      setTimeout(renderNewcomers, 200);
+      return r;
+    };
+    window._ehNewcomerHooked = true;
+  }
+
+  /* ─── 🔥 오늘의 활약 (TOP 기여자 위) ─── */
+  let _todayActCache = null;
+  let _todayActCacheTime = 0;
+  const TODAY_ACT_CACHE_MS = 3 * 60 * 1000; // 3분 캐시
+
+  async function renderTodayActivity() {
+    const topEl = document.getElementById('topContrib');
+    if (!topEl || !window.FB?.getDocs || !window.FB?.query) return;
+    try {
+      const now = Date.now();
+      let ranked, userMap;
+
+      // 캐시 확인
+      if (_todayActCache && (now - _todayActCacheTime) < TODAY_ACT_CACHE_MS) {
+        ({ ranked, userMap } = _todayActCache);
+      } else {
+        const today = new Date().toISOString().split('T')[0];
+        const q = window.FB.query(
+          window.FB.collection(window.FB.db, 'missionLogs'),
+          window.FB.where('date', '==', today)
+        );
+        const snap = await window.FB.getDocs(q);
+        const logs = snap.docs.map(d => d.data());
+
+        // uid별 그룹핑
+        const byUser = {};
+        logs.forEach(l => {
+          if (!l.uid) return;
+          if (!byUser[l.uid]) byUser[l.uid] = { count: 0, co2: 0 };
+          byUser[l.uid].count++;
+          byUser[l.uid].co2 += (l.co2 || 0);
+        });
+
+        ranked = Object.entries(byUser)
+          .map(([uid, d]) => ({ uid, ...d }))
+          .sort((a, b) => b.count - a.count || b.co2 - a.co2)
+          .slice(0, 5);
+
+        // 닉네임 매핑
+        userMap = {};
+        await Promise.all(ranked.map(async r => {
+          try {
+            const u = await window.FB.getDoc(window.FB.doc(window.FB.db, 'users', r.uid));
+            if (u.exists()) userMap[r.uid] = u.data();
+          } catch (e) {}
+        }));
+
+        _todayActCache = { ranked, userMap };
+        _todayActCacheTime = now;
+      }
+
+      // 기존 섹션 제거 후 새로 그리기
+      const existing = document.getElementById('ehTodayActivity');
+      if (existing) existing.remove();
+      if (!ranked.length) return;
+
+      const wrap = document.createElement('div');
+      wrap.id = 'ehTodayActivity';
+      wrap.style.cssText = 'padding:0 12px';
+      const medals = ['🥇','🥈','🥉','4️⃣','5️⃣'];
+
+      wrap.innerHTML = `
+        <div style="font-size:15px;font-weight:900;color:var(--txt);margin:14px 0 8px;display:flex;align-items:center;gap:6px">
+          🔥 오늘의 활약
+          <span style="background:linear-gradient(135deg,#ff6b6b,#ee5a52);color:#fff;font-size:9px;font-weight:700;padding:2px 7px;border-radius:8px">LIVE</span>
+        </div>
+        ${ranked.map((r, i) => {
+          const u = userMap[r.uid] || {};
+          const isMe = r.uid === window.ME?.uid;
+          return `
+            <div style="display:flex;align-items:center;gap:10px;padding:10px;background:linear-gradient(90deg,#fff,#fff8e1);border-radius:12px;margin-bottom:6px;border:1px solid #ffe0a3">
+              <div style="font-size:18px">${medals[i]}</div>
+              <div style="flex:1;min-width:0">
+                <div style="font-size:13px;font-weight:700;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+                  ${u.nickname || '익명 지구지킴이'}${isMe ? ' 🌟' : ''}
+                </div>
+                <div style="font-size:11px;color:var(--sub)">오늘 미션 <b style="color:#e67e22">${r.count}개</b> 인증</div>
+              </div>
+              <div style="text-align:right;flex-shrink:0">
+                <div style="font-size:12px;font-weight:900;color:var(--g2)">${r.co2.toFixed(2)}kg</div>
+                <div style="font-size:10px;color:var(--sub)">오늘 절감</div>
+              </div>
+            </div>`;
+        }).join('')}
+      `;
+      // TOP 기여자 위에 삽입
+      topEl.parentNode.insertBefore(wrap, topEl.previousElementSibling || topEl);
+    } catch (e) { console.warn('[home_mission_patch] todayActivity 실패', e); }
+  }
+
   /* ─── 3. 통합 챌린지 카드 ─── */
   function startMissionFromChal(challengeId) {
     if (!window.ME) { window.toast && window.toast('로그인이 필요해요!'); return; }
@@ -405,6 +560,11 @@
     try { removeCompanyFromHome();        } catch(e){}
     try { hideOldMissionSec();            } catch(e){}
     try { hideForestTotal();              } catch(e){}
+    // 지도 탭 보일 때 newcomer + todayActivity 갱신
+    if (document.getElementById('page-map')?.classList.contains('on')) {
+      try { renderTodayActivity(); } catch(e){}
+      try { renderNewcomers();     } catch(e){}
+    }
     try { installRenderHomeOverride();    } catch(e){}
     try { installRenderOfficialOverride();} catch(e){}
     try { ensureCategoryChips();          } catch(e){}

@@ -22,6 +22,9 @@
     #page-home #missionScroll,
     #page-home .sec.eh-old-mission-sec { display: none !important; }
 
+    /* 지도 탭 "총 참여자" 카드 숨김 (숫자가 안 채워져서) */
+    #page-map div:has(> #forestTotal) { display: none !important; }
+
     /* 통합 챌린지 카드 */
     .ehChalCard {
       background:#fff; border-radius:16px; padding:14px;
@@ -177,6 +180,12 @@
     if (prev && prev.classList && prev.classList.contains('sec')) {
       prev.classList.add('eh-old-mission-sec');
     }
+  }
+
+  /* 지도 탭 "총 참여자" 카드 JS fallback */
+  function hideForestTotal() {
+    const el = document.getElementById('forestTotal');
+    if (el && el.parentElement) el.parentElement.style.display = 'none';
   }
 
   /* ─── 3. 통합 챌린지 카드 ─── */
@@ -395,6 +404,7 @@
   function run() {
     try { removeCompanyFromHome();        } catch(e){}
     try { hideOldMissionSec();            } catch(e){}
+    try { hideForestTotal();              } catch(e){}
     try { installRenderHomeOverride();    } catch(e){}
     try { installRenderOfficialOverride();} catch(e){}
     try { ensureCategoryChips();          } catch(e){}

@@ -105,13 +105,60 @@
   }
 
   // ═══════════════════════════════════════════
+  // 🛠️ sec-room 보장 (없으면 생성, 비어있으면 채움)
+  // ═══════════════════════════════════════════
+  function ensureSecRoom() {
+    let sec = document.getElementById('sec-room');
+
+    if (!sec) {
+      // sec-room 자체가 없음 → 생성
+      const chalPage = document.getElementById('page-chal')
+        || document.getElementById('page-challenge')
+        || document.querySelector('.page[id*="chal"]');
+      if (!chalPage) return null;
+      sec = document.createElement('div');
+      sec.id = 'sec-room';
+      sec.style.display = 'none';
+      chalPage.appendChild(sec);
+    }
+
+    // 비어있으면 기본 방 챌린지 UI 복구
+    if (sec.children.length === 0 || !document.getElementById('myRoomList')) {
+      // 기존 자식들 보존 후 재구성
+      sec.innerHTML = `
+        <div class="payback-info" style="margin:12px"></div>
+
+        <div class="sec" style="margin-top:12px"><div class="sec-t">👥 친구·동료와 함께</div></div>
+        <div style="margin:0 12px 12px">
+          <button class="btn btn-b" style="width:100%;padding:14px;font-size:14px" onclick="openCreateRoom()">
+            ➕ 새 방 만들기
+          </button>
+        </div>
+
+        <div class="sec"><div class="sec-t">📌 내가 참여중인 방</div></div>
+        <div id="myRoomList" style="margin:0 12px"></div>
+
+        <div class="sec" style="margin-top:12px"><div class="sec-t">🌍 공개된 방</div></div>
+        <div id="pubRoomList" style="margin:0 12px"></div>
+
+        <div class="sec" style="margin-top:12px"><div class="sec-t">🔑 코드로 입장</div></div>
+        <div style="margin:0 12px 12px;display:flex;gap:6px">
+          <input class="inp" id="codeInp" placeholder="방 코드 입력 (6자리)" style="flex:1;text-transform:uppercase"/>
+          <button class="btn btn-g" onclick="joinByCode()">입장</button>
+        </div>
+      `;
+    }
+
+    return sec;
+  }
+
+  // ═══════════════════════════════════════════
   // 🧹 "준비중" 가림 제거
   // ═══════════════════════════════════════════
   function clearPreparingOverlay() {
     // sec-room 강제 표시
     const sec = document.getElementById('sec-room');
     if (sec) {
-      sec.style.removeProperty('display');
       sec.style.removeProperty('opacity');
       sec.style.removeProperty('filter');
       sec.style.removeProperty('pointer-events');
@@ -123,6 +170,8 @@
     if (chalPage) {
       chalPage.querySelectorAll('div, p, span, h2, h3').forEach(el => {
         if (el.dataset.dcCleared) return;
+        // dc-official-section 안의 "준비중"은 무시 (오탐 방지)
+        if (el.closest('#dc-official-section')) return;
         const text = (el.textContent || '').trim();
         if (text.length < 80 && /^[\s🚧⏳]*준비\s*중|coming\s*soon|업데이트\s*예정[\s.…]*$/i.test(text)) {
           el.dataset.dcCleared = 'true';
@@ -136,7 +185,7 @@
   // 📝 공식 기부형 섹션 주입 (sec-room 상단)
   // ═══════════════════════════════════════════
   function injectDonationSection() {
-    const secRoom = document.getElementById('sec-room');
+    const secRoom = ensureSecRoom();
     if (!secRoom) return;
     if (document.getElementById('dc-official-section')) return;
 
@@ -421,15 +470,56 @@
     };
   }
 
-  // 챌린지 탭 클릭 시 재시도
-  if (window.goSec) {
-    const orig = window.goSec;
-    window.goSec = function(...args) {
-      const r = orig.apply(this, args);
-      setTimeout(reapply, 50);
-      return r;
-    };
+  // 챌린지 탭 클릭 시 — 방 챌린지를 강제로 살림
+  const _origGoSec = window.goSec;
+  window.goSec = function(name) {
+    // 1) 원본 goSec 시도 (있으면)
+    if (_origGoSec) {
+      try { _origGoSec(name); } catch(e) {}
+    }
+
+    // 2) 모든 sec-* 숨김
+    document.querySelectorAll('[id^="sec-"]').forEach(s => {
+      s.style.display = 'none';
+    });
+
+    // 3) 선택된 탭 보장
+    if (name === 'room') {
+      const sec = ensureSecRoom();
+      if (sec) {
+        sec.style.setProperty('display', 'block', 'important');
+        clearPreparingOverlay();
+        injectDonationSection();
+        // 방 데이터 로드
+        setTimeout(() => {
+          window.loadMyRooms?.();
+          window.loadPubRooms?.();
+          loadMyDonationChallenges();
+        }, 100);
+      }
+    } else {
+      const sec = document.getElementById('sec-' + name);
+      if (sec) sec.style.display = 'block';
+    }
+
+    // 4) 탭 버튼 active 상태
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + name)?.classList.add('active');
+  };
+
+  // 탭 버튼 직접 클릭 리스너 (백업)
+  function bindTabRoomClick() {
+    const tabRoom = document.getElementById('tab-room');
+    if (!tabRoom || tabRoom.dataset.dcBound) return;
+    tabRoom.dataset.dcBound = 'true';
+    tabRoom.addEventListener('click', (e) => {
+      // onclick의 goSec과 충돌 방지: 약간 딜레이
+      setTimeout(() => window.goSec('room'), 10);
+    });
   }
+  setInterval(bindTabRoomClick, 1500);
+  setTimeout(bindTabRoomClick, 100);
+  setTimeout(bindTabRoomClick, 1000);
 
   // MutationObserver
   if (typeof MutationObserver !== 'undefined') {

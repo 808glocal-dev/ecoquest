@@ -1,19 +1,44 @@
 /* ================================================================
-   EcoQuest – eco_story_card_v2.js  v2-FORCE-3 (전체통합 인스타피드)
+   EcoQuest – eco_story_card_v2.js  v2-FORCE-4 (모바일 그리드 차단판)
    ----------------------------------------------------------------
-   - "전체" 카테고리에서 글/사진 인증 모두 시간순으로 1열 인스타식 카드
-   - 글 없는 사진 인증도 헤더+사진+좋아요로 표시 → 댓글 patch가 자동으로 댓글 버튼 추가
-   - 모바일/PC 100% 동일 디자인
-   - 카테고리(책/영화/글/제품매장)는 해당 미션만 필터
-   - "사진만" 카테고리는 v3 그리드 그대로 유지
+   - 모든 카테고리(전체/책/영화/글/사진 전부)를 1열 인스타식으로 강제
+   - #feedList의 그리드 CSS 강제 무효화 (display:block !important)
+   - 글 없는 사진 인증도 좋아요/댓글 동일 동작
+   - PWA Service Worker 자동 갱신 시도
    ================================================================ */
 (function () {
   'use strict';
 
-  console.log('[eco_story_card v2-FORCE-3] 🚀 시작 - 전체 시간순 인스타피드');
+  console.log('[eco_story_card v2-FORCE-4] 🚀 시작 - 그리드 차단 + 1열 강제');
 
-  /* ─── CSS (모바일/PC 동일, !important 강제) ─── */
+  /* ─── PWA SW 자동 갱신 (옛 코드 캐시 깨기) ─── */
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(regs => {
+      regs.forEach(reg => reg.update().catch(() => {}));
+    }).catch(() => {});
+  }
+
+  /* ─── CSS - 그리드 강제 차단 ─── */
   const css = `
+    /* feedList 그리드 강제 무효화 (가장 중요!) */
+    #feedList,
+    .feedList,
+    .feed-list {
+      display: block !important;
+      grid-template-columns: none !important;
+      grid-template-rows: none !important;
+      gap: 0 !important;
+      column-count: 1 !important;
+    }
+    #feedList > *,
+    .feedList > *,
+    .feed-list > * {
+      width: auto !important;
+      max-width: 100% !important;
+      grid-column: auto !important;
+    }
+
+    /* 카드 컨테이너 */
     .ehStoryCard {
       background: #fff !important;
       border-radius: 14px !important;
@@ -136,7 +161,7 @@
     if (btn)  btn.style.display = 'none';
   };
 
-  /* ─── 카드 렌더링 (글 없어도 OK) ─── */
+  /* ─── 인스타식 카드 렌더링 (글 없어도 OK) ─── */
   function renderInstaCard(v) {
     const { title, body } = splitTitleBody(v.comment || '');
     const time = window.timeAgo ? window.timeAgo(v.createdAt?.seconds) : '';
@@ -174,7 +199,7 @@
       </div>`;
   }
 
-  /* ─── 카테고리 필터 ─── */
+  /* ─── 카테고리 필터 (사진 카테고리도 1열로) ─── */
   function filterByCategory(items, cat) {
     if (cat === 'all' || !cat) return items.slice();
     if (cat === 'photo') return items.filter(v => v.thumb);
@@ -188,7 +213,7 @@
     });
   }
 
-  /* ─── 통합 렌더링 (전체 시간순 + 글 유무 무관) ─── */
+  /* ─── 통합 렌더링 (모든 카테고리 1열 강제) ─── */
   let _isRerendering = false;
   function rerenderToInsta() {
     if (_isRerendering) return;
@@ -202,40 +227,36 @@
 
       const cat = window._ehStoryCurCat || 'all';
 
-      // "사진만" 카테고리는 v3 그리드 그대로 유지 (사용자가 따로 사진만 보고 싶을 때)
-      if (cat === 'photo') return;
-
-      // 카테고리 필터
+      // 모든 카테고리(사진 포함)를 1열 인스타식으로 강제
       const filtered = filterByCategory(all, cat);
 
-      // 시간순 정렬 (최신 먼저)
       filtered.sort((a, b) => {
         const tA = a.createdAt?.seconds || 0;
         const tB = b.createdAt?.seconds || 0;
         return tB - tA;
       });
 
-      // 빈 상태 처리
       if (!filtered.length) {
         feedList.querySelectorAll('.ehStoryCard').forEach(c => c.remove());
         return;
       }
 
-      // 새 카드 HTML 생성
       const newHTML = filtered.slice(0, 30).map(renderInstaCard).join('');
       const tempDiv = document.createElement('div');
       tempDiv.innerHTML = newHTML;
       const newCards = [...tempDiv.children];
 
-      // 옛 카드(.ehStoryCard) 제거 후 새 카드 삽입
-      const oldCards = feedList.querySelectorAll('.ehStoryCard');
+      // 옛 카드(.ehStoryCard 외에도 모든 카드 클래스) 제거
+      const oldCards = feedList.querySelectorAll(
+        '.ehStoryCard, .ehPhotoCard, .ehSCard, .ehFeedCard, .feed-card, .ehFeedItem, [data-feed-item]'
+      );
+
       if (oldCards.length) {
         const firstCard = oldCards[0];
         const parent = firstCard.parentNode;
         newCards.forEach(c => parent.insertBefore(c, firstCard));
         oldCards.forEach(c => c.remove());
       } else {
-        // 옛 카드 없으면 chip 다음에 삽입
         const chips = feedList.querySelector('.ehSChips, .ehSecHead');
         if (chips) {
           newCards.reverse().forEach(c => chips.insertAdjacentElement('afterend', c));
@@ -286,5 +307,5 @@
     }
   }, true);
 
-  console.log('[eco_story_card v2-FORCE-3] ✅ 통합 인스타피드 적용 완료');
+  console.log('[eco_story_card v2-FORCE-4] ✅ 그리드 차단 + 1열 인스타피드 적용');
 })();

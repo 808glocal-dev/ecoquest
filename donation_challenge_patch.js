@@ -54,36 +54,50 @@
     if (!paybackBox || paybackBox.dataset.donationApplied) return;
     paybackBox.dataset.donationApplied = 'true';
 
-    paybackBox.style.cssText = 'margin:12px;background:linear-gradient(135deg,#f0fbf4,#e8f5e9);border-radius:14px;padding:14px;border:1.5px solid var(--g1)';
+    paybackBox.style.cssText = 'margin:12px;background:linear-gradient(135deg,#fffbf0,#fff8e1);border-radius:14px;padding:14px;border:1.5px solid #F39C12';
     paybackBox.innerHTML = `
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
-        <span style="font-size:20px">🌳</span>
-        <div style="font-size:14px;font-weight:900;color:var(--g2)">기부형 챌린지 페이백 구조</div>
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+        <span style="font-size:22px">🎁</span>
+        <div style="font-size:15px;font-weight:900;color:#8B5E04">미션 성공하면 받는 돈</div>
       </div>
-      <div style="font-size:12px;color:#3d4f45;line-height:1.6;margin-bottom:12px">
-        실패해도 지구가 받아요. 성공하면 추가 보너스까지!
+      <div style="font-size:13px;color:#8B5E04;line-height:1.5;margin-bottom:12px;font-weight:700">
+        참가비 환급 + 보너스 받기! 🌟
       </div>
 
+      <!-- 메인 보상 박스 (강조) -->
+      <div style="background:#fff;border-radius:12px;padding:12px;margin-bottom:10px;border:2px solid #F39C12;box-shadow:0 2px 6px rgba(243,156,18,0.15)">
+        <div style="font-size:11px;font-weight:700;color:#8B5E04;margin-bottom:8px">💡 예시 — 1만원 걸고 100% 성공한 경우</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:13px">
+          <span style="color:var(--sub)">참가비 환급</span>
+          <span style="font-weight:900;color:var(--txt)">10,000원</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:13px;border-top:1px solid #fff3cd">
+          <span style="color:var(--sub)">🎁 보너스 추가</span>
+          <span style="font-weight:900;color:#F39C12">+ 1,000~3,000원</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0 4px;font-size:14px;border-top:2px solid #F39C12;margin-top:4px">
+          <span style="font-weight:700;color:#8B5E04">총 받는 돈</span>
+          <span style="font-weight:900;color:#F39C12;font-size:16px">≈ 11,000~13,000원 ✨</span>
+        </div>
+      </div>
+
+      <!-- 달성률별 환급 -->
       <div style="background:#fff;border-radius:10px;padding:10px 12px;margin-bottom:8px;border:1px solid var(--bdr)">
-        <div style="font-size:11px;font-weight:700;color:var(--g2);margin-bottom:6px">✅ 성공 시 환급</div>
-        <div style="display:flex;justify-content:space-between;padding:3px 0;font-size:12px"><span style="color:var(--sub)">100% 달성</span><span style="font-weight:700;color:var(--g2)">참가비 환급 + 🎁 보너스</span></div>
-        <div style="display:flex;justify-content:space-between;padding:3px 0;font-size:12px;border-top:1px solid #f0f0f0"><span style="color:var(--sub)">85% 이상</span><span style="font-weight:700;color:var(--txt)">참가비 100% 환급</span></div>
-        <div style="display:flex;justify-content:space-between;padding:3px 0;font-size:12px;border-top:1px solid #f0f0f0"><span style="color:var(--sub)">85% 미만</span><span style="font-weight:700;color:var(--txt)">달성률만큼 부분 환급</span></div>
+        <div style="font-size:11px;font-weight:700;color:var(--g2);margin-bottom:6px">📊 달성률별 환급</div>
+        <div style="display:flex;justify-content:space-between;padding:3px 0;font-size:12px"><span style="color:var(--sub)">100% 달성</span><span style="font-weight:700;color:#F39C12">환급 + 🎁 보너스</span></div>
+        <div style="display:flex;justify-content:space-between;padding:3px 0;font-size:12px;border-top:1px solid #f0f0f0"><span style="color:var(--sub)">85% 이상</span><span style="font-weight:700;color:var(--g2)">100% 환급</span></div>
+        <div style="display:flex;justify-content:space-between;padding:3px 0;font-size:12px;border-top:1px solid #f0f0f0"><span style="color:var(--sub)">85% 미만</span><span style="font-weight:700;color:var(--txt)">달성률만큼 환급</span></div>
       </div>
 
-      <div style="background:#fff;border-radius:10px;padding:10px 12px;margin-bottom:8px;border:1px solid var(--bdr)">
-        <div style="font-size:11px;font-weight:700;color:#8B5E04;margin-bottom:6px">🌍 실패자 참가비 흐름</div>
-        <div style="display:flex;justify-content:space-between;padding:3px 0;font-size:12px"><span style="color:var(--sub)">🎁 30%</span><span style="font-weight:700;color:var(--txt)">성공자 보너스 풀</span></div>
-        <div style="display:flex;justify-content:space-between;padding:3px 0;font-size:12px;border-top:1px solid #f0f0f0"><span style="color:var(--sub)">🌳 65%</span><span style="font-weight:700;color:var(--g2)">환경 캠페인 기금</span></div>
-        <div style="display:flex;justify-content:space-between;padding:3px 0;font-size:12px;border-top:1px solid #f0f0f0"><span style="color:var(--sub)">⚙️ 5%</span><span style="font-weight:700;color:var(--txt)">앱 운영비</span></div>
-      </div>
-
+      <!-- 실패 시 (보조 메시지) -->
       <div style="background:#f0fbf4;border-radius:10px;padding:10px;font-size:11px;color:var(--g2);line-height:1.7">
-        💚 <b>캠페인 기금 사용처</b><br/>
-        · 제로웨이스트 매장 협업 (알맹상점·지구별가게 등)<br/>
-        · 산림복원·나무심기 사업<br/>
-        · 환경 NGO 후원 (환경운동연합·녹색연합)<br/>
-        · 분기별 사용 내역 투명 공개 📊
+        🌳 <b>못 채운 만큼은 의미있게</b><br/>
+        받지 못한 참가비는 환경 캠페인에 쓰여요<br/>
+        <span style="color:var(--sub);font-weight:500">제로웨이스트 매장 협업 · 나무심기 · 환경 NGO 후원</span><br/>
+        <span style="color:var(--sub);font-weight:500">📊 분기별 사용 내역 투명 공개</span>
+        <div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--bdr);font-size:10px;color:var(--sub);font-weight:600">
+          💡 앱 운영비는 1% 미만 — 99% 이상이 환경에
+        </div>
       </div>
     `;
   }

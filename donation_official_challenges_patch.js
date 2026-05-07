@@ -123,8 +123,7 @@
     }
 
     // 비어있으면 기본 방 챌린지 UI 복구
-    if (sec.children.length === 0 || !document.getElementById('myRoomList')) {
-      // 기존 자식들 보존 후 재구성
+    if (sec.children.length === 0 || !document.getElementById('codeInp')) {
       sec.innerHTML = `
         <div class="payback-info" style="margin:12px"></div>
 
@@ -134,12 +133,6 @@
             ➕ 새 방 만들기
           </button>
         </div>
-
-        <div class="sec"><div class="sec-t">📌 내가 참여중인 방</div></div>
-        <div id="myRoomList" style="margin:0 12px"></div>
-
-        <div class="sec" style="margin-top:12px"><div class="sec-t">🌍 공개된 방</div></div>
-        <div id="pubRoomList" style="margin:0 12px"></div>
 
         <div class="sec" style="margin-top:12px"><div class="sec-t">🔑 코드로 입장</div></div>
         <div style="margin:0 12px 12px;display:flex;gap:6px">
@@ -153,7 +146,7 @@
   }
 
   // ═══════════════════════════════════════════
-  // 🧹 "준비중" 가림 제거
+  // 🧹 "준비중" 가림 제거 + 내방/공개방 섹션 숨김
   // ═══════════════════════════════════════════
   function clearPreparingOverlay() {
     // sec-room 강제 표시
@@ -179,6 +172,41 @@
         }
       });
     }
+
+    // 내 방·공개 방 리스트 숨김 (기존 DOM에 있을 경우)
+    hideRoomLists();
+  }
+
+  function hideRoomLists() {
+    // myRoomList / pubRoomList 자체 숨김
+    ['myRoomList', 'pubRoomList'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el && !el.dataset.dcHidden) {
+        el.dataset.dcHidden = 'true';
+        el.style.display = 'none';
+        // 직전 형제(.sec 헤더 "내가 참여중인 방", "공개된 방")도 같이 숨김
+        const prev = el.previousElementSibling;
+        if (prev && prev.classList.contains('sec')) {
+          prev.style.display = 'none';
+        }
+      }
+    });
+
+    // 텍스트 기반으로도 한번 더 검색 (안전망)
+    document.querySelectorAll('.sec .sec-t, .sec-t').forEach(t => {
+      if (t.dataset.dcHidden) return;
+      const text = (t.textContent || '').trim();
+      if (/내가\s*참여|공개된?\s*방/.test(text)) {
+        t.dataset.dcHidden = 'true';
+        const wrap = t.closest('.sec');
+        if (wrap) wrap.style.display = 'none';
+        // 다음 형제(리스트 div)도 숨김
+        let nxt = (wrap || t).nextElementSibling;
+        if (nxt && (nxt.id === 'myRoomList' || nxt.id === 'pubRoomList' || nxt.children.length > 0)) {
+          nxt.style.display = 'none';
+        }
+      }
+    });
   }
 
   // ═══════════════════════════════════════════
@@ -490,16 +518,20 @@
         sec.style.setProperty('display', 'block', 'important');
         clearPreparingOverlay();
         injectDonationSection();
-        // 방 데이터 로드
+        // 공식 기부형 섹션 표시
+        const dcSec = document.getElementById('dc-official-section');
+        if (dcSec) dcSec.style.display = '';
+        // 데이터 로드
         setTimeout(() => {
-          window.loadMyRooms?.();
-          window.loadPubRooms?.();
           loadMyDonationChallenges();
         }, 100);
       }
     } else {
       const sec = document.getElementById('sec-' + name);
       if (sec) sec.style.display = 'block';
+      // 공식 기부형 섹션도 숨김 (방 챌린지 탭이 아닐 때)
+      const dcSec = document.getElementById('dc-official-section');
+      if (dcSec) dcSec.style.display = 'none';
     }
 
     // 4) 탭 버튼 active 상태

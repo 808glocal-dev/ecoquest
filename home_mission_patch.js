@@ -1,122 +1,111 @@
 /* ================================================================
-   EcoQuest – home_mission_patch.js  v3
-   1. 홈 "🏢 소속 기업/단체" CSS 강제 숨김
-   2. "⚡ 오늘의 미션" 섹션(missionScroll) 숨김 — 챌린지 카드와 통합
-   3. "참여 중인 챌린지" 카드 재설계: 카드 안에 "📸 오늘 인증하기" 버튼
-      → 미션과 챌린지가 한 카드로 통합. 누르는 곳 명확.
+   EcoQuest – home_mission_patch.js  v4
+   1. 홈 "🏢 소속 기업/단체" 강제 숨김
+   2. 홈 미션 + 챌린지 통합 카드 (인증 버튼 내장)
+   3. 챌린지 탭 카테고리 필터 7개 (chip)  ← v4 신규
    4. 카드 hover tooltip
    5. 환경 콘텐츠 챌린지 5종 추가 (m41~m45 / id 36~40)
    ================================================================ */
 (function () {
   'use strict';
 
-  /* ─── CSS injection ─── */
+  /* ─── CSS ─── */
   const css = `
-    /* 홈에서 기업/단체 섹션 강제 숨김 (별도 '소속' 탭에 있음) */
+    /* 홈 기업 섹션 강제 숨김 */
     #page-home #companySec,
     #page-home #companyBox,
     #page-home #companyPageBox,
     #page-home #companySection,
     #page-home #homeCompanySection { display: none !important; }
 
-    /* 기존 "⚡ 오늘의 미션" 섹션 헤더+스크롤 숨김 (챌린지 카드와 통합되었으므로) */
+    /* 기존 "⚡ 오늘의 미션" 섹션 숨김 */
     #page-home #missionScroll,
     #page-home .sec.eh-old-mission-sec { display: none !important; }
 
     /* 통합 챌린지 카드 */
     .ehChalCard {
-      background: #fff;
-      border-radius: 16px;
-      padding: 14px;
-      margin: 0 12px 10px;
-      border: 1.5px solid var(--g1);
-      box-shadow: 0 2px 10px rgba(46,204,113,.12);
+      background:#fff; border-radius:16px; padding:14px;
+      margin:0 12px 10px; border:1.5px solid var(--g1);
+      box-shadow:0 2px 10px rgba(46,204,113,.12);
     }
-    .ehChalCard.done { border-color: #a8f0c6; background: #f8fdf9; }
-
-    .ehChalHead {
-      display: flex; align-items: center; gap: 12px; margin-bottom: 10px;
-    }
-    .ehChalEmoji { font-size: 36px; line-height: 1; }
-    .ehChalInfo { flex: 1; min-width: 0; }
+    .ehChalCard.done { border-color:#a8f0c6; background:#f8fdf9; }
+    .ehChalHead { display:flex; align-items:center; gap:12px; margin-bottom:10px; }
+    .ehChalEmoji { font-size:36px; line-height:1; }
+    .ehChalInfo { flex:1; min-width:0; }
     .ehChalTitle {
-      font-size: 14px; font-weight: 900; color: var(--txt);
-      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      font-size:14px; font-weight:900; color:var(--txt);
+      overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
     }
-    .ehChalMeta { font-size: 11px; color: var(--sub); margin-top: 2px; }
-    .ehChalCount {
-      text-align: right; flex-shrink: 0;
-    }
-    .ehChalCountN { font-size: 14px; font-weight: 900; color: var(--g2); }
-    .ehChalCountP { font-size: 10px; color: var(--sub); }
-
+    .ehChalMeta { font-size:11px; color:var(--sub); margin-top:2px; }
+    .ehChalCount { text-align:right; flex-shrink:0; }
+    .ehChalCountN { font-size:14px; font-weight:900; color:var(--g2); }
+    .ehChalCountP { font-size:10px; color:var(--sub); }
     .ehBar {
-      background: #e0f2e7; border-radius: 6px; height: 6px;
-      overflow: hidden; margin-bottom: 12px;
+      background:#e0f2e7; border-radius:6px; height:6px;
+      overflow:hidden; margin-bottom:12px;
     }
     .ehBarFill {
-      height: 100%; border-radius: 6px;
-      background: linear-gradient(90deg, var(--g1), var(--acc));
-      transition: width .5s;
+      height:100%; border-radius:6px;
+      background:linear-gradient(90deg,var(--g1),var(--acc));
+      transition:width .5s;
     }
-
     .ehVerifyBtn {
-      width: 100%;
-      background: linear-gradient(135deg, var(--g1), var(--g2));
-      color: #fff; border: none; border-radius: 12px;
-      padding: 14px; font-size: 14px; font-weight: 900;
-      cursor: pointer; font-family: inherit;
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-      box-shadow: 0 4px 14px rgba(46,204,113,.35);
-      animation: ehVerifPulse 1.8s ease-in-out infinite;
-      transition: transform .1s;
+      width:100%; background:linear-gradient(135deg,var(--g1),var(--g2));
+      color:#fff; border:none; border-radius:12px;
+      padding:14px; font-size:14px; font-weight:900;
+      cursor:pointer; font-family:inherit;
+      display:flex; align-items:center; justify-content:center; gap:8px;
+      box-shadow:0 4px 14px rgba(46,204,113,.35);
+      animation:ehVerifPulse 1.8s ease-in-out infinite;
+      transition:transform .1s;
     }
-    .ehVerifyBtn:active { transform: scale(.97); }
-    .ehVerifyBtn .ehSub {
-      font-size: 11px; opacity: .9; font-weight: 700;
-    }
+    .ehVerifyBtn:active { transform:scale(.97); }
+    .ehVerifyBtn .ehSub { font-size:11px; opacity:.9; font-weight:700; }
     @keyframes ehVerifPulse {
-      0%, 100% { box-shadow: 0 4px 14px rgba(46,204,113,.35); }
-      50%      { box-shadow: 0 6px 22px rgba(46,204,113,.55); }
+      0%,100% { box-shadow:0 4px 14px rgba(46,204,113,.35); }
+      50%     { box-shadow:0 6px 22px rgba(46,204,113,.55); }
     }
-
     .ehDoneBox {
-      background: #f0fbf4;
-      border: 1.5px solid var(--g1);
-      border-radius: 12px;
-      padding: 14px;
-      text-align: center;
-      font-size: 13px;
-      font-weight: 800;
-      color: var(--g2);
+      background:#f0fbf4; border:1.5px solid var(--g1);
+      border-radius:12px; padding:14px; text-align:center;
+      font-size:13px; font-weight:800; color:var(--g2);
     }
-    .ehDoneBox .ehSm { font-size: 11px; color: var(--sub); font-weight: 600; margin-top: 2px; }
-
+    .ehDoneBox .ehSm { font-size:11px; color:var(--sub); font-weight:600; margin-top:2px; }
     .ehCancel {
-      background: none; color: var(--sub);
-      border: none; font-size: 11px;
-      cursor: pointer; font-family: inherit;
-      text-decoration: underline;
-      padding: 6px 0;
-      margin-top: 4px;
-      display: block; margin-left: auto;
+      background:none; color:var(--sub); border:none; font-size:11px;
+      cursor:pointer; font-family:inherit; text-decoration:underline;
+      padding:6px 0; margin-top:4px; display:block; margin-left:auto;
     }
-    .ehCancel:hover { color: var(--red); }
-
+    .ehCancel:hover { color:var(--red); }
     .ehEmpty {
-      background: #fff; border-radius: 14px;
-      padding: 20px 16px; margin: 0 12px 10px;
-      border: 1.5px dashed var(--bdr); text-align: center;
+      background:#fff; border-radius:14px;
+      padding:20px 16px; margin:0 12px 10px;
+      border:1.5px dashed var(--bdr); text-align:center;
     }
-    .ehEmpty .ehEmojiBig { font-size: 36px; margin-bottom: 10px; }
-    .ehEmpty .ehTxt { font-size: 14px; font-weight: 800; color: var(--txt); margin-bottom: 4px; }
-    .ehEmpty .ehSub2 { font-size: 12px; color: var(--sub); margin-bottom: 14px; }
+    .ehEmpty .ehEmojiBig { font-size:36px; margin-bottom:10px; }
+    .ehEmpty .ehTxt { font-size:14px; font-weight:800; color:var(--txt); margin-bottom:4px; }
+    .ehEmpty .ehSub2 { font-size:12px; color:var(--sub); margin-bottom:14px; }
     .ehEmpty .ehGoBtn {
-      background: linear-gradient(135deg, var(--g1), var(--g2));
-      color: #fff; border: none; border-radius: 12px;
-      padding: 12px 24px; font-size: 14px; font-weight: 900;
-      cursor: pointer; font-family: inherit;
+      background:linear-gradient(135deg,var(--g1),var(--g2));
+      color:#fff; border:none; border-radius:12px;
+      padding:12px 24px; font-size:14px; font-weight:900;
+      cursor:pointer; font-family:inherit;
     }
+
+    /* ─── 챌린지 카테고리 chip ─── */
+    #ehCatChips {
+      display:flex; gap:6px; padding:4px 12px 10px;
+      overflow-x:auto; -webkit-overflow-scrolling:touch;
+    }
+    #ehCatChips::-webkit-scrollbar { display:none; }
+    .ehChip {
+      flex-shrink:0; background:#fff; border:1.5px solid var(--bdr);
+      color:var(--sub); padding:7px 12px; border-radius:20px;
+      font-size:12px; font-weight:700; cursor:pointer; font-family:inherit;
+      white-space:nowrap; transition:all .15s;
+    }
+    .ehChip:hover { border-color:var(--g1); color:var(--g2); }
+    .ehChip.on { background:var(--g1); color:#fff; border-color:var(--g1); }
   `;
   if (!document.getElementById('home_mission_patch_style')) {
     const style = document.createElement('style');
@@ -125,7 +114,39 @@
     (document.head || document.documentElement).appendChild(style);
   }
 
-  /* ─── 1. 홈 기업 섹션 JS 제거 (CSS 보조) ─── */
+  /* ─── 카테고리 정의 ─── */
+  const CATEGORIES = [
+    {id:'all',       label:'전체',         icon:'🌍'},
+    {id:'food',      label:'먹거리',       icon:'🍽️'},
+    {id:'transport', label:'이동',         icon:'🚌'},
+    {id:'waste',     label:'제로웨이스트', icon:'♻️'},
+    {id:'energy',    label:'에너지',       icon:'💡'},
+    {id:'nature',    label:'자연',         icon:'🌿'},
+    {id:'learn',     label:'학습·생활',    icon:'📚'},
+    {id:'eco10',     label:'생태십계명',   icon:'✝️'},
+  ];
+
+  const CAT_MAP = {
+    // 먹거리
+    3:'food', 10:'food', 12:'food',
+    // 이동
+    2:'transport', 5:'transport', 17:'transport',
+    // 제로웨이스트
+    1:'waste', 4:'waste', 7:'waste', 8:'waste', 11:'waste',
+    13:'waste', 16:'waste', 19:'waste', 20:'waste', 25:'waste',
+    // 에너지
+    9:'energy', 15:'energy', 23:'energy',
+    // 자연
+    6:'nature', 14:'nature', 21:'nature', 22:'nature',
+    // 학습·생활
+    18:'learn', 24:'learn', 36:'learn', 37:'learn', 38:'learn', 39:'learn', 40:'learn',
+    // 생태십계명
+    26:'eco10', 27:'eco10', 28:'eco10', 29:'eco10', 30:'eco10',
+    31:'eco10', 32:'eco10', 33:'eco10', 34:'eco10', 35:'eco10',
+  };
+  window._ehCurCat = window._ehCurCat || 'all';
+
+  /* ─── 1. 홈 기업 섹션 JS 제거 ─── */
   function removeCompanyFromHome() {
     const home = document.getElementById('page-home');
     if (!home) return;
@@ -148,7 +169,7 @@
     });
   }
 
-  /* ─── 2. "⚡ 오늘의 미션" sec 헤더에 클래스 추가해서 CSS로 숨김 ─── */
+  /* ─── 2. "⚡ 오늘의 미션" sec 헤더 숨김 ─── */
   function hideOldMissionSec() {
     const ms = document.getElementById('missionScroll');
     if (!ms) return;
@@ -158,7 +179,7 @@
     }
   }
 
-  /* ─── 3. 통합 챌린지 카드 재설계 (renderHomeChalls 오버라이드) ─── */
+  /* ─── 3. 통합 챌린지 카드 ─── */
   function startMissionFromChal(challengeId) {
     if (!window.ME) { window.toast && window.toast('로그인이 필요해요!'); return; }
     if (typeof MISSIONS === 'undefined' || typeof CHALLENGES === 'undefined') return;
@@ -174,7 +195,6 @@
     const w = document.getElementById('homeChallList');
     if (!w) return;
     if (typeof CHALLENGES === 'undefined' || typeof MISSIONS === 'undefined') return;
-
     const validIds = CHALLENGES.map(c => c.missionId);
     const active = (window.UDATA?.activeChallenges || []).filter(ac => validIds.includes(ac.missionId));
 
@@ -190,7 +210,6 @@
     }
 
     const today = new Date().toISOString().split('T')[0];
-
     w.innerHTML = active.map(ac => {
       const chal = CHALLENGES.find(c => c.id === ac.challengeId);
       const m = MISSIONS.find(x => x.id === ac.missionId);
@@ -231,16 +250,90 @@
     }).join('');
   }
 
-  // 원본 renderHomeChalls를 우리 버전으로 교체
-  function installRenderOverride() {
+  function installRenderHomeOverride() {
     if (window._ehRenderHomeChalls_installed) return;
     window.renderHomeChalls = ehRenderHomeChalls;
     window._ehRenderHomeChalls_installed = true;
-    // 즉시 한 번 그려보기
     try { ehRenderHomeChalls(); } catch(e){}
   }
 
-  /* ─── 4. tooltip ─── */
+  /* ─── 4. 챌린지 탭 카테고리 chip ─── */
+  function ensureCategoryChips() {
+    const sec = document.getElementById('sec-official');
+    if (!sec || document.getElementById('ehCatChips')) return;
+
+    const chipsRow = document.createElement('div');
+    chipsRow.id = 'ehCatChips';
+    chipsRow.innerHTML = CATEGORIES.map(c => `
+      <button data-cat="${c.id}" class="ehChip${c.id === window._ehCurCat ? ' on' : ''}">
+        ${c.icon} ${c.label}
+      </button>
+    `).join('');
+
+    const secHdr = sec.querySelector('.sec');
+    if (secHdr && secHdr.nextSibling) sec.insertBefore(chipsRow, secHdr.nextSibling);
+    else sec.insertBefore(chipsRow, sec.firstChild);
+
+    chipsRow.querySelectorAll('.ehChip').forEach(b => {
+      b.onclick = () => {
+        window._ehCurCat = b.dataset.cat;
+        chipsRow.querySelectorAll('.ehChip').forEach(x => x.classList.remove('on'));
+        b.classList.add('on');
+        if (typeof renderOfficialChallenges === 'function') renderOfficialChallenges();
+      };
+    });
+  }
+
+  function installRenderOfficialOverride() {
+    if (window._ehRenderOC_installed) return;
+    window.renderOfficialChallenges = async function () {
+      const grid = document.getElementById('officialGrid');
+      if (!grid || typeof CHALLENGES === 'undefined') return;
+
+      const cat = window._ehCurCat || 'all';
+      const filtered = cat === 'all'
+        ? CHALLENGES.slice()
+        : CHALLENGES.filter(c => CAT_MAP[c.id] === cat);
+
+      if (!filtered.length) {
+        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--sub);font-size:13px">이 카테고리에 챌린지가 없어요</div>';
+        return;
+      }
+
+      grid.innerHTML = filtered.map(c => `
+        <div class="cg-card" onclick="openChal(${c.id})">
+          <div class="cg-img">
+            ${c.emoji}
+            <span class="official-tag">공식챌린지</span>
+            <span class="cg-cnt" id="chal-cnt-${c.id}">👥 ${c.baseParticipants.toLocaleString()}명</span>
+            ${c.hot ? '<span class="hot-badge">HOT</span>' : ''}
+          </div>
+          <div class="cg-body">
+            <div class="cg-title">${c.title}</div>
+            <div class="cg-meta">${c.freqOptions?.[0]==="daily"?"매일":c.freqOptions?.[0]==="w1"?"주 1회":"주 3일~"} · AI인증</div>
+          </div>
+        </div>`).join('');
+
+      try {
+        if (window.FB?.getDoc) {
+          const snap = await window.FB.getDoc(window.FB.doc(window.FB.db, 'stats', 'challenges'));
+          if (snap.exists()) {
+            const counts = snap.data();
+            filtered.forEach(c => {
+              const el = document.getElementById(`chal-cnt-${c.id}`);
+              if (el) {
+                const total = counts[`c${c.id}`] || 0;
+                el.textContent = `👥 ${total.toLocaleString()}명`;
+              }
+            });
+          }
+        }
+      } catch(e) {}
+    };
+    window._ehRenderOC_installed = true;
+  }
+
+  /* ─── 5. tooltip ─── */
   function addTooltips() {
     document.querySelectorAll('.cg-card').forEach(card => {
       const t = card.querySelector('.cg-title')?.textContent.trim();
@@ -256,7 +349,7 @@
     });
   }
 
-  /* ─── 5. 환경 콘텐츠 챌린지 추가 ─── */
+  /* ─── 6. 환경 콘텐츠 챌린지 추가 ─── */
   const NEW_MISSIONS = [
     {id:"m41",emoji:"🎬",name:"환경 다큐 시청",point:100,co2:0.05,kw:"다큐멘터리, TV 화면, 영상"},
     {id:"m42",emoji:"🎥",name:"환경 영화 관람",point:100,co2:0.05,kw:"영화, 영화관, 티켓, 스크린"},
@@ -289,23 +382,28 @@
       if (typeof MISSIONS === 'undefined' || typeof CHALLENGES === 'undefined') return false;
       NEW_MISSIONS.forEach(m => { if (!MISSIONS.find(x => x.id === m.id)) MISSIONS.push(m); });
       NEW_CHALLENGES.forEach(c => { if (!CHALLENGES.find(x => x.id === c.id)) CHALLENGES.push(c); });
-      if (typeof renderOfficialChallenges === 'function') renderOfficialChallenges();
       _injected = true;
-      console.log('[home_mission_patch v3] ✅ 환경 콘텐츠 챌린지 5종 추가 + 카드 통합 완료');
+      console.log('[home_mission_patch v4] ✅ 통합 카드 + 카테고리 7개 + 콘텐츠 챌린지 5종');
       return true;
-    } catch (e) {
-      console.warn('[home_mission_patch v3] inject 실패:', e);
+    } catch(e) {
+      console.warn('[home_mission_patch v4] inject 실패', e);
       return false;
     }
   }
 
   /* ─── 실행 ─── */
   function run() {
-    try { removeCompanyFromHome(); } catch(e){}
-    try { hideOldMissionSec();    } catch(e){}
-    try { installRenderOverride();} catch(e){}
-    try { addTooltips();          } catch(e){}
-    try { injectChallenges();     } catch(e){}
+    try { removeCompanyFromHome();        } catch(e){}
+    try { hideOldMissionSec();            } catch(e){}
+    try { installRenderHomeOverride();    } catch(e){}
+    try { installRenderOfficialOverride();} catch(e){}
+    try { ensureCategoryChips();          } catch(e){}
+    try { addTooltips();                  } catch(e){}
+    try { injectChallenges();             } catch(e){}
+    // 카테고리 칩 + 콘텐츠 챌린지 적용 후 다시 그리기
+    if (typeof renderOfficialChallenges === 'function') {
+      try { renderOfficialChallenges(); } catch(e){}
+    }
   }
 
   if (document.readyState === 'loading') {
@@ -315,8 +413,7 @@
   }
   [800, 1500, 3000, 5000, 8000].forEach(t => setTimeout(run, t));
 
-  // 함수 후크 — 페이지 전환·렌더 후 자동 재적용
-  ['showApp','goPage','renderOfficialChallenges','renderTodayQuests','loadCompanySec','loadCompanyPage']
+  ['showApp','goPage','renderTodayQuests','loadCompanySec','loadCompanyPage']
     .forEach(fn => {
       if (typeof window[fn] !== 'function') return;
       const orig = window[fn];
@@ -327,19 +424,31 @@
       };
     });
 
-  // page-home 변경 감지 → 즉시 재정리
   function startObserver() {
     const home = document.getElementById('page-home');
-    if (!home || !window.MutationObserver) return;
-    let pending = false;
-    new MutationObserver(() => {
-      if (pending) return;
-      pending = true;
-      setTimeout(() => {
-        try { removeCompanyFromHome(); hideOldMissionSec(); addTooltips(); } catch(e){}
-        pending = false;
-      }, 150);
-    }).observe(home, { childList: true, subtree: true });
+    if (home && window.MutationObserver) {
+      let pending = false;
+      new MutationObserver(() => {
+        if (pending) return;
+        pending = true;
+        setTimeout(() => {
+          try { removeCompanyFromHome(); hideOldMissionSec(); addTooltips(); } catch(e){}
+          pending = false;
+        }, 150);
+      }).observe(home, { childList: true, subtree: true });
+    }
+    const chal = document.getElementById('page-chal');
+    if (chal && window.MutationObserver) {
+      let pending2 = false;
+      new MutationObserver(() => {
+        if (pending2) return;
+        pending2 = true;
+        setTimeout(() => {
+          try { ensureCategoryChips(); addTooltips(); } catch(e){}
+          pending2 = false;
+        }, 150);
+      }).observe(chal, { childList: true, subtree: true });
+    }
   }
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => setTimeout(startObserver, 500));

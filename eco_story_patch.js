@@ -351,6 +351,7 @@
 
   function renderPhotoCell(v) {
     const liked = (v.likes || []).includes(window.ME?.uid);
+    const cnt = (v.likes || []).length;
     return `
       <div onclick="openFeedDetail('${v.id}')" style="position:relative;aspect-ratio:1;background:#f0f0f0;cursor:pointer;border-radius:6px;overflow:hidden">
         ${v.thumb
@@ -361,7 +362,12 @@
             ${v.missionEmoji || ''} ${escapeHtml(v.missionName || '')}
           </div>
         </div>
-        ${(v.likes||[]).length ? `<div style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,.5);border-radius:6px;padding:1px 5px;font-size:9px;color:#fff">${liked?'❤️':'🤍'} ${(v.likes||[]).length}</div>` : ''}
+        <div data-like="${v.id}" onclick="event.stopPropagation();toggleLike('${v.id}')"
+             style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,.55);border-radius:11px;padding:2px 7px;font-size:10px;color:#fff;display:flex;align-items:center;gap:3px;cursor:pointer;font-weight:700"
+             title="좋아요">
+          <span class="ic" style="font-size:11px">${liked?'❤️':'🤍'}</span>
+          <span class="count">${cnt}</span>
+        </div>
       </div>`;
   }
 
@@ -450,6 +456,7 @@
 
     w.innerHTML = html;
     bindChipClicks(w);
+    console.log('[eco_story] 피드 그림:', { stories: stories.length, photos: photos.length, cat });
   }
   window.renderFeedGrid = ehRenderFeed;
   window._ehRenderFeed = ehRenderFeed;

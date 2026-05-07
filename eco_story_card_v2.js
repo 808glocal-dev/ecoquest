@@ -1,26 +1,26 @@
 /* ================================================================
-   EcoQuest – eco_story_card_v2.js  v2-FORCE-4 (모바일 그리드 차단판)
+   EcoQuest – eco_story_card_v2.js  v2-FORCE-5 (중복 그리드 제거판)
    ----------------------------------------------------------------
-   - 모든 카테고리(전체/책/영화/글/사진 전부)를 1열 인스타식으로 강제
-   - #feedList의 그리드 CSS 강제 무효화 (display:block !important)
-   - 글 없는 사진 인증도 좋아요/댓글 동일 동작
-   - PWA Service Worker 자동 갱신 시도
+   - 위에 뜨는 3x3 사진 그리드 자동 감지 + 숨김 (중복 제거)
+   - 모든 카테고리(전체/책/영화/글/사진) 1열 인스타식
+   - 글 없는 사진 인증도 좋아요/댓글 동일
+   - 모바일/PC 100% 동일
    ================================================================ */
 (function () {
   'use strict';
 
-  console.log('[eco_story_card v2-FORCE-4] 🚀 시작 - 그리드 차단 + 1열 강제');
+  console.log('[eco_story_card v2-FORCE-5] 🚀 시작 - 중복 그리드 제거 + 1열 인스타피드');
 
-  /* ─── PWA SW 자동 갱신 (옛 코드 캐시 깨기) ─── */
+  /* ─── PWA SW 자동 갱신 ─── */
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.getRegistrations().then(regs => {
       regs.forEach(reg => reg.update().catch(() => {}));
     }).catch(() => {});
   }
 
-  /* ─── CSS - 그리드 강제 차단 ─── */
+  /* ─── CSS ─── */
   const css = `
-    /* feedList 그리드 강제 무효화 (가장 중요!) */
+    /* feedList 그리드 강제 차단 */
     #feedList,
     .feedList,
     .feed-list {
@@ -124,7 +124,7 @@
     .ehSCExpandBtn:hover { color: var(--g1) !important; }
     .ehStoryCard .ehSCFoot { display: none !important; }
 
-    /* PC만 가운데 정렬 */
+    /* PC 가운데 정렬 */
     @media (min-width: 768px) {
       #feedList {
         max-width: 500px !important;
@@ -161,7 +161,7 @@
     if (btn)  btn.style.display = 'none';
   };
 
-  /* ─── 인스타식 카드 렌더링 (글 없어도 OK) ─── */
+  /* ─── 인스타식 카드 ─── */
   function renderInstaCard(v) {
     const { title, body } = splitTitleBody(v.comment || '');
     const time = window.timeAgo ? window.timeAgo(v.createdAt?.seconds) : '';
@@ -199,7 +199,7 @@
       </div>`;
   }
 
-  /* ─── 카테고리 필터 (사진 카테고리도 1열로) ─── */
+  /* ─── 카테고리 필터 ─── */
   function filterByCategory(items, cat) {
     if (cat === 'all' || !cat) return items.slice();
     if (cat === 'photo') return items.filter(v => v.thumb);
@@ -213,7 +213,7 @@
     });
   }
 
-  /* ─── 통합 렌더링 (모든 카테고리 1열 강제) ─── */
+  /* ─── 통합 렌더링 ─── */
   let _isRerendering = false;
   function rerenderToInsta() {
     if (_isRerendering) return;
@@ -226,8 +226,6 @@
       if (!all.length) return;
 
       const cat = window._ehStoryCurCat || 'all';
-
-      // 모든 카테고리(사진 포함)를 1열 인스타식으로 강제
       const filtered = filterByCategory(all, cat);
 
       filtered.sort((a, b) => {
@@ -246,7 +244,6 @@
       tempDiv.innerHTML = newHTML;
       const newCards = [...tempDiv.children];
 
-      // 옛 카드(.ehStoryCard 외에도 모든 카드 클래스) 제거
       const oldCards = feedList.querySelectorAll(
         '.ehStoryCard, .ehPhotoCard, .ehSCard, .ehFeedCard, .feed-card, .ehFeedItem, [data-feed-item]'
       );
@@ -264,11 +261,78 @@
           newCards.forEach(c => feedList.appendChild(c));
         }
       }
+
+      // 렌더링 후 중복 그리드 자동 감지/숨김
+      setTimeout(hideRedundantGrids, 50);
     } finally {
       _isRerendering = false;
     }
   }
   window._rerenderToInsta = rerenderToInsta;
+
+  /* ─── 중복 사진 그리드 자동 감지 + 숨김 ─── */
+  function hideRedundantGrids() {
+    const feedList = document.getElementById('feedList');
+    if (!feedList) return;
+
+    // 1. feedList 부모의 형제 중 그리드+이미지3개+이상 있는 영역 숨김
+    const parent = feedList.parentElement;
+    if (parent) {
+      [...parent.children].forEach(el => {
+        if (el === feedList) return;
+        if (el.dataset.v5Hidden === '1') return;
+        const cs = getComputedStyle(el);
+        const isGrid = cs.display === 'grid' || cs.display === 'inline-grid';
+        if (isGrid) {
+          const imgs = el.querySelectorAll('img');
+          if (imgs.length >= 3) {
+            el.style.display = 'none';
+            el.dataset.v5Hidden = '1';
+            console.log('[v5] 중복 사진 그리드 숨김 (외부):', el.className || el.id || el.tagName);
+          }
+        }
+      });
+    }
+
+    // 2. feedList 안의 그리드 자식 (보존 영역 제외) 숨김
+    [...feedList.children].forEach(el => {
+      if (el.dataset.v5Hidden === '1') return;
+      // 보존: chip, 헤더, 우리 인스타 카드
+      if (el.classList.contains('ehSChips')) return;
+      if (el.classList.contains('ehSecHead')) return;
+      if (el.classList.contains('ehStoryCard')) return;
+      if (el.tagName === 'H1' || el.tagName === 'H2' || el.tagName === 'H3') return;
+
+      const cs = getComputedStyle(el);
+      const isGrid = cs.display === 'grid' || cs.display === 'inline-grid';
+      if (isGrid) {
+        const imgs = el.querySelectorAll('img');
+        if (imgs.length >= 3) {
+          el.style.display = 'none';
+          el.dataset.v5Hidden = '1';
+          console.log('[v5] 중복 사진 그리드 숨김 (내부):', el.className || el.id);
+        }
+      }
+    });
+
+    // 3. 의심되는 셀렉터들 직접 숨김
+    const suspects = [
+      '.ehPhotoGrid', '.photoGrid', '#photoGrid',
+      '.feedPhotos', '.miniPhotos', '.photoPreview',
+      '.ehMiniGallery', '.ehFeedPreview',
+      '[class*="photo-grid"]', '[class*="photoGrid"]', '[class*="mini-gallery"]'
+    ];
+    suspects.forEach(sel => {
+      try {
+        document.querySelectorAll(sel).forEach(el => {
+          if (el.dataset.v5Hidden === '1') return;
+          el.style.display = 'none';
+          el.dataset.v5Hidden = '1';
+          console.log('[v5] 의심 셀렉터 숨김:', sel);
+        });
+      } catch (e) {}
+    });
+  }
 
   /* ─── 후킹 ─── */
   function setupHooks() {
@@ -293,19 +357,20 @@
     }
   }
 
-  setTimeout(() => { setupHooks(); rerenderToInsta(); }, 500);
+  setTimeout(() => { setupHooks(); rerenderToInsta(); hideRedundantGrids(); }, 500);
   [1500, 3000, 5000, 8000].forEach(t => setTimeout(() => {
     setupHooks();
     rerenderToInsta();
+    hideRedundantGrids();
   }, t));
 
-  // chip 클릭 (PC + 모바일 터치)
   document.addEventListener('click', e => {
     if (e.target.closest('.ehSChip')) {
       setTimeout(rerenderToInsta, 100);
       setTimeout(rerenderToInsta, 400);
+      setTimeout(hideRedundantGrids, 500);
     }
   }, true);
 
-  console.log('[eco_story_card v2-FORCE-4] ✅ 그리드 차단 + 1열 인스타피드 적용');
+  console.log('[eco_story_card v2-FORCE-5] ✅ 중복 그리드 제거 + 1열 인스타피드 적용');
 })();

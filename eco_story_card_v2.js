@@ -1,53 +1,66 @@
 /* ================================================================
-   EcoQuest – eco_story_card_v2.js
-   에코 스토리 카드를 인스타 피드 스타일로 변경
-   - 헤더(아바타+이름) → 사진(풀폭) → 좋아요 → 제목+본문 → 더보기
-   - 본문 4줄까지 표시 → "... 더보기" 클릭 시 인라인 확장
-   - PC 가운데 정렬 (max-width 500px, 인스타와 동일)
-   - 사진 클릭 시 상세 모달 열림
+   EcoQuest – eco_story_card_v2.js  v2-FORCE-2 (모바일/PC 통일판)
+   ----------------------------------------------------------------
+   - 모바일과 PC 모두 100% 동일한 인스타식 1열 카드
+   - 헤더 → 사진 → 좋아요 → 글(+더보기) 순서
+   - 강제 !important로 옛 CSS 완전 덮어쓰기
+   - PC에서만 가운데 정렬 (max-width 500px)
+   - 다중 후킹 + 중복 방지 가드
    ================================================================ */
 (function () {
   'use strict';
 
-  /* ─── CSS 덮어쓰기 ─── */
+  console.log('[eco_story_card v2-FORCE-2] 🚀 시작 - 모바일/PC 동일 인스타식');
+
+  /* ─── CSS (모바일/PC 동일, !important 강제) ─── */
   const css = `
-    /* 카드 컨테이너 */
+    /* 카드 컨테이너 - 모든 화면에서 동일 */
     .ehStoryCard {
       background: #fff !important;
       border-radius: 14px !important;
       margin-bottom: 16px !important;
-      border: 1px solid var(--bdr) !important;
+      border: 1px solid #e8e8e8 !important;
       overflow: hidden !important;
       padding: 0 !important;
       cursor: default !important;
-      transition: border-color .15s !important;
+      width: auto !important;
+      max-width: 100% !important;
+      display: block !important;
     }
-    .ehStoryCard:hover { border-color: var(--g1) !important; box-shadow: none !important; }
+    .ehStoryCard:hover {
+      border-color: var(--g1) !important;
+      box-shadow: none !important;
+      transform: none !important;
+    }
 
     /* 헤더 */
     .ehStoryCard .ehSCHead {
       padding: 12px 14px !important;
-      margin-bottom: 0 !important;
+      margin: 0 !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 10px !important;
     }
 
-    /* 사진 (풀폭, 큼직하게) */
+    /* 사진 - 모바일/PC 동일 풀폭 */
     .ehStoryCard .ehSCImg {
       width: 100% !important;
-      max-height: 600px !important;
+      height: auto !important;
+      max-height: 500px !important;
       object-fit: cover !important;
       margin: 0 !important;
       border-radius: 0 !important;
       display: block !important;
-      cursor: pointer;
-      background: #fafafa;
+      cursor: pointer !important;
+      background: #fafafa !important;
     }
 
     /* 액션 (좋아요) - 사진 바로 아래 */
     .ehSCActions {
       padding: 8px 12px 4px !important;
-      display: flex;
-      align-items: center;
-      gap: 4px;
+      display: flex !important;
+      align-items: center !important;
+      gap: 4px !important;
     }
     .ehSCActions .ehLikeBtn {
       padding: 8px 10px !important;
@@ -55,24 +68,25 @@
     }
     .ehSCActions .ehLikeBtn .ic { font-size: 18px !important; }
 
-    /* 본문 영역 */
+    /* 콘텐츠 (제목+본문) - 좋아요 아래 */
     .ehSCContent {
       padding: 0 14px 14px !important;
     }
     .ehStoryCard .ehSCTitle {
       font-size: 16px !important;
       font-weight: 800 !important;
-      margin-bottom: 6px !important;
+      margin: 0 0 6px 0 !important;
       line-height: 1.4 !important;
-      letter-spacing: -0.3px;
+      letter-spacing: -0.3px !important;
+      color: var(--txt) !important;
     }
     .ehStoryCard .ehSCBody {
       font-size: 14px !important;
       color: #3a3a3a !important;
       line-height: 1.7 !important;
-      margin-bottom: 0 !important;
-      white-space: pre-wrap;
-      word-break: break-word;
+      margin: 0 !important;
+      white-space: pre-wrap !important;
+      word-break: break-word !important;
     }
     .ehStoryCard .ehSCBody.clip {
       display: -webkit-box !important;
@@ -80,54 +94,54 @@
       -webkit-box-orient: vertical !important;
       overflow: hidden !important;
     }
-
-    /* 더보기 버튼 */
     .ehSCExpandBtn {
-      background: none;
-      border: none;
-      color: var(--sub);
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      padding: 6px 0 0;
-      font-family: inherit;
-      display: block;
+      background: none !important;
+      border: none !important;
+      color: var(--sub) !important;
+      font-size: 13px !important;
+      font-weight: 600 !important;
+      cursor: pointer !important;
+      padding: 6px 0 0 !important;
+      font-family: inherit !important;
+      display: block !important;
     }
-    .ehSCExpandBtn:hover { color: var(--g1); }
+    .ehSCExpandBtn:hover { color: var(--g1) !important; }
 
-    /* 기존 푸터(좋아요+더보기 한 줄) 숨김 */
+    /* 옛 푸터 강제 숨김 */
     .ehStoryCard .ehSCFoot { display: none !important; }
 
-    /* PC 가운데 정렬 (인스타식) */
+    /* PC만 가운데 정렬 (모바일은 풀폭) */
     @media (min-width: 768px) {
       #feedList {
-        max-width: 500px;
-        margin-left: auto;
-        margin-right: auto;
+        max-width: 500px !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
       }
     }
   `;
-  if (!document.getElementById('eco_story_card_v2_style')) {
-    const s = document.createElement('style');
-    s.id = 'eco_story_card_v2_style';
-    s.textContent = css;
-    document.head.appendChild(s);
-  }
+
+  // 옛 스타일 제거 후 새로 적용 (캐시 갱신)
+  const oldStyle = document.getElementById('eco_story_card_v2_style');
+  if (oldStyle) oldStyle.remove();
+  const styleEl = document.createElement('style');
+  styleEl.id = 'eco_story_card_v2_style';
+  styleEl.textContent = css;
+  document.head.appendChild(styleEl);
 
   /* ─── 헬퍼 ─── */
   function escapeHtml(s) {
     return String(s || '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   }
   function splitTitleBody(text) {
-    if (!text) return { title:'', body:'' };
+    if (!text) return { title: '', body: '' };
     const lines = text.split('\n');
     if (lines[0].startsWith('# ')) {
       return { title: lines[0].slice(2).trim(), body: lines.slice(1).join('\n').trim() };
     }
-    return { title:'', body:text };
+    return { title: '', body: text };
   }
 
-  /* ─── "더보기" 인라인 확장 ─── */
+  /* ─── 더보기 ─── */
   window.ehExpandCard = function (id) {
     const body = document.querySelector(`[data-body="${id}"]`);
     const btn  = document.querySelector(`[data-expand="${id}"]`);
@@ -142,7 +156,7 @@
     const avatar = v.userPhoto ? `<img src="${escapeHtml(v.userPhoto)}"/>` : '👤';
     const liked = (v.likes || []).includes(window.ME?.uid);
     const likeCount = (v.likes || []).length;
-    const showExpand = body.length > 200;  // 200자 넘으면 더보기
+    const showExpand = body.length > 200;
 
     return `
       <div class="ehStoryCard">
@@ -153,9 +167,7 @@
             <div class="ehSCMission">${v.missionEmoji || ''} ${escapeHtml(v.missionName || '')} · ${time}</div>
           </div>
         </div>
-
         ${v.thumb ? `<img class="ehSCImg" src="${escapeHtml(v.thumb)}" alt="" onclick="openFeedDetail('${v.id}')"/>` : ''}
-
         <div class="ehSCActions">
           <button class="ehLikeBtn ${liked ? 'on' : ''}" data-like="${v.id}"
                   onclick="event.stopPropagation();toggleLike('${v.id}')">
@@ -163,7 +175,6 @@
             <span class="count">${likeCount}</span>
           </button>
         </div>
-
         ${(title || body) ? `
           <div class="ehSCContent">
             ${title ? `<div class="ehSCTitle">${escapeHtml(title)}</div>` : ''}
@@ -176,49 +187,53 @@
       </div>`;
   }
 
-  /* ─── 기존 카드를 인스타식으로 교체 ─── */
+  /* ─── rerenderToInsta (중복 방지 가드) ─── */
+  let _isRerendering = false;
   function rerenderToInsta() {
-    const feedList = document.getElementById('feedList');
-    if (!feedList) return;
+    if (_isRerendering) return;
+    _isRerendering = true;
+    try {
+      const feedList = document.getElementById('feedList');
+      if (!feedList) return;
 
-    const existingCards = feedList.querySelectorAll('.ehStoryCard');
-    if (!existingCards.length) return;
+      const existingCards = feedList.querySelectorAll('.ehStoryCard');
+      if (!existingCards.length) return;
 
-    const all = window._allFeedItems || [];
-    const items = window._feedItems || {};
+      const items = window._feedItems || {};
+      const all = window._allFeedItems || [];
 
-    // 기존 카드들의 id를 순서대로 추출
-    const ids = [];
-    existingCards.forEach(card => {
-      // onclick 속성에서 id 추출
-      const onclick = card.getAttribute('onclick') || '';
-      const m = onclick.match(/openFeedDetail\('([^']+)'\)/);
-      if (m) ids.push(m[1]);
-      else {
-        // fallback: data-like 속성에서 id 추출
-        const likeBtn = card.querySelector('[data-like]');
-        if (likeBtn) ids.push(likeBtn.dataset.like);
-      }
-    });
+      const ids = [];
+      existingCards.forEach(card => {
+        const onclick = card.getAttribute('onclick') || '';
+        const m = onclick.match(/openFeedDetail\('([^']+)'\)/);
+        if (m) ids.push(m[1]);
+        else {
+          const likeBtn = card.querySelector('[data-like]');
+          if (likeBtn) ids.push(likeBtn.dataset.like);
+        }
+      });
 
-    const stories = ids
-      .map(id => items[id] || all.find(v => v.id === id))
-      .filter(Boolean);
+      const stories = ids
+        .map(id => items[id] || all.find(v => v.id === id))
+        .filter(Boolean);
 
-    if (!stories.length) return;
+      if (!stories.length) return;
 
-    const newHTML = stories.map(renderInstaCard).join('');
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = newHTML;
+      const newHTML = stories.map(renderInstaCard).join('');
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = newHTML;
 
-    // 첫 카드 위치에 새 카드들 삽입 + 기존 카드 제거
-    const firstCard = existingCards[0];
-    const parent = firstCard.parentNode;
-    [...tempDiv.children].forEach(c => parent.insertBefore(c, firstCard));
-    existingCards.forEach(c => c.remove());
+      const firstCard = existingCards[0];
+      const parent = firstCard.parentNode;
+      [...tempDiv.children].forEach(c => parent.insertBefore(c, firstCard));
+      existingCards.forEach(c => c.remove());
+    } finally {
+      _isRerendering = false;
+    }
   }
+  window._rerenderToInsta = rerenderToInsta;
 
-  /* ─── _ehRenderFeed 후킹 ─── */
+  /* ─── 후킹 (다중 시점) ─── */
   function setupHooks() {
     const _origRender = window._ehRenderFeed;
     if (typeof _origRender === 'function' && !window._ehInstaCardHooked) {
@@ -242,18 +257,19 @@
     }
   }
 
-  setTimeout(setupHooks, 500);
-  [1500, 3000, 5000].forEach(t => setTimeout(() => {
+  setTimeout(() => { setupHooks(); rerenderToInsta(); }, 500);
+  [1500, 3000, 5000, 8000].forEach(t => setTimeout(() => {
     setupHooks();
     rerenderToInsta();
   }, t));
 
-  // 카테고리 chip 클릭도 감지
+  // 카테고리 chip 클릭 후 (모바일 터치 포함)
   document.addEventListener('click', e => {
     if (e.target.closest('.ehSChip')) {
       setTimeout(rerenderToInsta, 100);
+      setTimeout(rerenderToInsta, 400);
     }
   }, true);
 
-  console.log('[eco_story_card_v2] ✅ 인스타식 카드 (사진→좋아요→글) 적용');
+  console.log('[eco_story_card v2-FORCE-2] ✅ 인스타식 카드 적용 완료');
 })();

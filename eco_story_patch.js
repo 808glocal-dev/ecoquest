@@ -327,7 +327,7 @@
     const likeCount = (v.likes || []).length;
 
     return `
-      <div class="ehStoryCard" onclick="openFeedDetail('${v.id}')">
+      <div class="ehStoryCard" onclick="window._ehLastDetailId='${v.id}';ehOpenDetail('${v.id}')">
         <div class="ehSCHead">
           <div class="ehSCAvatar">${avatar}</div>
           <div class="ehSCMeta">
@@ -353,7 +353,7 @@
     const liked = (v.likes || []).includes(window.ME?.uid);
     const cnt = (v.likes || []).length;
     return `
-      <div onclick="openFeedDetail('${v.id}')" style="position:relative;aspect-ratio:1;background:#f0f0f0;cursor:pointer;border-radius:6px;overflow:hidden">
+      <div onclick="window._ehLastDetailId='${v.id}';ehOpenDetail('${v.id}')" style="position:relative;aspect-ratio:1;background:#f0f0f0;cursor:pointer;border-radius:6px;overflow:hidden">
         ${v.thumb
           ? `<img src="${escapeHtml(v.thumb)}" style="width:100%;height:100%;object-fit:cover"/>`
           : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:32px;background:linear-gradient(135deg,#f0fbf4,#e8f5e9)">${v.missionEmoji || '📷'}</div>`}
@@ -493,9 +493,10 @@
   }
 
   /* ─── 6. 상세 보기 (제목·본문·좋아요) ─── */
-  window.openFeedDetail = function (id) {
+  window.ehOpenDetail = function (id) {
+    console.log('[eco_story] ehOpenDetail 호출:', id);
     const v = window._feedItems?.[id];
-    if (!v) return;
+    if (!v) { console.warn('[eco_story] _feedItems에서 못 찾음', id); return; }
     const detail = document.getElementById('feedDetailContent');
     if (!detail) return;
     const { title, body } = splitTitleBody(v.comment || '');
@@ -529,17 +530,59 @@
             : `<div style="background:#f8f8f8;border-radius:10px;padding:10px 12px;font-size:13px;color:var(--txt);line-height:1.6;margin-bottom:14px">💬 "${escapeHtml(body)}"</div>`)
         : ''}
 
-      <div style="border-top:1px solid #f0f0f0;padding-top:12px;display:flex;justify-content:space-between;align-items:center">
+      <div style="border-top:1px solid #f0f0f0;padding-top:14px;margin-top:8px;display:flex;justify-content:flex-start;align-items:center;gap:12px">
         <button class="ehLikeBtn ${liked ? 'on' : ''}" data-like="${v.id}"
-                onclick="toggleLike('${v.id}')">
-          <span class="ic">${liked ? '❤️' : '🤍'}</span>
+                onclick="toggleLike('${v.id}')"
+                style="background:none;border:1.5px solid var(--bdr);border-radius:22px;padding:8px 16px;font-size:14px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-family:inherit;${liked ? 'color:var(--red);border-color:#ffd0d0;background:#fff5f5' : 'color:var(--sub)'}">
+          <span class="ic" style="font-size:16px">${liked ? '❤️' : '🤍'}</span>
           <span class="count">${likeCount}</span>
-          <span style="margin-left:4px;font-weight:600">좋아요</span>
+          <span style="font-weight:600">좋아요</span>
         </button>
       </div>
     `;
     window.openOv && window.openOv('ovFeedDetail');
   };
+
+  // 강제 오버라이드 (원본이 함수 선언이어도 덮어쓰기 시도)
+  window.openFeedDetail = window.ehOpenDetail;
+  try { globalThis.openFeedDetail = window.ehOpenDetail; } catch (e) {}
+
+  /* ─── 안전장치: ovFeedDetail 모달 열림 감지 → 좋아요 버튼 없으면 동적 삽입 ─── */
+  window._ehLastDetailId = null;
+  function watchDetailModal() {
+    const ov = document.getElementById('ovFeedDetail');
+    if (!ov || ov._ehDetailWatched) return;
+    new MutationObserver(() => {
+      if (ov.classList.contains('on')) {
+        setTimeout(() => {
+          const detail = document.getElementById('feedDetailContent');
+          if (!detail) return;
+          // 우리 좋아요 버튼이 이미 있으면 스킵
+          if (detail.querySelector('.ehLikeBtn')) return;
+          // 없으면 마지막으로 클릭한 글의 좋아요 버튼 동적 삽입
+          if (!window._ehLastDetailId) return;
+          const v = window._feedItems?.[window._ehLastDetailId];
+          if (!v) return;
+          const liked = (v.likes || []).includes(window.ME?.uid);
+          const likeCount = (v.likes || []).length;
+          const wrap = document.createElement('div');
+          wrap.style.cssText = 'border-top:1px solid #f0f0f0;padding-top:14px;margin-top:14px;display:flex;justify-content:flex-start';
+          wrap.innerHTML = `
+            <button class="ehLikeBtn ${liked ? 'on' : ''}" data-like="${v.id}"
+                    onclick="toggleLike('${v.id}')"
+                    style="background:none;border:1.5px solid var(--bdr);border-radius:22px;padding:8px 16px;font-size:14px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-family:inherit;${liked ? 'color:var(--red);border-color:#ffd0d0;background:#fff5f5' : 'color:var(--sub)'}">
+              <span class="ic" style="font-size:16px">${liked ? '❤️' : '🤍'}</span>
+              <span class="count">${likeCount}</span>
+              <span style="font-weight:600">좋아요</span>
+            </button>`;
+          detail.appendChild(wrap);
+          console.log('[eco_story] 좋아요 버튼 동적 삽입 완료');
+        }, 100);
+      }
+    }).observe(ov, { attributes: true, attributeFilter: ['class'] });
+    ov._ehDetailWatched = true;
+  }
+  setTimeout(watchDetailModal, 800);
 
   /* ─── 7. 글쓰기 모달 ─── */
   const WRITE_CATS = [

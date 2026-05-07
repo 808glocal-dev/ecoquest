@@ -10,6 +10,9 @@
 (function () {
   'use strict';
 
+  /* 자체 캐시 — 원본의 _allUsers는 let이라 window에 없어서 직접 캐시 */
+  let _ehAllUsersCache = [];
+
   /* ──────────────────────────────────────
      1. 온보딩 모달에 입력 필드 동적 삽입
      ────────────────────────────────────── */
@@ -172,10 +175,13 @@
      5. renderAdminUsers 오버라이드
      ────────────────────────────────────── */
   window.renderAdminUsers = function (list) {
-    if (!list) list = window._allUsers || [];
+    // 받은 list를 캐시 (원본 loadAllUsers가 호출할 때마다 갱신됨)
+    if (Array.isArray(list)) _ehAllUsersCache = list;
+    if (!list) list = _ehAllUsersCache;
+
     const w = document.getElementById('adminUserList');
     if (!w) return;
-    if (!list.length) {
+    if (!list || !list.length) {
       w.innerHTML = '<div style="text-align:center;padding:20px;color:#aaa">회원이 없어요</div>';
       return;
     }
@@ -213,7 +219,7 @@
     window.loadAllUsers = async function () {
       await _origLoadAll.call(this);
       await buildEmailMap();
-      if (window._allUsers) window.renderAdminUsers(window._allUsers);
+      if (_ehAllUsersCache.length) window.renderAdminUsers(_ehAllUsersCache);
       addExportBtn();
     };
   }
@@ -221,9 +227,9 @@
   /* 검색 확장 */
   window.searchAdminUsers = function () {
     const q = (document.getElementById('userSearchInp')?.value || '').toLowerCase().trim();
-    if (!q) { window.renderAdminUsers(window._allUsers || []); return; }
+    if (!q) { window.renderAdminUsers(_ehAllUsersCache); return; }
     const emailMap = window._adminEmailMap || {};
-    const filtered = (window._allUsers || []).filter(u => {
+    const filtered = _ehAllUsersCache.filter(u => {
       const email = (u.email || emailMap[u.id] || '').toLowerCase();
       const phone = (u.phoneNumber || u.phone || u.kakaoPhone || '').toLowerCase();
       const nick  = (u.nickname || '').toLowerCase();
@@ -260,12 +266,12 @@
   }
 
   async function exportUsersCSV() {
-    if (!window._allUsers || !window._allUsers.length) {
+    if (!_ehAllUsersCache.length) {
       window.toast?.('회원 정보 로딩 중...');
       if (typeof window.loadAllUsers === 'function') await window.loadAllUsers();
     }
-    if (!window._allUsers || !window._allUsers.length) {
-      window.toast?.('회원이 없거나 로딩 실패'); return;
+    if (!_ehAllUsersCache.length) {
+      window.toast?.('먼저 [전체 회원 불러오기]를 눌러주세요'); return;
     }
     await buildEmailMap();
     const emailMap = window._adminEmailMap || {};
@@ -273,7 +279,7 @@
     const rows = [
       ['UID','닉네임','이메일','휴대폰번호','나이대','성별','지역','직업','자동차','가구형태','환경관심도','관심분야','미션수','포인트','CO2절감(kg)','가입일']
     ];
-    window._allUsers.forEach(u => {
+    _ehAllUsersCache.forEach(u => {
       const email = u.email || emailMap[u.id] || '';
       const phone = u.phoneNumber || u.phone || u.kakaoPhone || '';
       const created = u.createdAt?.toDate?.()?.toLocaleDateString('ko-KR') || '';

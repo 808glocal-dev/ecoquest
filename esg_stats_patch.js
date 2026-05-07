@@ -35,21 +35,29 @@
     return 'story';
   }
 
-  /* 기업/소속 필드 추출 (다양한 필드명 시도) */
-  function getCompany(u) {
-    return u.company || u.companyName || u.companyId || u.affiliation || u.org || u.corporateName || '';
+  /* 기업/소속 필드: users.companyId → companies 컬렉션 lookup */
+  function getCompanyId(u) {
+    return u.companyId || u.company || u.companyName || u.affiliation || '';
   }
-  function extractCompanyList(users) {
-    const map = {};
+  async function fetchCompaniesMap() {
+    try {
+      const snap = await window.FB.getDocs(window.FB.collection(window.FB.db, 'companies'));
+      const map = {};
+      snap.docs.forEach(d => { map[d.id] = { id: d.id, ...d.data() }; });
+      return map;
+    } catch (e) { return {}; }
+  }
+  async function extractCompanyList(users) {
+    const coMap = await fetchCompaniesMap();
+    const grp = {};
     users.forEach(u => {
-      const c = getCompany(u);
-      const key = c || '_none';
-      if (!map[key]) map[key] = { name: c || '소속 없음', count: 0 };
-      map[key].count++;
+      const cid = getCompanyId(u);
+      const key = cid || '_none';
+      const name = cid ? (coMap[cid]?.name || cid) : '소속 없음';
+      if (!grp[key]) grp[key] = { key, name, count: 0 };
+      grp[key].count++;
     });
-    return Object.entries(map)
-      .map(([key, v]) => ({ key, name: v.name, count: v.count }))
-      .sort((a, b) => b.count - a.count);
+    return Object.values(grp).sort((a, b) => b.count - a.count);
   }
 
   /* 모든 데이터 fetch */
@@ -283,7 +291,7 @@
       // SheetJS 로드 + 데이터 fetch 동시
       const [_, allData] = await Promise.all([loadSheetJS(), fetchAllData()]);
 
-      // 기업 필터 적용
+      // 기업 필터 적용 (users.companyId 기준)
       const sel = document.getElementById('ehCompanyFilter');
       const selKey = sel?.value || 'all';
       const selCompany = sel?.options[sel.selectedIndex]?.dataset.companyName || '';
@@ -291,9 +299,9 @@
       if (selKey !== 'all') {
         let filteredUsers;
         if (selKey === '_none') {
-          filteredUsers = allData.users.filter(u => !getCompany(u));
+          filteredUsers = allData.users.filter(u => !getCompanyId(u));
         } else {
-          filteredUsers = allData.users.filter(u => getCompany(u) === selKey);
+          filteredUsers = allData.users.filter(u => getCompanyId(u) === selKey);
         }
         const userIdSet = new Set(filteredUsers.map(u => u.id));
         data = {
@@ -397,7 +405,7 @@
     try {
       const snap = await window.FB.getDocs(window.FB.collection(window.FB.db, 'users'));
       const users = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      const list = extractCompanyList(users);
+      const list = await extractCompanyList(users);
 
       const cur = sel.value;
       sel.innerHTML = `<option value="all">전체 회원 (${users.length}명)</option>`;
@@ -410,11 +418,9 @@
         sel.appendChild(opt);
       });
 
-      // 이전 선택 복원
       if (cur && Array.from(sel.options).some(o => o.value === cur)) {
         sel.value = cur;
       }
-
       console.log('[esg_stats] 기업 목록:', list);
     } catch (e) {
       console.warn('[esg_stats] 기업 목록 로딩 실패', e);

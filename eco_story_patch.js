@@ -747,14 +747,64 @@
   }
   setTimeout(watchAiModal, 800);
 
-  const _origLoadFeed = window.loadFeed;
-  if (typeof _origLoadFeed === 'function' && !window._ehStoryFeedHooked) {
+  /* ─── loadFeed 완전 오버라이드 (원본 renderFeedGrid 우회) ─── */
+  if (!window._ehStoryFeedHooked) {
     window.loadFeed = async function () {
-      const r = await _origLoadFeed.call(this);
-      setTimeout(() => ehRenderFeed(), 100);
-      return r;
+      const w = document.getElementById('feedList');
+      if (!w) return;
+      w.innerHTML = '<div style="text-align:center;padding:16px;color:var(--sub);font-size:12px">로딩 중...</div>';
+      try {
+        const snap = await window.FB.getDocs(window.FB.collection(window.FB.db, 'verifications'));
+        const items = snap.docs
+          .map(d => ({ id: d.id, ...d.data() }))
+          .filter(d => d.isPublic)
+          .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+
+        const uids = [...new Set(items.map(v => v.uid).filter(Boolean))];
+        const nicknameMap = {};
+        await Promise.all(uids.map(async uid => {
+          try {
+            const usnap = await window.FB.getDoc(window.FB.doc(window.FB.db, 'users', uid));
+            if (usnap.exists()) {
+              const d = usnap.data();
+              nicknameMap[uid] = d.nickname || d.userName || '익명';
+            }
+          } catch (e) {}
+        }));
+
+        window._allFeedItems = items;
+        window._feedNicknameMap = nicknameMap;
+        window._feedItems = {};
+
+        ehRenderFeed(w);
+      } catch (e) {
+        console.error('[eco_story] loadFeed 실패', e);
+        w.innerHTML = '<div style="text-align:center;padding:16px;color:var(--sub);font-size:12px">불러오기 실패</div>';
+      }
     };
     window._ehStoryFeedHooked = true;
+  }
+
+  /* ─── 카드 클릭 capture: 원본 onclick="openFeedDetail(id)" 가로채기 ─── */
+  if (!window._ehCardClickHooked) {
+    document.addEventListener('click', (e) => {
+      const card = e.target.closest('[onclick*="openFeedDetail"]');
+      if (!card) return;
+      const oc = card.getAttribute('onclick') || '';
+      const m = oc.match(/openFeedDetail\(['"]([^'"]+)['"]\)/);
+      if (!m) return;
+      // 마지막 클릭 ID 저장 (모달 fallback용)
+      window._ehLastDetailId = m[1];
+      // 원본 호출 막고 우리 함수 호출
+      e.stopPropagation();
+      e.preventDefault();
+      // attribute 제거해서 inline onclick도 실행 안 되게
+      card.removeAttribute('onclick');
+      card.onclick = null;
+      window.ehOpenDetail(m[1]);
+      // 다음 렌더 시 우리 카드로 다시 그려지므로 OK
+    }, true); // capture phase
+    window._ehCardClickHooked = true;
   }
 
   const _origGoPage = window.goPage;

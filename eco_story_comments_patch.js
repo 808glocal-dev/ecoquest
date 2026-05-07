@@ -1,11 +1,9 @@
 /* ================================================================
-   EcoQuest – eco_story_comments_patch.js
-   에코 스토리 카드에 댓글 기능 추가
-   - ❤️ 옆에 💬 댓글 버튼 (카운트 표시)
-   - 클릭 시 카드 하단에 댓글 영역 인라인 펼침
-   - 댓글 작성/삭제 (본인 댓글만 삭제 가능)
-   - Firestore: verifications/{id}.comments 배열에 저장
-   - eco_story_card_v2.js 다음에 로드해야 함
+   EcoQuest – eco_story_comments_patch.js v2 (SAFE)
+   - 무한 루프 방지: MutationObserver 제거
+   - 카운트 비교 후 변경 (불필요한 DOM mutation 방지)
+   - _ehRenderFeed 후킹 + 가벼운 polling만 사용
+   - v2 미적용 상태에서도 동작 (.ehSCActions 없으면 좋아요 옆에 붙임)
    ================================================================ */
 (function () {
   'use strict';
@@ -83,10 +81,7 @@
       align-items: center;
       margin-top: 3px;
     }
-    .ehCommentTime {
-      font-size: 10px;
-      color: var(--sub);
-    }
+    .ehCommentTime { font-size: 10px; color: var(--sub); }
     .ehCommentDelBtn {
       background: none;
       border: none;
@@ -163,6 +158,9 @@
     return `${Math.floor(sec / 86400)}일 전`;
   }
 
+  /* ─── 댓글 카운트 캐시 (불필요한 DOM 변경 방지) ─── */
+  const _lastCounts = {};
+
   /* ─── 댓글 토글 ─── */
   window.ehToggleComments = function (verifId) {
     const area = document.getElementById(`ehComments-${verifId}`);
@@ -237,7 +235,6 @@
     };
 
     try {
-      // 로컬 상태에서 현재 댓글 + 새 댓글 합치기 (read-modify-write)
       const item = window._feedItems?.[verifId];
       const allItem = (window._allFeedItems || []).find(v => v.id === verifId);
       const newComments = [...(item?.comments || []), newComment];
@@ -247,17 +244,15 @@
         { comments: newComments }
       );
 
-      // 로컬 상태 업데이트
       if (item) item.comments = newComments;
       if (allItem) allItem.comments = newComments;
+      _lastCounts[verifId] = newComments.length;
 
       input.value = '';
       ehRenderComments(verifId);
 
-      // 카운트 업데이트
-      document.querySelectorAll(`[data-comment="${verifId}"] .count`).forEach(el => {
-        el.textContent = newComments.length;
-      });
+      const cntEl = document.querySelector(`[data-comment="${verifId}"] .count`);
+      if (cntEl) cntEl.textContent = newComments.length;
     } catch (e) {
       console.error('[comments] 작성 실패', e);
       window.toast?.('댓글 작성 실패: ' + (e.message || ''));
@@ -283,18 +278,22 @@
       );
       item.comments = newComments;
       if (allItem) allItem.comments = newComments;
+      _lastCounts[verifId] = newComments.length;
       ehRenderComments(verifId);
-      document.querySelectorAll(`[data-comment="${verifId}"] .count`).forEach(el => {
-        el.textContent = newComments.length;
-      });
+
+      const cntEl = document.querySelector(`[data-comment="${verifId}"] .count`);
+      if (cntEl) cntEl.textContent = newComments.length;
     } catch (e) {
       window.toast?.('댓글 삭제 실패: ' + (e.message || ''));
     }
   };
 
-  /* ─── 카드에 댓글 버튼/영역 inject ─── */
+  /* ─── 카드에 댓글 버튼/영역 inject (안전 버전) ─── */
   function injectComments() {
-    document.querySelectorAll('.ehStoryCard').forEach(card => {
+    const cards = document.querySelectorAll('.ehStoryCard');
+    if (!cards.length) return;
+
+    cards.forEach(card => {
       const likeBtn = card.querySelector('[data-like]');
       if (!likeBtn) return;
       const verifId = likeBtn.dataset.like;
@@ -302,17 +301,21 @@
       const item = window._feedItems?.[verifId];
       const cnt = item?.comments?.length || 0;
 
-      // 이미 있으면 카운트만 갱신
       const existingBtn = card.querySelector(`[data-comment="${verifId}"]`);
       if (existingBtn) {
-        const cntEl = existingBtn.querySelector('.count');
-        if (cntEl) cntEl.textContent = cnt;
+        // 카운트가 실제로 변경된 경우에만 DOM 업데이트 (무한 루프 방지)
+        if (_lastCounts[verifId] !== cnt) {
+          const cntEl = existingBtn.querySelector('.count');
+          if (cntEl) cntEl.textContent = cnt;
+          _lastCounts[verifId] = cnt;
+        }
         return;
       }
 
-      // 댓글 버튼 추가 (좋아요 옆)
+      // 새 카드: 댓글 버튼 추가
       const actionsDiv = card.querySelector('.ehSCActions');
       if (actionsDiv) {
+        // v2 인스타식 카드 (.ehSCActions 존재)
         const btn = document.createElement('button');
         btn.className = 'ehCommentBtn';
         btn.dataset.comment = verifId;
@@ -322,6 +325,21 @@
           window.ehToggleComments(verifId);
         };
         actionsDiv.appendChild(btn);
+      } else {
+        // v2 미적용 (옛 카드): 좋아요 버튼 옆에 직접 붙이기
+        const likeBtnParent = likeBtn.parentElement;
+        if (likeBtnParent) {
+          const btn = document.createElement('button');
+          btn.className = 'ehCommentBtn';
+          btn.dataset.comment = verifId;
+          btn.style.cssText = 'margin-left:8px';
+          btn.innerHTML = `<span class="ic">💬</span><span class="count">${cnt}</span>`;
+          btn.onclick = (e) => {
+            e.stopPropagation();
+            window.ehToggleComments(verifId);
+          };
+          likeBtn.insertAdjacentElement('afterend', btn);
+        }
       }
 
       // 댓글 영역 추가 (카드 끝)
@@ -339,25 +357,45 @@
         `;
         card.appendChild(area);
       }
+
+      _lastCounts[verifId] = cnt;
     });
   }
 
-  /* ─── MutationObserver로 카드 변화 감지 ─── */
-  let observer = null;
-  function setupObserver() {
-    const feedList = document.getElementById('feedList');
-    if (!feedList || observer) return;
-    observer = new MutationObserver(() => {
-      injectComments();
-    });
-    observer.observe(feedList, { childList: true, subtree: true });
+  /* ─── 후킹 (MutationObserver 사용 안 함) ─── */
+  function setupHooks() {
+    const _origRender = window._ehRenderFeed;
+    if (typeof _origRender === 'function' && !window._ehCmtRenderHooked) {
+      window._ehRenderFeed = function (w) {
+        const r = _origRender.call(this, w);
+        setTimeout(injectComments, 100);
+        return r;
+      };
+      window._ehCmtRenderHooked = true;
+    }
+
+    const _origLoad = window.loadFeed;
+    if (typeof _origLoad === 'function' && !window._ehCmtLoadHooked) {
+      window.loadFeed = async function () {
+        const r = await _origLoad.call(this);
+        setTimeout(injectComments, 250);
+        return r;
+      };
+      window._ehCmtLoadHooked = true;
+    }
   }
 
-  setTimeout(() => { setupObserver(); injectComments(); }, 800);
-  [1500, 3000, 5000, 8000].forEach(t => setTimeout(() => {
-    setupObserver();
+  setTimeout(() => { setupHooks(); injectComments(); }, 800);
+  [1500, 3000, 6000].forEach(t => setTimeout(() => {
+    setupHooks();
     injectComments();
   }, t));
 
-  console.log('[eco_story_comments_patch] ✅ 댓글 기능 활성화');
+  document.addEventListener('click', e => {
+    if (e.target.closest('.ehSChip')) {
+      setTimeout(injectComments, 300);
+    }
+  }, true);
+
+  console.log('[eco_story_comments_patch v2-SAFE] ✅ 안전 모드 댓글 기능 활성화');
 })();

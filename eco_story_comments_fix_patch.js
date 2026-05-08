@@ -1,23 +1,21 @@
 /**
- * EcoQuest 댓글 영역 자동 유지 patch.js
+ * EcoQuest 댓글 자동 유지 patch.js (v2 - 강화)
  * ─────────────────────────────────────────────
- * 사용법: index.html 하단에 추가 (eco_story_comments_patch.js 다음)
+ * 사용법: index.html 하단에 추가
  *   <script src="eco_story_comments_fix_patch.js"></script>
  *
- * 문제: 댓글 작성 후 피드 재렌더링 시 댓글 영역이 닫혀서 안 보임
- * 해결: 한 번 펼친 댓글 영역은 자동으로 다시 열어주고 댓글 렌더링
+ * v2 변경: MutationObserver로 즉시 반응, 100ms 폴링, 깜빡임 제거
  */
 
 (function () {
   'use strict';
 
-  // 펼쳐진 댓글 영역 추적
   const _openComments = new Set();
+  let _busy = false;
 
   function escapeHtml(s) {
     return String(s || '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   }
-
   function shortTime(ts) {
     if (!ts) return '';
     const sec = (Date.now() - ts) / 1000;
@@ -60,7 +58,33 @@
     }).join('');
   }
 
-  // ─── ehToggleComments 오버라이드 (열림/닫힘 상태 추적) ───
+  function restoreArea(verifId) {
+    const area = document.getElementById(`ehComments-${verifId}`);
+    if (!area) return;
+    if (!area.classList.contains('on')) {
+      area.classList.add('on');
+    }
+    // 댓글 수 체크 후 다를 때만 리렌더
+    const list = area.querySelector('.ehCommentList');
+    const item = window._feedItems?.[verifId];
+    const expected = item?.comments?.length || 0;
+    const actual = list?.querySelectorAll('.ehCommentItem').length || 0;
+    if (expected !== actual || (expected === 0 && !list?.querySelector('.ehNoComments'))) {
+      renderCommentsInArea(verifId);
+    }
+  }
+
+  function restoreAll() {
+    if (_busy) return;
+    _busy = true;
+    try {
+      _openComments.forEach(restoreArea);
+    } finally {
+      _busy = false;
+    }
+  }
+
+  // ─── ehToggleComments 오버라이드 ───
   window.ehToggleComments = function (verifId) {
     const area = document.getElementById(`ehComments-${verifId}`);
     if (!area) return;
@@ -75,45 +99,57 @@
     }
   };
 
-  // ─── ehSubmitComment 후킹 (작성 후 열림 보장) ───
-  const _origSubmit = window.ehSubmitComment;
-  if (typeof _origSubmit === 'function') {
+  // ─── ehSubmitComment 후킹 ───
+  function hookSubmit() {
+    const _orig = window.ehSubmitComment;
+    if (typeof _orig !== 'function' || window._ehFixSubmitHooked) return;
+    window._ehFixSubmitHooked = true;
     window.ehSubmitComment = async function (verifId) {
       _openComments.add(verifId);
-      const r = await _origSubmit.call(this, verifId);
-      setTimeout(() => {
-        const area = document.getElementById(`ehComments-${verifId}`);
-        if (area) {
-          area.classList.add('on');
-          renderCommentsInArea(verifId);
-        }
-      }, 150);
+      const r = await _orig.call(this, verifId);
+      // 즉시 + 짧은 간격으로 여러번 복구
+      restoreArea(verifId);
+      setTimeout(() => restoreArea(verifId), 50);
+      setTimeout(() => restoreArea(verifId), 200);
+      setTimeout(() => restoreArea(verifId), 600);
+      return r;
+    };
+  }
+  hookSubmit();
+  setInterval(hookSubmit, 1000); // 다른 패치가 덮어쓸 경우 대비
+
+  // ─── 빠른 폴링 (100ms) ───
+  setInterval(restoreAll, 100);
+
+  // ─── MutationObserver - 피드 변화 즉시 감지 ───
+  let _observer = null;
+  function startObserving() {
+    const feed = document.getElementById('feedList');
+    if (!feed) {
+      setTimeout(startObserving, 300);
+      return;
+    }
+    if (_observer) _observer.disconnect();
+    _observer = new MutationObserver(() => {
+      // 즉시 + 약간 딜레이 후 한 번 더
+      restoreAll();
+      setTimeout(restoreAll, 30);
+      setTimeout(restoreAll, 150);
+    });
+    _observer.observe(feed, { childList: true, subtree: true });
+  }
+  startObserving();
+
+  // 페이지 전환 후에도 다시 감지
+  if (window.goPage) {
+    const _origGo = window.goPage;
+    window.goPage = function (...args) {
+      const r = _origGo.apply(this, args);
+      setTimeout(startObserving, 200);
+      setTimeout(restoreAll, 300);
       return r;
     };
   }
 
-  // ─── 주기적으로 열림 상태 복구 ───
-  setInterval(() => {
-    _openComments.forEach(verifId => {
-      const area = document.getElementById(`ehComments-${verifId}`);
-      if (!area) return;
-
-      if (!area.classList.contains('on')) {
-        // 닫혀 있으면 다시 열기
-        area.classList.add('on');
-        renderCommentsInArea(verifId);
-      } else {
-        // 열려있어도 댓글 수가 안 맞으면 다시 그리기 (누락 방지)
-        const list = area.querySelector('.ehCommentList');
-        const item = window._feedItems?.[verifId];
-        const expectedCount = item?.comments?.length || 0;
-        const actualCount = list?.querySelectorAll('.ehCommentItem').length || 0;
-        if (expectedCount !== actualCount && expectedCount > 0) {
-          renderCommentsInArea(verifId);
-        }
-      }
-    });
-  }, 500);
-
-  console.log('%c[댓글 fix] 영역 열림 상태 자동 유지 ✓', 'color:#2ECC71;font-weight:bold');
+  console.log('%c[댓글 fix v2] 강화 모드 ✓ (100ms + MutationObserver)', 'color:#2ECC71;font-weight:bold');
 })();

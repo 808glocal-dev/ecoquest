@@ -10,6 +10,9 @@
 
   let _myBunny = null;
   let _petTimer = 0;
+  let _bunnyChars = [];
+  let _animLoop = null;
+  let _lastSpawnedCount = -1;
 
   function getBunnyLevel(friends){
     let lv = BUNNY_LEVELS[0];
@@ -42,7 +45,11 @@
     if(!window.ME || !_myBunny) return;
     try {
       await window.FB.setDoc(window.FB.doc(window.FB.db, "bunnies", window.ME.uid), _myBunny);
-      renderBunnyMap();
+      renderBunnyStats();
+      const targetCount = (_myBunny.friendCount || 0) + 1;
+      if(targetCount !== _lastSpawnedCount){
+        spawnBunnies(targetCount);
+      }
     } catch(e){console.log("토끼 저장 실패:", e.message);}
   }
 
@@ -70,15 +77,6 @@
       return;
     }
 
-    const friends = _myBunny.friendCount || 0;
-    const happiness = _myBunny.happiness || 0;
-    const carrots = _myBunny.carrots || 0;
-    const lv = getBunnyLevel(friends);
-    const next = getNextLevel(friends);
-    const myPoints = window.UDATA?.point || 0;
-    const totalRabbits = friends + 1;
-    const rabbitDisplay = '🐰'.repeat(Math.min(totalRabbits, 8));
-
     const globalCo2 = parseFloat(document.getElementById("bCo2")?.textContent) || 0;
     const totalUsers = parseInt(document.getElementById("bTotal")?.textContent?.replace(/,/g, "") || "0");
     const totalTrees = (globalCo2 / 21.4).toFixed(1);
@@ -95,66 +93,87 @@
         </div>
       </div>
 
-      <div style="margin:0 12px 12px;background:linear-gradient(180deg,#E8F5E9,#FFF8E1);border-radius:18px;padding:24px 20px;text-align:center;box-shadow:0 4px 16px rgba(46,204,113,.1)">
-        <div style="font-size:11px;color:#689F38;font-weight:700;letter-spacing:2px;margin-bottom:8px">🐰 MY BUNNY FAMILY</div>
-        <div style="font-size:60px;line-height:1.2;margin:12px 0;letter-spacing:-4px">${rabbitDisplay}</div>
-        <div style="font-size:20px;font-weight:900;color:#1B5E20">${lv.name}</div>
-        <div style="font-size:12px;color:#689F38;margin-top:4px">친구 토끼 ${friends}마리</div>
+      <!-- 잔디밭 (토끼들이 뛰어다님) -->
+      <div id="bunnyPlayground" style="position:relative;margin:0 12px;height:240px;background:linear-gradient(180deg,#87CEEB 0%,#87CEEB 50%,#A8DC8E 50%,#76B947 100%);border-radius:18px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,.08);user-select:none">
+        <!-- 하늘 장식 -->
+        <div style="position:absolute;top:8px;left:24px;font-size:22px;opacity:.85">☁️</div>
+        <div style="position:absolute;top:18px;right:36px;font-size:18px;opacity:.7">☁️</div>
+        <div style="position:absolute;top:6px;right:14px;font-size:24px">☀️</div>
+        <!-- 잔디 장식 -->
+        <div style="position:absolute;bottom:6px;left:30px;font-size:14px">🌱</div>
+        <div style="position:absolute;bottom:4px;left:200px;font-size:16px">🌿</div>
+        <div style="position:absolute;bottom:8px;right:50px;font-size:14px">🌱</div>
+        <div style="position:absolute;bottom:6px;right:20px;font-size:18px">🌷</div>
+        <div style="position:absolute;bottom:10px;left:120px;font-size:14px">🌾</div>
+        <!-- 토끼들은 JS에서 동적 추가 -->
+        <div id="bunnyHelpText" style="position:absolute;top:8px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,.85);border-radius:12px;padding:3px 10px;font-size:10px;color:#444;font-weight:600;pointer-events:none">탭하면 쓰다듬을 수 있어요!</div>
+      </div>
 
-        <div style="background:#fff;border-radius:14px;padding:14px;margin-top:18px;text-align:left">
-          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px">
+      <!-- 토끼 정보 + 액션 (별도 영역에서 업데이트) -->
+      <div id="bunnyStats"></div>
+    `;
+
+    renderBunnyStats();
+    setTimeout(() => spawnBunnies((_myBunny.friendCount || 0) + 1), 100);
+  }
+
+  function renderBunnyStats(){
+    const c = document.getElementById("bunnyStats");
+    if(!c || !_myBunny) return;
+
+    const friends = _myBunny.friendCount || 0;
+    const happiness = _myBunny.happiness || 0;
+    const carrots = _myBunny.carrots || 0;
+    const lv = getBunnyLevel(friends);
+    const next = getNextLevel(friends);
+    const myPoints = window.UDATA?.point || 0;
+
+    c.innerHTML = `
+      <div style="margin:12px">
+        <div style="background:linear-gradient(135deg,#fff,#fff8e1);border-radius:14px;padding:14px 16px;text-align:center;border:2px solid #FFE082;margin-bottom:12px">
+          <div style="font-size:11px;color:#689F38;font-weight:700;letter-spacing:2px">🐰 MY BUNNY FAMILY</div>
+          <div style="font-size:18px;font-weight:900;color:#1B5E20;margin-top:4px">${lv.name} · 친구 ${friends}마리</div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-top:10px">
             <span style="color:#555;font-weight:600">😊 행복도</span>
             <span style="color:#e91e63;font-weight:700">${happiness}/100</span>
           </div>
-          <div style="height:10px;background:#fce4ec;border-radius:5px;overflow:hidden">
+          <div style="height:8px;background:#fce4ec;border-radius:4px;overflow:hidden;margin-top:4px">
             <div style="width:${Math.min(100,happiness)}%;height:100%;background:linear-gradient(90deg,#f06292,#e91e63);transition:width .5s"></div>
           </div>
-          ${happiness >= 100 ? '<div style="font-size:11px;color:#C44569;margin-top:8px;font-weight:700;text-align:center">✨ 친구 토끼를 늘릴 수 있어요!</div>' : ''}
+          ${happiness >= 100 ? '<div style="font-size:11px;color:#C44569;margin-top:6px;font-weight:700">✨ 친구 토끼를 늘릴 수 있어요!</div>' : ''}
         </div>
-      </div>
 
-      <div style="margin:0 12px 12px">
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#FFF8E1;border-radius:14px;margin-bottom:14px;border:2px solid #FFE082">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#FFF8E1;border-radius:14px;margin-bottom:12px;border:2px solid #FFE082">
           <div style="font-size:14px;font-weight:700;color:#8D6E1B">🥕 내 당근</div>
           <div style="font-size:22px;font-weight:900;color:#B8860B">${carrots}개</div>
         </div>
 
-        <div style="display:flex;flex-direction:column;gap:10px">
-          <button onclick="buyCarrot()" ${myPoints < 10 ? 'disabled' : ''} style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:${myPoints < 10 ? '#f5f5f5' : '#fff'};color:${myPoints < 10 ? '#aaa' : '#5D4037'};border:1.5px solid ${myPoints < 10 ? '#e0e0e0' : '#FFD54F'};border-radius:14px;font-size:14px;cursor:${myPoints < 10 ? 'default' : 'pointer'};font-family:inherit;font-weight:700">
-            <span>🥕 당근 사기</span>
-            <span style="color:#FF8F00;font-weight:600">10P → 1개</span>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <button onclick="buyCarrot()" ${myPoints < 10 ? 'disabled' : ''} style="display:flex;align-items:center;justify-content:space-between;padding:13px 16px;background:${myPoints < 10 ? '#f5f5f5' : '#fff'};color:${myPoints < 10 ? '#aaa' : '#5D4037'};border:1.5px solid ${myPoints < 10 ? '#e0e0e0' : '#FFD54F'};border-radius:12px;font-size:14px;cursor:${myPoints < 10 ? 'default' : 'pointer'};font-family:inherit;font-weight:700">
+            <span>🥕 당근 사기</span><span style="color:#FF8F00;font-weight:600">10P → 1개</span>
           </button>
-
-          <button onclick="feedBunny()" ${carrots < 1 ? 'disabled' : ''} style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:${carrots < 1 ? '#f5f5f5' : 'linear-gradient(135deg,#2ECC71,#27AE60)'};color:${carrots < 1 ? '#aaa' : '#fff'};border:none;border-radius:14px;font-size:14px;cursor:${carrots < 1 ? 'default' : 'pointer'};font-family:inherit;font-weight:700">
-            <span>🍴 먹이 주기</span>
-            <span style="font-weight:600">${carrots < 1 ? '당근 부족' : '당근 -1, 행복+10'}</span>
+          <button onclick="feedBunny()" ${carrots < 1 ? 'disabled' : ''} style="display:flex;align-items:center;justify-content:space-between;padding:13px 16px;background:${carrots < 1 ? '#f5f5f5' : 'linear-gradient(135deg,#2ECC71,#27AE60)'};color:${carrots < 1 ? '#aaa' : '#fff'};border:none;border-radius:12px;font-size:14px;cursor:${carrots < 1 ? 'default' : 'pointer'};font-family:inherit;font-weight:700">
+            <span>🍴 먹이 주기</span><span style="font-weight:600">${carrots < 1 ? '당근 부족' : '당근 -1, 행복+10'}</span>
           </button>
-
-          <button onclick="petBunny()" style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:#fff;color:#5D4037;border:1.5px solid #d8eedd;border-radius:14px;font-size:14px;cursor:pointer;font-family:inherit;font-weight:700">
-            <span>🤲 쓰다듬기</span>
-            <span style="color:#888;font-weight:400">행복+1 (5초 쿨)</span>
-          </button>
-
-          <button onclick="addFriend()" ${happiness < 100 ? 'disabled' : ''} style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:${happiness < 100 ? '#f5f5f5' : 'linear-gradient(135deg,#FF6B9D,#C44569)'};color:${happiness < 100 ? '#aaa' : '#fff'};border:none;border-radius:14px;font-size:14px;cursor:${happiness < 100 ? 'default' : 'pointer'};font-family:inherit;font-weight:700">
-            <span>🐰 친구 토끼 늘리기</span>
-            <span style="font-weight:600">${happiness < 100 ? `행복 ${100-happiness} 더` : '✨ 가능!'}</span>
+          <button onclick="addFriend()" ${happiness < 100 ? 'disabled' : ''} style="display:flex;align-items:center;justify-content:space-between;padding:13px 16px;background:${happiness < 100 ? '#f5f5f5' : 'linear-gradient(135deg,#FF6B9D,#C44569)'};color:${happiness < 100 ? '#aaa' : '#fff'};border:none;border-radius:12px;font-size:14px;cursor:${happiness < 100 ? 'default' : 'pointer'};font-family:inherit;font-weight:700">
+            <span>🐰 친구 토끼 늘리기</span><span style="font-weight:600">${happiness < 100 ? `행복 ${100-happiness} 더` : '✨ 가능!'}</span>
           </button>
         </div>
 
-        <div style="margin-top:14px;padding:12px 14px;background:#f0fbf4;border-radius:12px;font-size:12px;color:#1B5E20;line-height:1.8">
-          💡 EcoQuest 미션 1개 완료 = 🥕 +1 자동 지급<br/>
-          💡 깅 모임 참여 = 🥕 +5 보너스<br/>
+        <div style="margin-top:12px;padding:11px 13px;background:#f0fbf4;border-radius:10px;font-size:11px;color:#1B5E20;line-height:1.8">
+          💡 미션 1개 완료 = 🥕 +1 자동 · 깅 참여 = 🥕 +5<br/>
+          💡 토끼 직접 탭하면 쓰다듬을 수 있어요 (행복+1)<br/>
           💡 ${next ? `다음 단계: 친구 ${next.min}마리 → ${next.name}` : '✨ 최고 단계 도달!'}
         </div>
 
-        <div style="margin-top:14px;padding:14px;background:#fff;border-radius:14px;border:1px solid #d8eedd">
-          <div style="font-size:12px;font-weight:900;color:#1a2e1a;margin-bottom:10px">🌱 토끼 가족 성장 단계</div>
+        <div style="margin-top:12px;padding:12px;background:#fff;border-radius:12px;border:1px solid #d8eedd">
+          <div style="font-size:11px;font-weight:900;color:#1a2e1a;margin-bottom:8px">🌱 토끼 가족 성장 단계</div>
           <div style="display:flex;justify-content:space-between;text-align:center">
             ${BUNNY_LEVELS.map((l) => `
               <div style="opacity:${friends >= l.min ? 1 : 0.3};flex:1">
-                <div style="font-size:22px">${l.emoji}</div>
-                <div style="font-size:9px;color:#666;margin-top:3px;font-weight:700">${l.name}</div>
-                <div style="font-size:9px;color:#999;margin-top:1px">${l.min === 0 ? '시작' : '친구 ' + l.min + '+'}</div>
+                <div style="font-size:20px">${l.emoji}</div>
+                <div style="font-size:9px;color:#666;margin-top:2px;font-weight:700">${l.name}</div>
+                <div style="font-size:9px;color:#999">${l.min === 0 ? '시작' : l.min + '+'}</div>
               </div>
             `).join('')}
           </div>
@@ -163,6 +182,147 @@
     `;
   }
 
+  // === 토끼 캐릭터 생성 + 애니메이션 ===
+  function spawnBunnies(count){
+    const playground = document.getElementById('bunnyPlayground');
+    if(!playground) return;
+
+    // 기존 토끼들 제거
+    playground.querySelectorAll('.bunny-char').forEach(el => el.remove());
+    _bunnyChars = [];
+
+    const w = playground.offsetWidth || 320;
+    const groundTop = 120;   // 잔디 시작 y
+    const groundBottom = 200; // 토끼가 움직일 수 있는 y 최대
+
+    // 최대 12마리까지만 (성능)
+    const showCount = Math.min(count, 12);
+
+    for(let i = 0; i < showCount; i++){
+      const el = document.createElement('div');
+      el.className = 'bunny-char';
+      const size = 28 + Math.random() * 8;
+      el.style.cssText = `
+        position:absolute;
+        font-size:${size}px;
+        cursor:pointer;
+        user-select:none;
+        z-index:${10+i};
+        will-change:left,top,transform;
+        line-height:1;
+        text-shadow:0 1px 2px rgba(0,0,0,.15);
+      `;
+      el.textContent = '🐰';
+      const idx = i;
+      el.onclick = (e) => {
+        e.stopPropagation();
+        bigJump(idx);
+        window.petBunny();
+      };
+      playground.appendChild(el);
+
+      _bunnyChars.push({
+        el,
+        x: 20 + Math.random() * (w - 60),
+        y: groundTop + Math.random() * (groundBottom - groundTop),
+        vx: (Math.random() - 0.5) * 1.2,
+        hopOffset: Math.random() * Math.PI * 2,
+        facing: 1,
+        idleTimer: 0,
+        state: 'walking', // walking, idle, eating
+        groundTop,
+        groundBottom
+      });
+    }
+
+    if(count > 12){
+      const more = document.createElement('div');
+      more.className = 'bunny-char';
+      more.style.cssText = 'position:absolute;bottom:8px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,.85);border-radius:10px;padding:3px 10px;font-size:11px;font-weight:700;color:#5D4037';
+      more.textContent = `+${count - 12}마리 더!`;
+      playground.appendChild(more);
+    }
+
+    _lastSpawnedCount = count;
+    startBunnyAnim();
+  }
+
+  function startBunnyAnim(){
+    if(_animLoop){ clearInterval(_animLoop); _animLoop = null; }
+    let frame = 0;
+    _animLoop = setInterval(() => {
+      frame++;
+      const playground = document.getElementById('bunnyPlayground');
+      if(!playground){ clearInterval(_animLoop); _animLoop = null; return; }
+      const w = playground.offsetWidth || 320;
+
+      _bunnyChars.forEach((b) => {
+        // idle 상태면 잠깐 멈춤
+        if(b.state === 'idle'){
+          b.idleTimer--;
+          if(b.idleTimer <= 0){
+            b.state = 'walking';
+            b.vx = (Math.random() - 0.5) * 1.2;
+            b.facing = b.vx > 0 ? 1 : -1;
+          }
+          // idle 중엔 살짝 좌우 흔들림 (풀 뜯는 느낌)
+          const wiggle = Math.sin(frame * 0.4) * 2;
+          b.el.style.left = b.x + 'px';
+          b.el.style.top = (b.y + wiggle) + 'px';
+          b.el.style.transform = `scaleX(${b.facing}) rotate(${wiggle}deg)`;
+          return;
+        }
+
+        // 이동
+        b.x += b.vx;
+
+        // 경계 체크
+        if(b.x < 5){ b.x = 5; b.vx = Math.abs(b.vx); b.facing = 1; }
+        if(b.x > w - 35){ b.x = w - 35; b.vx = -Math.abs(b.vx); b.facing = -1; }
+
+        // 가끔 idle 상태로 (풀 뜯기)
+        if(Math.random() < 0.005){
+          b.state = 'idle';
+          b.idleTimer = 30 + Math.floor(Math.random() * 50);
+          b.vx = 0;
+        }
+
+        // 가끔 방향 변경
+        if(Math.random() < 0.015){
+          b.vx = (Math.random() - 0.5) * 1.2;
+          b.facing = b.vx > 0 ? 1 : -1;
+        }
+
+        // y축으로도 가끔 이동 (잔디밭 안에서)
+        if(Math.random() < 0.01){
+          const targetY = b.groundTop + Math.random() * (b.groundBottom - b.groundTop);
+          b.y += (targetY - b.y) * 0.05;
+        }
+
+        // 점프 애니메이션 (sin 파 - 깡총깡총)
+        const hop = Math.abs(Math.sin(frame * 0.18 + b.hopOffset)) * 10;
+
+        b.el.style.left = b.x + 'px';
+        b.el.style.top = (b.y - hop) + 'px';
+        b.el.style.transform = `scaleX(${b.facing})`;
+      });
+    }, 50);
+  }
+
+  function bigJump(idx){
+    const b = _bunnyChars[idx];
+    if(!b) return;
+    const el = b.el;
+    el.style.transition = 'transform .35s cubic-bezier(.5,2,.3,.8)';
+    el.style.transform = `scaleX(${b.facing}) translateY(-30px) scale(1.3)`;
+    setTimeout(() => {
+      el.style.transition = 'transform .25s';
+      el.style.transform = `scaleX(${b.facing}) scale(1)`;
+      setTimeout(() => { el.style.transition = ''; }, 250);
+    }, 350);
+  }
+
+  // === 액션 ===
   window.buyCarrot = async function(){
     if(!window.ME || !_myBunny) return;
     const myPoints = window.UDATA?.point || 0;
@@ -184,16 +344,17 @@
     _myBunny.carrots--;
     _myBunny.happiness = Math.min(100, (_myBunny.happiness||0) + 10);
     await saveBunny();
-    window.toast("🍴 토끼가 행복해해요! 행복도 +10");
+    // 모든 토끼들 작은 점프
+    _bunnyChars.forEach((_, i) => setTimeout(() => bigJump(i), i * 80));
+    window.toast("🍴 토끼들이 행복해해요! 행복도 +10");
   };
 
   window.petBunny = async function(){
     if(!_myBunny) return;
-    if(Date.now() - _petTimer < 5000){window.toast("토끼가 좀 쉬고 싶대요 ☺️"); return;}
+    if(Date.now() - _petTimer < 800){return;}  // 클릭 spam 방지
     _petTimer = Date.now();
     _myBunny.happiness = Math.min(100, (_myBunny.happiness||0) + 1);
     await saveBunny();
-    window.toast("🤲 쓰다듬쓰다듬 (행복+1)");
   };
 
   window.addFriend = async function(){
@@ -203,9 +364,14 @@
     _myBunny.happiness = 0;
     await saveBunny();
     const lv = getBunnyLevel(_myBunny.friendCount);
+    // 새 친구 환영 점프
+    setTimeout(() => {
+      _bunnyChars.forEach((_, i) => setTimeout(() => bigJump(i), i * 100));
+    }, 200);
     window.toast(`🎉 친구 토끼 늘었어요! (${_myBunny.friendCount}마리 · ${lv.name})`);
   };
 
+  // === 미션/깅 hook ===
   function hookSaveMission(){
     if(window._bunnyHookedSaveMission) return;
     const orig = window.saveMission;

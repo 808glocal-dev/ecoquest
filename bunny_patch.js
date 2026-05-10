@@ -15,19 +15,19 @@
      msg:'지구가 아파요',sub:'당신의 작은 행동이 변화의 시작이에요',mask:true,hasCars:true},
     {id:1,min:1,name:'새싹',bg:'linear-gradient(180deg,#bee9d4 0%,#A8DC8E 50%,#8BC56F 100%)',
      skyDecor:[{e:'☁️',top:8,left:24,size:22,op:.85},{e:'🌤️',top:6,right:14,size:22}],
-     groundDecor:[{e:'🌱',bottom:6,left:18,size:14},{e:'🌿',bottom:4,left:80,size:13},{e:'🌷',bottom:8,left:200,size:14},{e:'🌱',bottom:6,right:60,size:13}],
+     groundDecor:[{e:'🌱',bottom:6,left:18,size:14},{e:'🌿',bottom:4,left:80,size:13},{e:'🌷',bottom:8,left:200,size:14}],
      msg:'당신이 시작했어요',sub:'첫 풀이 자라났어요',mask:false},
     {id:2,min:5,name:'들판',bg:'linear-gradient(180deg,#87CEEB 0%,#B5DCF0 45%,#A8DC8E 50%,#76B947 100%)',
      skyDecor:[{e:'☁️',top:8,left:24,size:22,op:.85},{e:'☀️',top:6,right:14,size:24},{e:'🦋',top:32,left:'50%',size:16},{e:'🐦',top:18,right:36,size:16,op:.8}],
-     groundDecor:[{e:'🌷',bottom:8,left:18,size:16},{e:'🌼',bottom:6,left:90,size:15},{e:'🌾',bottom:12,left:160,size:14},{e:'🌷',bottom:8,right:60,size:16},{e:'🌼',bottom:10,right:20,size:18}],
+     groundDecor:[{e:'🌷',bottom:8,left:18,size:16},{e:'🌼',bottom:6,left:90,size:15},{e:'🌾',bottom:12,left:160,size:14},{e:'🌷',bottom:8,right:60,size:16}],
      msg:'잃어버린 친구가 돌아와요',sub:'나비와 새가 다시 찾아왔어요',mask:false},
     {id:3,min:20,name:'숲',bg:'linear-gradient(180deg,#7AB85F 0%,#A8DC8E 40%,#5a9a3a 100%)',
      skyDecor:[{e:'☀️',top:6,right:14,size:22,op:.9},{e:'🦋',top:30,left:'45%',size:16},{e:'🌳',top:50,left:8,size:34,op:.85},{e:'🌳',top:48,right:6,size:32,op:.85}],
-     groundDecor:[{e:'🌲',bottom:6,left:60,size:24},{e:'🍄',bottom:4,left:130,size:14},{e:'💧',bottom:14,left:200,size:14},{e:'🐿️',bottom:8,right:80,size:16},{e:'🌲',bottom:6,right:18,size:22}],
+     groundDecor:[{e:'🌲',bottom:6,left:60,size:24},{e:'🍄',bottom:4,left:130,size:14},{e:'💧',bottom:14,left:200,size:14},{e:'🐿️',bottom:8,right:80,size:16}],
      msg:'생태계가 살아나요',sub:'나무와 시냇물이 흐르는 숲이 됐어요',mask:false},
     {id:4,min:50,name:'회복된 지구',bg:'linear-gradient(180deg,#1a1a3e 0%,#3d2966 40%,#5a9a3a 75%,#76B947 100%)',
      skyDecor:[{e:'🌙',top:8,right:14,size:24},{e:'⭐',top:18,left:50,size:14},{e:'⭐',top:36,left:'40%',size:12,op:.9},{e:'✨',top:8,left:140,size:14},{e:'⭐',top:28,right:50,size:14,op:.9}],
-     groundDecor:[{e:'🌳',bottom:6,left:18,size:24},{e:'🌸',bottom:4,left:80,size:14},{e:'✨',bottom:18,left:160,size:14},{e:'🌳',bottom:6,right:80,size:24},{e:'🌸',bottom:4,right:30,size:14}],
+     groundDecor:[{e:'🌳',bottom:6,left:18,size:24},{e:'🌸',bottom:4,left:80,size:14},{e:'✨',bottom:18,left:160,size:14},{e:'🌳',bottom:6,right:80,size:24}],
      msg:'당신이 지킨 작은 지구',sub:'별빛 아래 평화로운 토끼 마을이 됐어요',mask:false},
   ];
 
@@ -40,35 +40,63 @@
     {month:8,minCo2:200,emoji:'🐢',name:'푸른바다거북',theme:'바다를 살려줘',desc:'해양 보호',tag:'멸종위기 2급'},
   ];
 
+  // ═══ 토끼 메시지 50종 (탭 시 랜덤) ═══
+  const BUNNY_MSGS_STATIC=[
+    "오늘 날씨 좋아!","주인 보고 싶었어 💕","쓰담쓰담 해줘서 고마워!","심심했는데 와줘서 좋아!",
+    "햇볕 따스해 좋아!","주인 덕분에 우리가 살 수 있어 💕","환경 지켜줘서 너무 고마워!","우리 가족 행복해!",
+    "예전엔 회색 도시였는데 이젠 풀밭이야!","주인 행동이 우리 세계를 바꿨어!","오늘도 미션 했지? 짱이야!",
+    "내일도 미션 화이팅!","텀블러 써줘서 고마워!","줍깅 했다며? 멋져!","대중교통 타줘서 우리 공기 좋아졌어!",
+    "자동차 1km 안 타면 CO₂ 0.21kg 줄어!","텀블러 한 번에 11g 절감!","나무 1그루는 1년에 21kg 흡수해!",
+    "일회용컵 분해는 500년 걸려 😱","비닐봉지 분해는 100년!","수달은 한강에 다시 살게 됐어 🦦",
+    "하늘다람쥐는 천연기념물이야!","산양은 점점 줄어들어 ㅠㅠ","푸른바다거북도 우리 친구야!",
+    "주인이 최고야!","오늘도 고생했어!","쉬엄쉬엄 해, 환경은 마라톤이야 🏃","한 사람의 작은 행동이 큰 변화를 만들어!",
+    "사랑해 💕","안아줘! 🤗","포근해!","벚꽃 피는 봄이야! 🌸","녹음이 짙어! 🌿","단풍이 예뻐! 🍁",
+    "환기 자주 시켜!","오늘 점심은 뭐 먹을까?","잠이 솔솔 와... 😴","친구들이랑 놀고 있었어!",
+    "주인은 환경 영웅이야!","우리 오래오래 같이 살자 💕","미세먼지 없는 날이 좋아!",
+    "비 오면 풀이 더 잘 자라!","꽃밭 가꿔줘서 고마워!","작은 행동도 의미 있어!",
+    "환경의 날 알지? 6월 5일이야!","제로웨이스트 알지? 우리 다 살아!","에코퀘스트 짱! 💚",
+    "주인이 우리 마을 지킴이야!","어제보다 오늘이 더 푸르러!","주인 옆이 제일 좋아 ❤️"
+  ];
+
   function getStage(co2){for(let i=STAGES.length-1;i>=0;i--){if(co2>=STAGES[i].min)return STAGES[i];}return STAGES[0];}
   function getNextStage(co2){const cur=getStage(co2);const idx=STAGES.indexOf(cur);return idx<STAGES.length-1?STAGES[idx+1]:null;}
   function getStageProgress(co2){const cur=getStage(co2);const nxt=getNextStage(co2);if(!nxt)return 1;return Math.min(1,(co2-cur.min)/(nxt.min-cur.min));}
   function getImpact(co2){return {trees:(co2/21.4).toFixed(1),carKm:Math.round(co2/0.21),cups:Math.round(co2/0.011),sqm:Math.round(co2*0.6)};}
 
-  let _myCo2=0, _airQuality=null;
+  function getRandomBunnyMsg(){
+    const imp=getImpact(_myCo2);
+    const dynamic=[
+      `지금까지 ${_myCo2.toFixed(1)}kg 줄였어! 멋지다!`,
+      `우리 가족 ${(_myBunny?.bunnies||[]).length}마리야! 🐰`,
+      `주인 덕분에 나무 ${imp.trees}그루 산 거야!`,
+      `자동차 ${imp.carKm}km 안 탄 효과야! 🚗`,
+      `일회용컵 ${imp.cups}개 안 만들었어! ☕`,
+      `우리 마을 ${imp.sqm}평이야 🏡`,
+      `다음 단계 ${getNextStage(_myCo2)?Math.max(0,getNextStage(_myCo2).min-_myCo2).toFixed(1):0}kg 남았어!`,
+    ];
+    const all=[...BUNNY_MSGS_STATIC,...dynamic];
+    return all[Math.floor(Math.random()*all.length)];
+  }
 
-  // ═══ 미세먼지 (Open-Meteo, key 불필요) ═══
+  let _myCo2=0,_airQuality=null;
+
   async function fetchAirQuality(){
-    try {
-      const lat=37.5,lng=126.9; // 서울/인천
-      const r=await fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lng}&current=pm10,pm2_5`);
+    try{
+      const r=await fetch('https://air-quality-api.open-meteo.com/v1/air-quality?latitude=37.5&longitude=126.9&current=pm10,pm2_5');
       const d=await r.json();
       if(d.current){
         _airQuality={pm25:Math.round(d.current.pm2_5||0),pm10:Math.round(d.current.pm10||0)};
-        console.log('[bunny] 공기질:', _airQuality);
-        // 토끼 게임 다시 그리기
-        if(document.getElementById('bunnyGameMain') && _myBunny){renderBunnyMap();}
+        if(document.getElementById('bunnyGameMain')&&_myBunny) renderBunnyMap();
       }
-    } catch(e){console.log('[bunny] 공기 실패:',e.message);}
+    }catch(e){console.log('[bunny] 공기 실패:',e.message);}
   }
-
   function getAirStatus(){
     if(!_airQuality) return {label:'정보 없음',icon:'❓',color:'#888',mask:false,msg:''};
     const pm=_airQuality.pm25;
     if(pm<15) return {label:'좋음',icon:'✨',color:'#00BFA5',mask:false,msg:'토끼들이 신났어요!'};
     if(pm<35) return {label:'보통',icon:'☁️',color:'#43A047',mask:false,msg:''};
-    if(pm<75) return {label:'나쁨',icon:'🌫️',color:'#FF8F00',mask:true,msg:'토끼들이 마스크를 썼어요'};
-    return {label:'매우 나쁨',icon:'⚠️',color:'#D32F2F',mask:true,msg:'외출 자제 권장'};
+    if(pm<75) return {label:'나쁨',icon:'🌫️',color:'#FF8F00',mask:true,msg:'마스크 자동 착용'};
+    return {label:'매우 나쁨',icon:'⚠️',color:'#D32F2F',mask:true,msg:'외출 자제'};
   }
 
   async function refreshMyCo2(){
@@ -77,14 +105,14 @@
       const keys=['co2Saved','totalCo2','co2','totalCO2','CO2','co2_saved','co2Reduced','co2_reduced'];
       for(const k of keys){const v=Number(window.UDATA[k]); if(!isNaN(v)&&v>0){_myCo2=v;return _myCo2;}}
     }
-    try {
+    try{
       const q=window.FB.query(window.FB.collection(window.FB.db,"missionLogs"),window.FB.where("uid","==",window.ME.uid));
       const snap=await window.FB.getDocs(q);
       let sum=0,count=0;
       snap.forEach(d=>{const dt=d.data(); const v=Number(dt.co2||dt.co2Reduced||0); if(!isNaN(v))sum+=v; count++;});
       if(sum>0){_myCo2=sum;return _myCo2;}
       if(count>0){_myCo2=count*0.5;return _myCo2;}
-    } catch(e){console.log('[bunny] CO2 fetch 실패:',e.message);}
+    }catch(e){console.log('[bunny] CO2 fetch 실패');}
     _myCo2=0; return 0;
   }
 
@@ -93,7 +121,7 @@
     if(mood==='sleep') eye=`<path d="M 19 24 Q 22 27 25 24" stroke="${p.stroke}" stroke-width="1.2" fill="none" stroke-linecap="round"/><path d="M 31 24 Q 34 27 37 24" stroke="${p.stroke}" stroke-width="1.2" fill="none" stroke-linecap="round"/>`;
     else if(mood==='happy') eye=`<path d="M 19 26 Q 22 23 25 26" stroke="#1a1a1a" stroke-width="1.4" fill="none" stroke-linecap="round"/><path d="M 31 26 Q 34 23 37 26" stroke="#1a1a1a" stroke-width="1.4" fill="none" stroke-linecap="round"/>`;
     else eye=`<ellipse cx="22" cy="26" rx="2.6" ry="3.2" fill="#1a1a1a"/><ellipse cx="34" cy="26" rx="2.6" ry="3.2" fill="#1a1a1a"/><ellipse cx="23" cy="24.8" rx="1.2" ry="1.5" fill="#fff"/><ellipse cx="35" cy="24.8" rx="1.2" ry="1.5" fill="#fff"/><circle cx="21.3" cy="27.3" r=".4" fill="#fff" opacity=".7"/><circle cx="33.3" cy="27.3" r=".4" fill="#fff" opacity=".7"/>`;
-    const mask=withMask?`<g><ellipse cx="28" cy="35" rx="11" ry="5" fill="#A8E6F0" stroke="#5d9aaa" stroke-width=".5" opacity=".95"/><line x1="17" y1="35" x2="14" y2="32" stroke="#5d9aaa" stroke-width=".5"/><line x1="39" y1="35" x2="42" y2="32" stroke="#5d9aaa" stroke-width=".5"/><line x1="28" y1="32" x2="28" y2="38" stroke="#88c5d3" stroke-width=".4" opacity=".5"/></g>`:'';
+    const mask=withMask?`<g><ellipse cx="28" cy="35" rx="11" ry="5" fill="#A8E6F0" stroke="#5d9aaa" stroke-width=".5" opacity=".95"/><line x1="17" y1="35" x2="14" y2="32" stroke="#5d9aaa" stroke-width=".5"/><line x1="39" y1="35" x2="42" y2="32" stroke="#5d9aaa" stroke-width=".5"/></g>`:'';
     return `<svg viewBox="0 0 60 70" style="width:60px;height:70px;display:block;overflow:visible">
       <ellipse cx="30" cy="68" rx="17" ry="1.5" fill="${p.stroke}" opacity=".15"/>
       <path d="M 16 52 C 13 65 22 66 30 65 C 38 66 47 65 44 52 C 46 42 38 38 30 38 C 22 38 14 42 16 52 Z" fill="${p.body}" stroke="${p.stroke}" stroke-width=".8" stroke-linejoin="round"/>
@@ -107,7 +135,6 @@
       ${eye}
       <line x1="13" y1="32" x2="5" y2="31" stroke="${p.stroke}" stroke-width=".5" stroke-linecap="round" opacity=".7"/>
       <line x1="13" y1="33.5" x2="4" y2="34" stroke="${p.stroke}" stroke-width=".5" stroke-linecap="round" opacity=".7"/>
-      <line x1="38" y1="33" x2="45" y2="32" stroke="${p.stroke}" stroke-width=".4" stroke-linecap="round" opacity=".6"/>
       <path d="M 26 32 Q 28 31.5 29 32.5 Q 29 34 27.5 34.5 Q 25.5 34 25 32.8 Q 25.5 32 26 32 Z" fill="#FF9FB0" stroke="${p.stroke}" stroke-width=".4"/>
       <path d="M 27 34.5 L 27 35.8" stroke="${p.stroke}" stroke-width=".7" stroke-linecap="round"/>
       <path d="M 27 35.8 Q 25 36.8 24 36.3" stroke="${p.stroke}" stroke-width=".7" fill="none" stroke-linecap="round"/>
@@ -119,7 +146,7 @@
     </svg>`;
   }
 
-  let _myBunny=null,_petTimer=0,_bunnyChars=[],_animLoop=null,_lastSpawnedKey='',_adoptColor=0,_lastStageId=-1;
+  let _myBunny=null,_petTimer=0,_bunnyChars=[],_animLoop=null,_lastSpawnedKey='',_adoptColor=0,_lastStageId=-1,_isFirstAdopt=false;
 
   async function loadBunny(){
     if(!window.ME||!window.FB) return;
@@ -128,21 +155,25 @@
       const snap=await window.FB.getDoc(ref);
       if(snap.exists()){
         _myBunny=snap.data();
-        if(!_myBunny.bunnies||!Array.isArray(_myBunny.bunnies)){
-          const cnt=(_myBunny.friendCount||0)+1;
-          _myBunny.bunnies=[];
+        if(!_myBunny.bunnies||!Array.isArray(_myBunny.bunnies)) _myBunny.bunnies=[];
+        if(!_myBunny.decorations||!Array.isArray(_myBunny.decorations)) _myBunny.decorations=[];
+        // 기존 friendCount 마이그레이션 (있으면 토끼 데이터 보존)
+        if(_myBunny.friendCount!==undefined && _myBunny.bunnies.length===0){
+          const cnt=_myBunny.friendCount+1;
           for(let i=0;i<cnt;i++) _myBunny.bunnies.push({name:i===0?"꼬미":`토끼${i+1}`,color:0});
           delete _myBunny.friendCount;
+          delete _myBunny.carrots;
           await window.FB.setDoc(ref,_myBunny);
         }
       } else {
-        _myBunny={carrots:0,happiness:0,bunnies:[{name:"꼬미",color:0}],createdAt:window.FB.serverTimestamp()};
+        // 처음 → bunnies 비어있음. 입양 안내 화면 표시
+        _myBunny={happiness:0,bunnies:[],decorations:[],createdAt:window.FB.serverTimestamp()};
         await window.FB.setDoc(ref,_myBunny);
       }
       await refreshMyCo2();
       _lastStageId=getStage(_myCo2).id;
       renderBunnyMap();
-    } catch(e){console.log("토끼 로드 실패:",e.message);}
+    }catch(e){console.log("토끼 로드 실패:",e.message);}
   }
 
   async function saveBunny(){
@@ -153,9 +184,10 @@
       const cnt=(_myBunny.bunnies||[]).length;
       const colors=(_myBunny.bunnies||[]).map(b=>b.color).join(',');
       const stageId=getStage(_myCo2).id;
-      const newKey=`${cnt}_${colors}_${stageId}`;
+      const decoCount=(_myBunny.decorations||[]).length;
+      const newKey=`${cnt}_${colors}_${stageId}_${decoCount}`;
       if(newKey!==_lastSpawnedKey){spawnBunnies(_myBunny.bunnies||[]); applyStageBg(getStage(_myCo2));}
-    } catch(e){console.log("토끼 저장 실패:",e.message);}
+    }catch(e){console.log("토끼 저장 실패:",e.message);}
   }
 
   function checkStageUp(){
@@ -168,7 +200,7 @@
     const tryAdd=()=>{
       const mapPage=document.getElementById("page-map"); if(!mapPage) return false;
       if(document.getElementById("bunnyGameMain")) return true;
-      mapPage.innerHTML='<div id="bunnyGameMain"><div style="text-align:center;padding:40px;color:#888;font-size:13px">🐰 토끼 게임 로딩 중...</div></div>';
+      mapPage.innerHTML='<div id="bunnyGameMain"><div style="text-align:center;padding:40px;color:#888;font-size:13px">🐰 로딩 중...</div></div>';
       window.drawMap=function(){renderBunnyMap(); refreshAndUpdate();};
       loadBunny();
       return true;
@@ -205,7 +237,8 @@
         const stage=getStage(_myCo2); applyStageBg(stage);
         const cnt=(_myBunny?.bunnies||[]).length;
         const colors=(_myBunny?.bunnies||[]).map(b=>b.color).join(',');
-        const newKey=`${cnt}_${colors}_${stage.id}`;
+        const decoCount=(_myBunny?.decorations||[]).length;
+        const newKey=`${cnt}_${colors}_${stage.id}_${decoCount}`;
         if(newKey!==_lastSpawnedKey) spawnBunnies(_myBunny?.bunnies||[]);
         checkStageUp();
       },1500);
@@ -214,7 +247,14 @@
 
   function renderBunnyMap(){
     const c=document.getElementById("bunnyGameMain"); if(!c) return;
-    if(!_myBunny){c.innerHTML='<div style="text-align:center;padding:40px;color:#888;font-size:13px">🐰 토끼 데이터 로딩 중...</div>'; return;}
+    if(!_myBunny){c.innerHTML='<div style="text-align:center;padding:40px;color:#888;font-size:13px">🐰 로딩 중...</div>'; return;}
+    
+    // 토끼가 없으면 첫 입양 안내
+    if((_myBunny.bunnies||[]).length===0){
+      renderFirstAdopt();
+      return;
+    }
+
     const stage=getStage(_myCo2); const next=getNextStage(_myCo2); const air=getAirStatus();
 
     c.innerHTML=`
@@ -224,24 +264,27 @@
             <div style="font-size:9px;color:rgba(255,255,255,.6);font-weight:600;letter-spacing:1px">🌍 내 지구 — STAGE ${stage.id+1}/5</div>
             <div style="font-size:14px;font-weight:900;color:#a8f0c6;margin-top:1px">${stage.name} · CO₂ ${_myCo2.toFixed(1)}kg</div>
           </div>
-          <div style="font-size:10px;color:rgba(255,255,255,.7);text-align:right">${next?`다음: ${next.name}<br/><b style="color:#a8f0c6">${(next.min-_myCo2).toFixed(1)}kg 더!</b>`:'<b style="color:#FFD700">최종 단계 ✨</b>'}</div>
+          <div style="display:flex;gap:6px;align-items:center">
+            <button onclick="shareCurrentBunny()" style="background:rgba(255,255,255,.2);border:none;border-radius:10px;padding:6px 10px;font-size:11px;font-weight:700;color:#fff;cursor:pointer;font-family:inherit">📸 공유</button>
+          </div>
         </div>
+        <div style="font-size:10px;color:rgba(255,255,255,.7);margin-bottom:5px">${next?`다음: ${next.name} <b style="color:#a8f0c6">${(next.min-_myCo2).toFixed(1)}kg 더!</b>`:'<b style="color:#FFD700">최종 단계 ✨</b>'}</div>
         ${next?`<div style="height:5px;background:rgba(255,255,255,.2);border-radius:3px;overflow:hidden"><div style="width:${Math.min(100,getStageProgress(_myCo2)*100)}%;height:100%;background:linear-gradient(90deg,#a8f0c6,#FFD700);transition:width .8s"></div></div>`:''}
       </div>
 
-      ${_airQuality ? `<div style="margin:0 12px 12px;background:#fff;border:1.5px solid ${air.color};border-radius:12px;padding:8px 12px;display:flex;align-items:center;justify-content:space-between">
+      ${_airQuality?`<div style="margin:0 12px 12px;background:#fff;border:1.5px solid ${air.color};border-radius:12px;padding:8px 12px;display:flex;align-items:center;justify-content:space-between">
         <div style="display:flex;align-items:center;gap:8px">
           <div style="font-size:20px">${air.icon}</div>
           <div>
             <div style="font-size:10px;color:#888;font-weight:600">오늘 미세먼지</div>
-            <div style="font-size:13px;font-weight:900;color:${air.color}">${air.label} <span style="font-size:10px;color:#888">PM2.5 ${_airQuality.pm25}㎍/㎥</span></div>
+            <div style="font-size:13px;font-weight:900;color:${air.color}">${air.label} <span style="font-size:10px;color:#888">PM2.5 ${_airQuality.pm25}</span></div>
           </div>
         </div>
         ${air.msg?`<div style="font-size:10px;color:${air.color};font-weight:700;text-align:right">${air.msg}</div>`:''}
-      </div>` : ''}
+      </div>`:''}
 
       <div id="bunnyPlayground" style="position:relative;margin:0 12px;height:260px;border-radius:18px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.1);user-select:none;transition:background 1.5s">
-        <div id="bunnyHelpText" style="position:absolute;top:8px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,.85);border-radius:12px;padding:3px 10px;font-size:10px;color:#444;font-weight:600;pointer-events:none;z-index:5">"${stage.msg}" · 토끼 탭하면 이름</div>
+        <div id="bunnyHelpText" style="position:absolute;top:8px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,.85);border-radius:12px;padding:3px 10px;font-size:10px;color:#444;font-weight:600;pointer-events:none;z-index:5">"${stage.msg}" · 토끼 탭하면 메시지!</div>
       </div>
       <div id="bunnyStats"></div>
     `;
@@ -250,21 +293,48 @@
     setTimeout(()=>spawnBunnies(_myBunny.bunnies||[]),100);
   }
 
+  function renderFirstAdopt(){
+    const c=document.getElementById("bunnyGameMain"); if(!c) return;
+    c.innerHTML=`
+      <div style="margin:24px 16px;text-align:center">
+        <div style="background:linear-gradient(135deg,#fff,#fff8e1);border-radius:20px;padding:32px 20px;border:2px solid #FFE082;box-shadow:0 4px 20px rgba(0,0,0,.05)">
+          <div style="font-size:64px;margin-bottom:12px">🐰</div>
+          <div style="font-size:20px;font-weight:900;color:#1B5E20;margin-bottom:8px">아직 토끼가 없어요!</div>
+          <div style="font-size:13px;color:#666;line-height:1.6;margin-bottom:24px">
+            나의 환경 행동이<br/>토끼 가족의 세계를 바꿔요 🌍<br/>
+            첫 토끼를 입양하고 시작해 볼까요?
+          </div>
+          <button onclick="adoptBunny(true)" style="background:linear-gradient(135deg,#FF6B9D,#C44569);color:#fff;border:none;border-radius:14px;padding:14px 32px;font-size:15px;font-weight:900;cursor:pointer;font-family:inherit;box-shadow:0 4px 16px rgba(196,69,105,.3)">
+            🐰 첫 토끼 입양하기
+          </button>
+        </div>
+
+        <div style="margin-top:20px;padding:16px;background:#f0fbf4;border-radius:14px;text-align:left">
+          <div style="font-size:11px;font-weight:900;color:#1B5E20;margin-bottom:8px">🌍 어떻게 작동하나요?</div>
+          <div style="font-size:11px;color:#444;line-height:1.8">
+            1️⃣ 미션을 하면 누적 CO₂가 쌓여요<br/>
+            2️⃣ 누적 CO₂에 따라 토끼 세계가 5단계로 변해요<br/>
+            3️⃣ 회색 도시 → 새싹 → 들판 → 숲 → 회복된 지구<br/>
+            4️⃣ 50kg 넘으면 멸종위기종 친구도 만나요!
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
   function applyStageBg(stage){
     const pg=document.getElementById('bunnyPlayground'); if(!pg) return;
     pg.style.background=stage.bg;
-    pg.querySelectorAll('.stage-decor, .stage-car').forEach(el=>el.remove());
+    pg.querySelectorAll('.stage-decor, .stage-car, .user-decor').forEach(el=>el.remove());
 
-    // 미세먼지 나쁨 시 추가 안개
     const air=getAirStatus();
     if(air.mask){
-      const fog=document.createElement('div');
-      fog.className='stage-decor';
+      const fog=document.createElement('div'); fog.className='stage-decor';
       fog.style.cssText='position:absolute;inset:0;background:radial-gradient(circle at 50% 60%,rgba(180,170,150,.35) 0%,rgba(180,170,150,.15) 60%,transparent 100%);pointer-events:none;z-index:4';
       pg.appendChild(fog);
     }
 
-    const decors=[...(stage.skyDecor||[]).map(d=>({...d,zone:'sky'})),...(stage.groundDecor||[]).map(d=>({...d,zone:'ground'}))];
+    const decors=[...(stage.skyDecor||[]).map(d=>({...d})),...(stage.groundDecor||[]).map(d=>({...d}))];
     decors.forEach(d=>{
       const el=document.createElement('div'); el.className='stage-decor';
       let s=`position:absolute;font-size:${d.size||14}px;opacity:${d.op||.85};pointer-events:none;z-index:2;`;
@@ -276,11 +346,11 @@
       pg.appendChild(el);
     });
 
-    const progress=getStageProgress(_myCo2); const slots=8; const filled=Math.floor(progress*slots);
+    const progress=getStageProgress(_myCo2); const filled=Math.floor(progress*8);
     const subList=SUB_DECORS[stage.id]||[];
-    for(let i=0;i<filled && i<subList.length;i++){
+    for(let i=0;i<filled&&i<subList.length;i++){
       const e=document.createElement('div'); e.className='stage-decor';
-      const isSky=stage.id>=2 && (i%3===0); const seed=(i*97)%240;
+      const isSky=stage.id>=2&&(i%3===0); const seed=(i*97)%240;
       if(isSky) e.style.cssText=`position:absolute;top:${30+(i*23)%60}px;left:${20+seed}px;font-size:${13+(i%4)*2}px;opacity:.85;z-index:2;pointer-events:none`;
       else e.style.cssText=`position:absolute;bottom:${4+(i*7)%22}px;left:${20+seed}px;font-size:${13+(i%4)*2}px;opacity:.85;z-index:2;pointer-events:none`;
       e.textContent=subList[i];
@@ -301,11 +371,19 @@
         pg.appendChild(el);
       });
     }
+
+    // 사용자 영구 데코 (싸이월드 꾸미기)
+    (_myBunny?.decorations||[]).forEach(d=>{
+      const el=document.createElement('div'); el.className='user-decor';
+      el.style.cssText=`position:absolute;left:${d.x}px;top:${d.y}px;font-size:${d.size||24}px;z-index:3;pointer-events:none;text-shadow:0 1px 2px rgba(0,0,0,.1)`;
+      el.textContent=d.emoji;
+      pg.appendChild(el);
+    });
   }
 
   function renderBunnyStats(){
     const c=document.getElementById("bunnyStats"); if(!c||!_myBunny) return;
-    const bunnies=_myBunny.bunnies||[]; const happiness=_myBunny.happiness||0; const carrots=_myBunny.carrots||0;
+    const bunnies=_myBunny.bunnies||[]; const happiness=_myBunny.happiness||0;
     const myPoints=window.UDATA?.point||0; const imp=getImpact(_myCo2);
 
     c.innerHTML=`
@@ -328,46 +406,34 @@
           ${happiness>=100?'<div style="font-size:11px;color:#C44569;margin-top:6px;font-weight:700">✨ 새 토끼를 입양할 수 있어요!</div>':''}
         </div>
 
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#FFF8E1;border-radius:14px;margin-bottom:12px;border:2px solid #FFE082">
-          <div style="font-size:14px;font-weight:700;color:#8D6E1B">🥕 내 당근</div><div style="font-size:22px;font-weight:900;color:#B8860B">${carrots}개</div>
+        <button onclick="adoptBunny()" ${happiness<100?'disabled':''} style="display:flex;align-items:center;justify-content:space-between;padding:13px 16px;background:${happiness<100?'#f5f5f5':'linear-gradient(135deg,#FF6B9D,#C44569)'};color:${happiness<100?'#aaa':'#fff'};border:none;border-radius:12px;font-size:14px;cursor:${happiness<100?'default':'pointer'};font-family:inherit;font-weight:700;width:100%;margin-bottom:12px"><span>🐰 새 토끼 입양하기</span><span style="font-weight:600">${happiness<100?`행복 ${100-happiness} 더`:'✨ 가능!'}</span></button>
+
+        <div style="padding:11px 13px;background:#f0fbf4;border-radius:10px;font-size:11px;color:#1B5E20;line-height:1.8;margin-bottom:12px">
+          💡 미션 1개 → 새 꽃 즉시 피움 ✨<br/>
+          💡 토끼 탭 = 토끼가 한마디 해줘요<br/>
+          💡 상점에서 나무·꽃 사서 우리 마을 꾸미기!
         </div>
 
-        <div style="display:flex;flex-direction:column;gap:8px">
-          <button onclick="feedBunny()" ${carrots<1?'disabled':''} style="display:flex;align-items:center;justify-content:space-between;padding:13px 16px;background:${carrots<1?'#f5f5f5':'linear-gradient(135deg,#2ECC71,#27AE60)'};color:${carrots<1?'#aaa':'#fff'};border:none;border-radius:12px;font-size:14px;cursor:${carrots<1?'default':'pointer'};font-family:inherit;font-weight:700"><span>🍴 먹이 주기</span><span style="font-weight:600">${carrots<1?'당근 부족':'당근 -1, 행복+10'}</span></button>
-          <button onclick="adoptBunny()" ${happiness<100?'disabled':''} style="display:flex;align-items:center;justify-content:space-between;padding:13px 16px;background:${happiness<100?'#f5f5f5':'linear-gradient(135deg,#FF6B9D,#C44569)'};color:${happiness<100?'#aaa':'#fff'};border:none;border-radius:12px;font-size:14px;cursor:${happiness<100?'default':'pointer'};font-family:inherit;font-weight:700"><span>🐰 새 토끼 입양하기</span><span style="font-weight:600">${happiness<100?`행복 ${100-happiness} 더`:'✨ 가능!'}</span></button>
-        </div>
-
-        <div style="margin-top:12px;padding:11px 13px;background:#f0fbf4;border-radius:10px;font-size:11px;color:#1B5E20;line-height:1.8">
-          💡 미션 1개 → 새 꽃 한 송이 즉시 피움 ✨<br/>
-          💡 미세먼지 나쁨 → 토끼들이 마스크 자동 착용<br/>
-          💡 5단계(50kg) 도달 후 → 멸종위기종 친구!
-        </div>
-
-        <div style="margin-top:12px;padding:14px 12px;background:#fff;border-radius:12px;border:1px solid #d8eedd">
+        <div style="margin-bottom:12px;padding:14px 12px;background:#fff;border-radius:12px;border:1px solid #d8eedd">
           <div style="font-size:11px;font-weight:900;color:#1a2e1a;margin-bottom:12px;text-align:center">🐾 우리 토끼 가족</div>
           <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center">
             ${bunnies.map((b)=>`<div style="text-align:center;padding:6px 4px;background:#f8fdf9;border-radius:10px;min-width:62px;border:1px solid #eee"><div style="height:54px;display:flex;justify-content:center;align-items:flex-end;overflow:hidden"><div style="transform:scale(.7);transform-origin:center bottom">${bunnySvg(b.color,'normal',false)}</div></div><div style="font-size:10px;color:#444;margin-top:3px;font-weight:700">${b.name}</div></div>`).join('')}
           </div>
         </div>
 
-        <div style="margin-top:12px;padding:14px 12px;background:linear-gradient(135deg,#fff,#fff8e1);border-radius:14px;border:2px dashed #FFD54F">
+        <div style="padding:14px 12px;background:linear-gradient(135deg,#fff,#fff8e1);border-radius:14px;border:2px dashed #FFD54F">
           <div style="font-size:11px;font-weight:900;color:#8D6E1B;margin-bottom:4px;text-align:center">🌟 한정판 친구 — 멸종위기종</div>
           <div style="font-size:10px;color:#888;text-align:center;margin-bottom:12px">CO₂ 더 모으면 만날 수 있어요!</div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
             ${SEASONS.map(s=>{
-              const unlocked=_myCo2>=s.minCo2;
-              const remain=Math.max(0,s.minCo2-_myCo2);
+              const unlocked=_myCo2>=s.minCo2; const remain=Math.max(0,s.minCo2-_myCo2);
               const prog=Math.min(100,(_myCo2/s.minCo2)*100);
               return `<div style="background:${unlocked?'#fff':'#fafafa'};border-radius:10px;padding:10px 8px;text-align:center;border:1px solid ${unlocked?'#FFE082':'#e8e8e8'};position:relative">
                 <div style="font-size:36px;line-height:1.1;filter:${unlocked?'none':'grayscale(.85) opacity(.5)'}">${s.emoji}</div>
                 <div style="font-size:11px;font-weight:900;color:${unlocked?'#5D4037':'#999'};margin-top:6px">${s.month}월 · ${s.name}</div>
                 <div style="font-size:9px;color:#888;margin-top:2px">"${s.theme}"</div>
-                <div style="height:4px;background:#f0f0f0;border-radius:2px;overflow:hidden;margin-top:6px">
-                  <div style="width:${prog}%;height:100%;background:linear-gradient(90deg,#FFD54F,#FF8F00);transition:width .8s"></div>
-                </div>
-                <div style="font-size:9px;color:${unlocked?'#27AE60':'#FF8F00'};margin-top:4px;font-weight:700">
-                  ${unlocked?'✨ 해금!':`CO₂ ${remain.toFixed(0)}kg 더`}
-                </div>
+                <div style="height:4px;background:#f0f0f0;border-radius:2px;overflow:hidden;margin-top:6px"><div style="width:${prog}%;height:100%;background:linear-gradient(90deg,#FFD54F,#FF8F00);transition:width .8s"></div></div>
+                <div style="font-size:9px;color:${unlocked?'#27AE60':'#FF8F00'};margin-top:4px;font-weight:700">${unlocked?'✨ 해금!':`CO₂ ${remain.toFixed(0)}kg 더`}</div>
                 <div style="position:absolute;top:6px;right:6px;background:#FFE082;color:#8D6E1B;font-size:8px;font-weight:700;padding:2px 5px;border-radius:7px">${s.tag}</div>
               </div>`;
             }).join('')}
@@ -379,14 +445,18 @@
     `;
   }
 
-  window.adoptBunny=function(){
+  // ═══ 입양 ═══
+  window.adoptBunny=function(isFirst){
     if(!_myBunny) return;
-    if((_myBunny.happiness||0)<100){window.toast("행복도 100 필요해요!"); return;}
+    _isFirstAdopt=isFirst===true;
+    if(!_isFirstAdopt && (_myBunny.happiness||0)<100){window.toast("행복도 100 필요해요!"); return;}
     _adoptColor=0;
     const old=document.getElementById('ovAdopt'); if(old) old.remove();
     const modal=document.createElement('div');
     modal.id='ovAdopt'; modal.className='overlay on';
-    modal.innerHTML=`<div class="modal" style="padding:24px 20px 20px"><button class="modal-close" onclick="document.getElementById('ovAdopt').remove()">✕</button><div style="text-align:center;margin-bottom:14px"><div style="font-size:48px">🐰</div><div style="font-size:17px;font-weight:900;margin-top:6px;color:#1B5E20">새 토끼 입양하기</div><div style="font-size:12px;color:#888;margin-top:6px">우리 가족이 될 토끼를 골라요!</div></div><div style="font-size:12px;font-weight:700;margin-bottom:8px;color:#555">🎨 색깔 선택</div><div style="display:flex;gap:6px;justify-content:space-between;margin-bottom:16px">${PALETTES.map((p,i)=>`<button id="cpb-${i}" onclick="selectAdoptColor(${i})" style="flex:1;background:${i===0?'#f0fbf4':'#fff'};border:${i===0?'2.5px solid #2ECC71':'1.5px solid #ddd'};border-radius:12px;padding:6px 2px;cursor:pointer;font-family:inherit;text-align:center"><div style="height:60px;display:flex;justify-content:center;align-items:flex-end;overflow:hidden"><div style="transform:scale(.7);transform-origin:center bottom">${bunnySvg(i,'normal',false)}</div></div><div style="font-size:9px;color:#666;margin-top:2px;font-weight:700">${p.label}</div></button>`).join('')}</div><div style="font-size:12px;font-weight:700;margin-bottom:8px;color:#555">✏️ 이름</div><input id="newBunnyName" class="inp" placeholder="예: 꼬미, 토토..." maxlength="6" style="text-align:center;font-size:15px;font-weight:700"/><div style="display:flex;gap:8px;margin-top:16px"><button class="btn btn-gray" style="flex:1" onclick="document.getElementById('ovAdopt').remove()">취소</button><button class="btn btn-g" style="flex:1" onclick="confirmAdopt()">🎉 입양!</button></div></div>`;
+    const titleText=_isFirstAdopt?'첫 토끼 입양하기 🎉':'새 토끼 입양하기';
+    const subText=_isFirstAdopt?'우리 첫 토끼 이름을 지어주세요!':'우리 가족이 될 토끼를 골라요!';
+    modal.innerHTML=`<div class="modal" style="padding:24px 20px 20px"><button class="modal-close" onclick="document.getElementById('ovAdopt').remove()">✕</button><div style="text-align:center;margin-bottom:14px"><div style="font-size:48px">🐰</div><div style="font-size:17px;font-weight:900;margin-top:6px;color:#1B5E20">${titleText}</div><div style="font-size:12px;color:#888;margin-top:6px">${subText}</div></div><div style="font-size:12px;font-weight:700;margin-bottom:8px;color:#555">🎨 색깔 선택</div><div style="display:flex;gap:6px;justify-content:space-between;margin-bottom:16px">${PALETTES.map((p,i)=>`<button id="cpb-${i}" onclick="selectAdoptColor(${i})" style="flex:1;background:${i===0?'#f0fbf4':'#fff'};border:${i===0?'2.5px solid #2ECC71':'1.5px solid #ddd'};border-radius:12px;padding:6px 2px;cursor:pointer;font-family:inherit;text-align:center"><div style="height:60px;display:flex;justify-content:center;align-items:flex-end;overflow:hidden"><div style="transform:scale(.7);transform-origin:center bottom">${bunnySvg(i,'normal',false)}</div></div><div style="font-size:9px;color:#666;margin-top:2px;font-weight:700">${p.label}</div></button>`).join('')}</div><div style="font-size:12px;font-weight:700;margin-bottom:8px;color:#555">✏️ 이름 (직접 지어주세요!)</div><input id="newBunnyName" class="inp" placeholder="예: 꼬미, 토토, 보리, 마루..." maxlength="6" style="text-align:center;font-size:15px;font-weight:700"/><div style="font-size:10px;color:#aaa;text-align:center;margin-top:4px">최대 6글자</div><div style="display:flex;gap:8px;margin-top:16px"><button class="btn btn-gray" style="flex:1" onclick="document.getElementById('ovAdopt').remove()">취소</button><button class="btn btn-g" style="flex:1" onclick="confirmAdopt()">🎉 입양!</button></div></div>`;
     document.body.appendChild(modal);
     setTimeout(()=>{const inp=document.getElementById('newBunnyName'); if(inp){inp.focus(); inp.onkeydown=(e)=>{if(e.key==='Enter')window.confirmAdopt();};}},100);
   };
@@ -397,15 +467,21 @@
   window.confirmAdopt=async function(){
     if(!_myBunny) return;
     const inp=document.getElementById('newBunnyName');
-    let name=inp?.value?.trim()||''; if(!name) name=`토끼${(_myBunny.bunnies?.length||0)+1}`;
+    let name=inp?.value?.trim()||'';
+    if(!name){window.toast("이름을 지어주세요!"); return;}
     if(name.length>6) name=name.substring(0,6);
     if(!_myBunny.bunnies) _myBunny.bunnies=[];
     _myBunny.bunnies.push({name,color:_adoptColor});
-    _myBunny.happiness=0;
+    if(!_isFirstAdopt) _myBunny.happiness=0;
     await saveBunny();
     document.getElementById('ovAdopt')?.remove();
+    if(_isFirstAdopt){
+      // 첫 입양 → 토끼 게임 화면 다시 그리기
+      renderBunnyMap();
+    }
     setTimeout(()=>{_bunnyChars.forEach((_,i)=>setTimeout(()=>bigJump(i),i*100));},300);
     window.toast(`🎉 "${name}" 우리 가족이 됐어요!`);
+    _isFirstAdopt=false;
   };
 
   function spawnBunnies(bunniesData){
@@ -419,14 +495,12 @@
 
     for(let i=0;i<showCount;i++){
       const bdata=bunniesData[i];
-      const wrap=document.createElement('div');
-      wrap.className='bunny-char';
+      const wrap=document.createElement('div'); wrap.className='bunny-char';
       wrap.style.cssText=`position:absolute;cursor:pointer;user-select:none;z-index:${20+i};will-change:left,top,transform;line-height:0`;
-      // 마스크 = (Stage 0 첫 토끼) OR (미세먼지 나쁨)
       const withMask=(stage.mask&&i===0)||air.mask;
-      wrap.innerHTML=`<div class="bunny-svg">${bunnySvg(bdata.color,'normal',withMask)}</div><div class="bunny-grass" style="position:absolute;top:30px;left:-12px;font-size:14px;display:none;line-height:1">🌿</div><div class="bunny-zzz" style="position:absolute;top:-10px;right:-4px;font-size:12px;display:none;line-height:1;animation:zzz 1.5s infinite">💤</div><div class="name-bubble" style="position:absolute;top:-22px;left:50%;transform:translateX(-50%);background:#fff;border:1.5px solid #FFB6C1;color:#5D4037;font-size:11px;font-weight:700;padding:2px 9px;border-radius:10px;white-space:nowrap;z-index:50;box-shadow:0 2px 8px rgba(0,0,0,.15);display:none;line-height:1.3">${bdata.name}</div>`;
+      wrap.innerHTML=`<div class="bunny-svg">${bunnySvg(bdata.color,'normal',withMask)}</div><div class="bunny-grass" style="position:absolute;top:30px;left:-12px;font-size:14px;display:none;line-height:1">🌿</div><div class="bunny-zzz" style="position:absolute;top:-10px;right:-4px;font-size:12px;display:none;line-height:1;animation:zzz 1.5s infinite">💤</div><div class="msg-bubble" style="position:absolute;top:-26px;left:50%;transform:translateX(-50%);background:#fff;border:1.5px solid #FFB6C1;color:#5D4037;font-size:10px;font-weight:700;padding:4px 10px;border-radius:12px;white-space:nowrap;max-width:180px;z-index:50;box-shadow:0 2px 8px rgba(0,0,0,.15);display:none;line-height:1.3;text-overflow:ellipsis;overflow:hidden"></div>`;
       const idx=i;
-      wrap.onclick=(e)=>{e.stopPropagation(); showName(idx); bigJump(idx); window.petBunny();};
+      wrap.onclick=(e)=>{e.stopPropagation(); showBunnyMsg(idx); bigJump(idx); window.petBunny();};
       playground.appendChild(wrap);
       const bunny={el:wrap,name:bdata.name,color:bdata.color,withMask,
         x:20+Math.random()*(w-80), y:groundTop+Math.random()*(groundBottom-groundTop),
@@ -443,7 +517,8 @@
       playground.appendChild(more);
     }
     const colors=bunniesData.map(b=>b.color).join(',');
-    _lastSpawnedKey=`${bunniesData.length}_${colors}_${stage.id}_${air.mask?'m':'n'}`;
+    const decoCount=(_myBunny?.decorations||[]).length;
+    _lastSpawnedKey=`${bunniesData.length}_${colors}_${stage.id}_${decoCount}`;
     if(!document.getElementById('bunnyAnimStyle')){
       const style=document.createElement('style'); style.id='bunnyAnimStyle';
       style.textContent=`@keyframes zzz{0%{opacity:0;transform:translateY(0)}50%{opacity:1}100%{opacity:0;transform:translateY(-8px)}}@keyframes stageUpFade{0%{opacity:0;transform:scale(.8)}100%{opacity:1;transform:scale(1)}}@keyframes flashFade{0%{opacity:1}100%{opacity:0}}@keyframes sproutGrow{0%{transform:scale(0) rotate(-20deg)}60%{transform:scale(1.4) rotate(10deg)}100%{transform:scale(1) rotate(0)}}@keyframes carLtr{0%{left:-40px}100%{left:calc(100% + 40px)}}@keyframes carRtl{0%{right:-40px}100%{right:calc(100% + 40px)}}`;
@@ -452,13 +527,15 @@
     startBunnyAnim();
   }
 
-  function showName(idx){
+  function showBunnyMsg(idx){
     const b=_bunnyChars[idx]; if(!b) return;
-    const bubble=b.el.querySelector('.name-bubble'); if(!bubble) return;
+    const bubble=b.el.querySelector('.msg-bubble'); if(!bubble) return;
+    const msg=getRandomBunnyMsg();
+    bubble.textContent=`${b.name}: ${msg}`;
     bubble.style.transform=`translateX(-50%) scaleX(${b.facing})`;
     bubble.style.display='block';
     clearTimeout(b.bubbleTimer);
-    b.bubbleTimer=setTimeout(()=>{bubble.style.display='none';},2000);
+    b.bubbleTimer=setTimeout(()=>{bubble.style.display='none';},3500);
   }
   function setState(b,newState){
     b.state=newState;
@@ -496,7 +573,7 @@
         if(b.x>w-65){b.x=w-65; if(b.vx!==0){b.vx=-Math.abs(b.vx); b.facing=-1;}}
         b.el.style.left=b.x+'px'; b.el.style.top=(b.y-yOffset)+'px';
         b.el.style.transform=`scaleX(${b.facing})`+extraTransform;
-        const bubble=b.el.querySelector('.name-bubble');
+        const bubble=b.el.querySelector('.msg-bubble');
         if(bubble&&bubble.style.display==='block') bubble.style.transform=`translateX(-50%) scaleX(${b.facing})`;
       });
     },50);
@@ -521,8 +598,7 @@
   function showStageUp(stage){
     const imp=getImpact(_myCo2);
     const old=document.getElementById('ovStageUp'); if(old) old.remove();
-    const modal=document.createElement('div');
-    modal.id='ovStageUp';
+    const modal=document.createElement('div'); modal.id='ovStageUp';
     modal.style.cssText=`position:fixed;inset:0;background:${stage.bg};z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px 20px;animation:stageUpFade .8s ease-out;overflow-y:auto`;
     modal.innerHTML=`
       <div style="text-align:center;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.3);max-width:340px">
@@ -541,30 +617,34 @@
         </div>
       </div>
       <div style="display:flex;gap:8px;margin-top:20px;width:100%;max-width:340px">
-        <button onclick="shareStageCard(${stage.id})" style="flex:1;background:#fff;border:none;border-radius:14px;padding:14px;font-size:14px;font-weight:900;cursor:pointer;font-family:inherit;color:#C44569">📸 인증 공유</button>
+        <button onclick="shareCurrentBunny()" style="flex:1;background:#fff;border:none;border-radius:14px;padding:14px;font-size:14px;font-weight:900;cursor:pointer;font-family:inherit;color:#C44569">📸 인증 공유</button>
         <button onclick="document.getElementById('ovStageUp').remove()" style="flex:1;background:rgba(0,0,0,.4);border:1.5px solid rgba(255,255,255,.3);color:#fff;border-radius:14px;padding:14px;font-size:14px;font-weight:900;cursor:pointer;font-family:inherit">계속하기</button>
       </div>`;
     document.body.appendChild(modal);
   }
 
-  window.shareStageCard=async function(stageId){
-    const stage=STAGES[stageId]; const imp=getImpact(_myCo2);
-    const text=`🌍 EcoQuest STAGE ${stageId+1}/5 — ${stage.name} 도달!\n"${stage.msg}"\n\n💚 내가 만든 임팩트:\n🌳 나무 ${imp.trees}그루 · 🚗 자동차 ${imp.carKm}km · ☕ 일회용컵 ${imp.cups}개\n\n#에코퀘스트 #EcoQuest\nhttps://eco-quest.kr`;
+  // ═══ SNS 공유 (현재 상태) ═══
+  window.shareCurrentBunny=async function(){
+    const stage=getStage(_myCo2); const imp=getImpact(_myCo2);
+    const bunnies=_myBunny?.bunnies||[];
+    const text=`🐰 EcoQuest — 우리 토끼 가족 ${bunnies.length}마리!
+✨ STAGE ${stage.id+1}/5 ${stage.name} · CO₂ ${_myCo2.toFixed(1)}kg
+
+💚 내가 만든 임팩트:
+🌳 나무 ${imp.trees}그루 분량
+🚗 자동차 ${imp.carKm}km 안 탄 효과
+☕ 일회용컵 ${imp.cups}개 안 만든 효과
+
+"${stage.msg}"
+
+#에코퀘스트 #EcoQuest #환경챌린지 #제로웨이스트 #탄소중립
+https://eco-quest.kr`;
     try{
-      if(navigator.share) await navigator.share({title:`EcoQuest STAGE ${stageId+1}`,text,url:'https://eco-quest.kr'});
-      else{await navigator.clipboard.writeText(text); window.toast('📋 복사됨!');}
+      if(navigator.share) await navigator.share({title:`EcoQuest — 내 토끼 가족`,text,url:'https://eco-quest.kr'});
+      else{await navigator.clipboard.writeText(text); window.toast('📋 복사됨! SNS에 붙여넣어주세요!');}
     }catch(e){console.log('공유 취소');}
   };
 
-  window.feedBunny=async function(){
-    if(!_myBunny) return;
-    if((_myBunny.carrots||0)<1){window.toast("당근이 부족해요!"); return;}
-    _myBunny.carrots--;
-    _myBunny.happiness=Math.min(100,(_myBunny.happiness||0)+10);
-    await saveBunny();
-    _bunnyChars.forEach((_,i)=>setTimeout(()=>bigJump(i),i*80));
-    window.toast("🍴 토끼들이 행복해해요!");
-  };
   window.petBunny=async function(){
     if(!_myBunny) return;
     if(Date.now()-_petTimer<800) return;
@@ -573,11 +653,14 @@
     await saveBunny();
   };
 
-  // 토끼 데이터 외부에서 update 가능 (shop이 사용)
+  // 외부 (shop)에서 호출
   window._bunnyUpdate=async function(updates){
     if(!_myBunny) return;
-    if(updates.carrots) _myBunny.carrots=(_myBunny.carrots||0)+updates.carrots;
     if(updates.happiness) _myBunny.happiness=Math.min(100,(_myBunny.happiness||0)+updates.happiness);
+    if(updates.decoration){
+      if(!_myBunny.decorations) _myBunny.decorations=[];
+      _myBunny.decorations.push(updates.decoration);
+    }
     await saveBunny();
   };
 
@@ -588,8 +671,6 @@
     window.saveMission=async function(uid,m){
       const res=await orig(uid,m);
       if(res&&uid===window.ME?.uid&&_myBunny){
-        _myBunny.carrots=(_myBunny.carrots||0)+1;
-        await saveBunny();
         setTimeout(()=>refreshAndUpdate(),1500);
       }
       return res;
@@ -602,12 +683,7 @@
     if(typeof orig!=="function"){setTimeout(hookJoinGathering,1000); return;}
     window.joinGathering=async function(gid){
       await orig(gid);
-      if(_myBunny){
-        _myBunny.carrots=(_myBunny.carrots||0)+5;
-        await saveBunny();
-        setTimeout(()=>refreshAndUpdate(),1500);
-        setTimeout(()=>window.toast("🥕 깅 참여 +5!"),1200);
-      }
+      if(_myBunny) setTimeout(()=>refreshAndUpdate(),1500);
     };
     window._bunnyHookedJoinGathering=true;
   }
@@ -635,7 +711,7 @@
     hookJoinGathering();
     changeTabIcon();
     fetchAirQuality();
-    setInterval(fetchAirQuality, 30*60*1000); // 30분마다 갱신
+    setInterval(fetchAirQuality,30*60*1000);
   }
   if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",()=>setTimeout(boot,1500));
   else setTimeout(boot,1500);

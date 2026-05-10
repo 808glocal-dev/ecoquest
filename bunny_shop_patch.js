@@ -3,39 +3,45 @@
   const SHOP_CATS=[
     {id:'food',name:'먹이',emoji:'🍎'},
     {id:'toy', name:'장난감',emoji:'🎀'},
-    {id:'home',name:'집/환경',emoji:'🏠'},
+    {id:'deco',name:'꾸미기',emoji:'🌳'},
     {id:'care',name:'관리',emoji:'💆'},
   ];
 
   const SHOP_ITEMS=[
-    // 먹이 6
-    {id:'carrot', cat:'food',emoji:'🥕',name:'당근',          price:10, carrots:1, happiness:0,  desc:'기본 먹이'},
-    {id:'grass',  cat:'food',emoji:'🌾',name:'풀 한 다발',    price:30, carrots:1, happiness:10, desc:'먹이 + 행복'},
-    {id:'cabbage',cat:'food',emoji:'🥬',name:'양배추',        price:50, carrots:2, happiness:15, desc:'영양 만점'},
-    {id:'apple',  cat:'food',emoji:'🍎',name:'사과',          price:80, carrots:3, happiness:25, desc:'달콤한 간식'},
-    {id:'vitamin',cat:'food',emoji:'💊',name:'비타민',        price:150,carrots:5, happiness:50, desc:'기운 충전!'},
-    {id:'love',   cat:'food',emoji:'💕',name:'사랑의 영양제',price:300,carrots:10,happiness:100,desc:'행복 풀충전 ✨'},
+    // 먹이 6 (행복도만)
+    {id:'grass',  cat:'food',emoji:'🌾',name:'풀 한 다발',    price:30, happiness:10, desc:'기본 먹이'},
+    {id:'cabbage',cat:'food',emoji:'🥬',name:'양배추',        price:50, happiness:18, desc:'영양 만점'},
+    {id:'apple',  cat:'food',emoji:'🍎',name:'사과',          price:80, happiness:25, desc:'달콤한 간식'},
+    {id:'berry',  cat:'food',emoji:'🍓',name:'딸기',          price:100,happiness:30, desc:'토끼들이 좋아해요'},
+    {id:'vitamin',cat:'food',emoji:'💊',name:'비타민',        price:150,happiness:50, desc:'기운 충전!'},
+    {id:'love',   cat:'food',emoji:'💕',name:'사랑의 영양제',price:300,happiness:100,desc:'행복 풀충전 ✨'},
     // 장난감 6
-    {id:'ribbon', cat:'toy', emoji:'🎀',name:'리본',          price:50, carrots:0, happiness:8,  desc:'예쁘게 꾸미기'},
-    {id:'balloon',cat:'toy', emoji:'🎈',name:'풍선',          price:60, carrots:0, happiness:10, desc:'알록달록'},
-    {id:'ball',   cat:'toy', emoji:'⚽',name:'공놀이',        price:80, carrots:0, happiness:12, desc:'신나는 놀이'},
-    {id:'teddy',  cat:'toy', emoji:'🧸',name:'곰인형',        price:120,carrots:0, happiness:18, desc:'포근한 친구'},
-    {id:'pinata', cat:'toy', emoji:'🪅',name:'피냐타',        price:200,carrots:0, happiness:30, desc:'파티 시간!'},
-    {id:'rainbow',cat:'toy', emoji:'🌈',name:'무지개 비행',  price:250,carrots:0, happiness:40, desc:'환상의 시간'},
-    // 집/환경 6
-    {id:'pot',    cat:'home',emoji:'🪴',name:'화분',          price:80, carrots:0, happiness:10, desc:'초록 한 줌'},
-    {id:'flower', cat:'home',emoji:'🌷',name:'꽃밭',          price:120,carrots:0, happiness:15, desc:'향긋한 꽃밭'},
-    {id:'tree',   cat:'home',emoji:'🌳',name:'작은 나무',     price:180,carrots:0, happiness:20, desc:'시원한 그늘'},
-    {id:'bed',    cat:'home',emoji:'🛏️',name:'푹신한 침대',   price:250,carrots:0, happiness:30, desc:'잠 푹 자기'},
-    {id:'house',  cat:'home',emoji:'🏠',name:'토끼 집',       price:400,carrots:0, happiness:50, desc:'안락한 보금자리'},
-    {id:'garden', cat:'home',emoji:'🌻',name:'우리 정원',     price:500,carrots:0, happiness:60, desc:'우리만의 정원'},
+    {id:'ribbon', cat:'toy', emoji:'🎀',name:'리본',          price:50, happiness:8,  desc:'예쁘게 꾸미기'},
+    {id:'balloon',cat:'toy', emoji:'🎈',name:'풍선',          price:60, happiness:10, desc:'알록달록'},
+    {id:'ball',   cat:'toy', emoji:'⚽',name:'공놀이',        price:80, happiness:12, desc:'신나는 놀이'},
+    {id:'teddy',  cat:'toy', emoji:'🧸',name:'곰인형',        price:120,happiness:18, desc:'포근한 친구'},
+    {id:'pinata', cat:'toy', emoji:'🪅',name:'피냐타',        price:200,happiness:30, desc:'파티 시간!'},
+    {id:'rainbow',cat:'toy', emoji:'🌈',name:'무지개',        price:250,happiness:40, desc:'환상의 시간'},
+    // 꾸미기 12 (영구 배치 — 싸이월드처럼!)
+    {id:'rock',   cat:'deco',emoji:'🪨',name:'바위',          price:30, happiness:3, deco:true, size:22, desc:'정원 한 구석'},
+    {id:'tulip',  cat:'deco',emoji:'🌷',name:'튤립',          price:50, happiness:5, deco:true, size:22, desc:'영구 배치'},
+    {id:'mushroom',cat:'deco',emoji:'🍄',name:'버섯',         price:60, happiness:5, deco:true, size:22, desc:'숲 분위기'},
+    {id:'butterfly',cat:'deco',emoji:'🦋',name:'나비',        price:80, happiness:8, deco:true, size:22, desc:'살랑살랑'},
+    {id:'rose',   cat:'deco',emoji:'🌹',name:'장미',          price:100,happiness:10, deco:true, size:24, desc:'우아한 꽃'},
+    {id:'sunflower',cat:'deco',emoji:'🌻',name:'해바라기',    price:120,happiness:12, deco:true, size:26, desc:'태양을 향해'},
+    {id:'pine',   cat:'deco',emoji:'🌲',name:'소나무',        price:180,happiness:15, deco:true, size:32, desc:'사계절 푸르게'},
+    {id:'tree',   cat:'deco',emoji:'🌳',name:'큰 나무',       price:200,happiness:18, deco:true, size:36, desc:'시원한 그늘'},
+    {id:'palm',   cat:'deco',emoji:'🌴',name:'야자수',        price:250,happiness:20, deco:true, size:34, desc:'휴양지 느낌'},
+    {id:'bee',    cat:'deco',emoji:'🐝',name:'벌집',          price:120,happiness:10, deco:true, size:22, desc:'꿀이 가득'},
+    {id:'house',  cat:'deco',emoji:'🏡',name:'작은 집',       price:350,happiness:30, deco:true, size:36, desc:'토끼 보금자리'},
+    {id:'fountain',cat:'deco',emoji:'⛲',name:'분수',         price:400,happiness:35, deco:true, size:34, desc:'분수가 솟구쳐!'},
     // 관리 6
-    {id:'brush',  cat:'care',emoji:'🪮',name:'빗질',          price:30, carrots:0, happiness:5,  desc:'반짝반짝'},
-    {id:'bath',   cat:'care',emoji:'🛁',name:'목욕',          price:60, carrots:0, happiness:10, desc:'깨끗하게'},
-    {id:'sleep',  cat:'care',emoji:'😴',name:'낮잠 시간',     price:80, carrots:0, happiness:12, desc:'달콤한 꿈'},
-    {id:'massage',cat:'care',emoji:'💆',name:'마사지',        price:100,carrots:0, happiness:18, desc:'편안한 휴식'},
-    {id:'spa',    cat:'care',emoji:'🧖',name:'스파',          price:180,carrots:0, happiness:30, desc:'고급 케어'},
-    {id:'doctor', cat:'care',emoji:'🩺',name:'건강 검진',     price:250,carrots:0, happiness:40, desc:'건강 체크'},
+    {id:'brush',  cat:'care',emoji:'🪮',name:'빗질',          price:30, happiness:5,  desc:'반짝반짝'},
+    {id:'bath',   cat:'care',emoji:'🛁',name:'목욕',          price:60, happiness:10, desc:'깨끗하게'},
+    {id:'sleep',  cat:'care',emoji:'😴',name:'낮잠',          price:80, happiness:12, desc:'달콤한 꿈'},
+    {id:'massage',cat:'care',emoji:'💆',name:'마사지',        price:100,happiness:18, desc:'편안한 휴식'},
+    {id:'spa',    cat:'care',emoji:'🧖',name:'스파',          price:180,happiness:30, desc:'고급 케어'},
+    {id:'doctor', cat:'care',emoji:'🩺',name:'건강 검진',     price:250,happiness:40, desc:'건강 체크'},
   ];
 
   let _activeCat='food';
@@ -46,8 +52,7 @@
       if(!playground) return false;
       if(document.getElementById('bunnyShopBtn')) return true;
       const btn=document.createElement('button');
-      btn.id='bunnyShopBtn';
-      btn.onclick=openBunnyShop;
+      btn.id='bunnyShopBtn'; btn.onclick=openBunnyShop;
       btn.style.cssText=`position:absolute;bottom:8px;right:8px;background:linear-gradient(135deg,#FF6B9D,#C44569);color:#fff;border:none;border-radius:18px;padding:8px 14px;font-size:12px;font-weight:900;cursor:pointer;font-family:inherit;box-shadow:0 4px 12px rgba(196,69,105,.4);z-index:30;display:flex;align-items:center;gap:5px`;
       btn.innerHTML='🛒 토끼 상점';
       playground.appendChild(btn);
@@ -102,15 +107,15 @@
     return items.map(item=>{
       const can=myPoints>=item.price;
       const effects=[];
-      if(item.carrots) effects.push(`🥕 +${item.carrots}`);
       if(item.happiness) effects.push(`😊 +${item.happiness}`);
+      if(item.deco) effects.push(`🌳 영구 배치`);
       return `
         <div style="background:#fff;border:1.5px solid ${can?'#FFE082':'#eee'};border-radius:12px;padding:11px;margin-bottom:8px;display:flex;align-items:center;gap:12px">
           <div style="font-size:32px;line-height:1;flex-shrink:0">${item.emoji}</div>
           <div style="flex:1;min-width:0">
             <div style="font-size:13px;font-weight:900;color:#5D4037">${item.name}</div>
             <div style="font-size:10px;color:#888;margin-top:2px">${item.desc}</div>
-            <div style="font-size:10px;color:#27AE60;margin-top:4px;font-weight:700">${effects.join(' · ')}</div>
+            <div style="font-size:10px;color:${item.deco?'#7D5E47':'#27AE60'};margin-top:4px;font-weight:700">${effects.join(' · ')}</div>
           </div>
           <button onclick="buyShopItem('${item.id}')" ${can?'':'disabled'} style="background:${can?'linear-gradient(135deg,#2ECC71,#27AE60)':'#f0f0f0'};color:${can?'#fff':'#aaa'};border:none;border-radius:10px;padding:8px 12px;font-size:11px;font-weight:900;cursor:${can?'pointer':'default'};font-family:inherit;flex-shrink:0;min-width:60px">
             ${item.price}🍓
@@ -131,16 +136,28 @@
       window.UDATA.point=newP;
       if(window.updateUI) window.updateUI();
 
-      // 토끼에 효과 적용 (bunny_patch가 _bunnyUpdate 함수 노출)
+      const updates={happiness:item.happiness||0};
+      // 꾸미기 아이템 → 영구 배치 (랜덤 위치)
+      if(item.deco){
+        updates.decoration={
+          id:`${item.id}_${Date.now()}`,
+          emoji:item.emoji,
+          x:30+Math.random()*220,
+          y:130+Math.random()*60,
+          size:item.size||24,
+        };
+      }
+
       if(window._bunnyUpdate){
-        await window._bunnyUpdate({carrots:item.carrots||0, happiness:item.happiness||0});
+        await window._bunnyUpdate(updates);
       } else {
-        // 직접 처리
         const ref=window.FB.doc(window.FB.db,"bunnies",window.ME.uid);
         const snap=await window.FB.getDoc(ref);
         if(snap.exists()){
           const d=snap.data();
-          await window.FB.setDoc(ref,{...d, carrots:(d.carrots||0)+(item.carrots||0), happiness:Math.min(100,(d.happiness||0)+(item.happiness||0))});
+          const decos=d.decorations||[];
+          if(updates.decoration) decos.push(updates.decoration);
+          await window.FB.setDoc(ref,{...d, happiness:Math.min(100,(d.happiness||0)+(updates.happiness||0)), decorations:decos});
           if(typeof window.drawMap==='function') window.drawMap();
         }
       }
@@ -149,7 +166,7 @@
       const berry=document.getElementById('shopMyBerry');
       if(list) list.innerHTML=renderShopItems(newP);
       if(berry) berry.textContent=newP.toLocaleString()+'🍓';
-      const effects=[]; if(item.carrots) effects.push(`🥕+${item.carrots}`); if(item.happiness) effects.push(`😊+${item.happiness}`);
+      const effects=[]; if(item.happiness) effects.push(`😊+${item.happiness}`); if(item.deco) effects.push('🌳 배치!');
       window.toast(`🎉 "${item.name}" 구매! ${effects.join(' ')}`);
     }catch(e){window.toast("구매 실패: "+e.message);}
   };

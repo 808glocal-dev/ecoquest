@@ -10,18 +10,18 @@
 
   const STAGES = [
     {id:0, min:0,  name:'회색 도시',  bg:'linear-gradient(180deg,#a8a8a8 0%,#888 50%,#666 100%)',
-     skyDecor:[{e:'💨',top:8,left:24,size:22,op:.7},{e:'🏭',top:14,right:30,size:22,op:.6},{e:'🌫️',top:36,left:'45%',size:14,op:.5}],
-     groundDecor:[{e:'🗑️',bottom:6,left:18,size:16},{e:'🚮',bottom:8,left:200,size:15},{e:'⚙️',bottom:6,right:60,size:13,op:.5}],
-     msg:'지구가 아파요', sub:'당신의 작은 행동이 변화의 시작이에요', mask:true},
-    {id:1, min:1,  name:'새싹',        bg:'linear-gradient(180deg,#bee9d4 0%,#A8DC8E 50%,#8BC56F 100%)',
+     skyDecor:[{e:'💨',top:8,left:24,size:22,op:.6},{e:'🏭',top:14,right:30,size:24,op:.7},{e:'🌫️',top:36,left:'45%',size:14,op:.5},{e:'🏢',top:60,left:8,size:32,op:.7},{e:'🏬',top:62,right:8,size:30,op:.7},{e:'🏙️',top:70,left:'40%',size:24,op:.6}],
+     groundDecor:[{e:'🗑️',bottom:6,left:18,size:16},{e:'🚮',bottom:8,left:200,size:15},{e:'⚙️',bottom:6,right:60,size:13,op:.5},{e:'🛢️',bottom:4,right:14,size:14,op:.7}],
+     msg:'지구가 아파요', sub:'당신의 작은 행동이 변화의 시작이에요', mask:true, hasCars:true},
+    {id:1, min:1,  name:'새싹',       bg:'linear-gradient(180deg,#bee9d4 0%,#A8DC8E 50%,#8BC56F 100%)',
      skyDecor:[{e:'☁️',top:8,left:24,size:22,op:.85},{e:'🌤️',top:6,right:14,size:22}],
      groundDecor:[{e:'🌱',bottom:6,left:18,size:14},{e:'🌿',bottom:4,left:80,size:13},{e:'🌷',bottom:8,left:200,size:14},{e:'🌱',bottom:6,right:60,size:13}],
      msg:'당신이 시작했어요', sub:'첫 풀이 자라났어요', mask:false},
-    {id:2, min:5,  name:'들판',        bg:'linear-gradient(180deg,#87CEEB 0%,#B5DCF0 45%,#A8DC8E 50%,#76B947 100%)',
+    {id:2, min:5,  name:'들판',       bg:'linear-gradient(180deg,#87CEEB 0%,#B5DCF0 45%,#A8DC8E 50%,#76B947 100%)',
      skyDecor:[{e:'☁️',top:8,left:24,size:22,op:.85},{e:'☀️',top:6,right:14,size:24},{e:'🦋',top:32,left:'50%',size:16},{e:'🐦',top:18,right:36,size:16,op:.8}],
      groundDecor:[{e:'🌷',bottom:8,left:18,size:16},{e:'🌼',bottom:6,left:90,size:15},{e:'🌾',bottom:12,left:160,size:14},{e:'🌷',bottom:8,right:60,size:16},{e:'🌼',bottom:10,right:20,size:18}],
      msg:'잃어버린 친구가 돌아와요', sub:'나비와 새가 다시 찾아왔어요', mask:false},
-    {id:3, min:20, name:'숲',          bg:'linear-gradient(180deg,#7AB85F 0%,#A8DC8E 40%,#5a9a3a 100%)',
+    {id:3, min:20, name:'숲',         bg:'linear-gradient(180deg,#7AB85F 0%,#A8DC8E 40%,#5a9a3a 100%)',
      skyDecor:[{e:'☀️',top:6,right:14,size:22,op:.9},{e:'🦋',top:30,left:'45%',size:16},{e:'🌳',top:50,left:8,size:34,op:.85},{e:'🌳',top:48,right:6,size:32,op:.85}],
      groundDecor:[{e:'🌲',bottom:6,left:60,size:24},{e:'🍄',bottom:4,left:130,size:14},{e:'💧',bottom:14,left:200,size:14},{e:'🐿️',bottom:8,right:80,size:16},{e:'🌲',bottom:6,right:18,size:22}],
      msg:'생태계가 살아나요', sub:'나무와 시냇물이 흐르는 숲이 됐어요', mask:false},
@@ -31,59 +31,53 @@
      msg:'당신이 지킨 작은 지구', sub:'별빛 아래 평화로운 토끼 마을이 됐어요', mask:false},
   ];
 
-  // ═══ 시즌 챕터 (멸종위기종 미리보기) ═══
+  // ═══ Sub-stage 추가 데코 (단계 내 진행률에 따라) ═══
+  const SUB_DECORS = {
+    0: [], // 회색 도시는 추가 X (다음 단계로 가야 변화)
+    1: ['🌸','🌺','🌻','🌷','🌿','🌱','🌾','🦋'],
+    2: ['🌷','🌼','🦋','🌹','🐝','🌺','🍀','🌻'],
+    3: ['🌳','🍃','🐦','🦋','🌲','🌿','🦔','🌷'],
+    4: ['⭐','✨','💫','🌟','💖','🌙','⭐','✨'],
+  };
+
+  // ═══ 시즌 (멸종위기종) ═══
   const SEASONS = [
-    {month:5, theme:'한강에 친구가 살게', emoji:'🦦', name:'수달',       desc:'줍깅·비치깅', tag:'멸종위기 1급'},
-    {month:6, theme:'도심에 숲을',         emoji:'🐿️', name:'하늘다람쥐', desc:'대중교통·자전거', tag:'천연기념물'},
-    {month:7, theme:'리필 마을을 세워줘',  emoji:'🐐', name:'산양',       desc:'제로웨이스트샵', tag:'멸종위기 1급'},
-    {month:8, theme:'바다를 살려줘',       emoji:'🐢', name:'푸른바다거북', desc:'해양 보호', tag:'멸종위기 2급'},
+    {month:5, minCo2:75,  emoji:'🦦', name:'수달',         theme:'한강에 친구가 살게', desc:'줍깅·비치깅',     tag:'멸종위기 1급'},
+    {month:6, minCo2:100, emoji:'🐿️', name:'하늘다람쥐',   theme:'도심에 숲을',         desc:'대중교통·자전거', tag:'천연기념물'},
+    {month:7, minCo2:150, emoji:'🐐', name:'산양',         theme:'리필 마을을 세워줘',  desc:'제로웨이스트샵',  tag:'멸종위기 1급'},
+    {month:8, minCo2:200, emoji:'🐢', name:'푸른바다거북', theme:'바다를 살려줘',       desc:'해양 보호',       tag:'멸종위기 2급'},
   ];
 
   function getStage(co2){ for(let i=STAGES.length-1;i>=0;i--){if(co2>=STAGES[i].min)return STAGES[i];} return STAGES[0]; }
   function getNextStage(co2){ const cur=getStage(co2); const idx=STAGES.indexOf(cur); return idx<STAGES.length-1?STAGES[idx+1]:null; }
+  function getStageProgress(co2){ const cur=getStage(co2); const nxt=getNextStage(co2); if(!nxt)return 1; return Math.min(1,(co2-cur.min)/(nxt.min-cur.min)); }
   function getImpact(co2){ return {trees:(co2/21.4).toFixed(1), carKm:Math.round(co2/0.21), cups:Math.round(co2/0.011), sqm:Math.round(co2*0.6)}; }
 
-  // ═══ CO₂ 실시간 가져오기 (캐시) ═══
   let _myCo2 = 0;
 
   async function refreshMyCo2(){
     if(!window.ME) return 0;
-    // 1. UDATA에서 여러 필드 시도
     if(window.UDATA){
-      const keys = ['co2Saved','totalCo2','co2','totalCO2','CO2','co2_saved','co2Reduced','co2_reduced'];
-      for(const k of keys){
-        const v = Number(window.UDATA[k]);
-        if(!isNaN(v) && v > 0){ _myCo2 = v; return _myCo2; }
-      }
+      const keys=['co2Saved','totalCo2','co2','totalCO2','CO2','co2_saved','co2Reduced','co2_reduced'];
+      for(const k of keys){const v=Number(window.UDATA[k]); if(!isNaN(v)&&v>0){_myCo2=v;return _myCo2;}}
     }
-    // 2. missionLogs 직접 합산 (fallback)
     try {
-      const q = window.FB.query(
-        window.FB.collection(window.FB.db, "missionLogs"),
-        window.FB.where("uid", "==", window.ME.uid)
-      );
-      const snap = await window.FB.getDocs(q);
-      let sum = 0, count = 0;
-      snap.forEach(d => {
-        const dt = d.data();
-        const v = Number(dt.co2 || dt.co2Reduced || 0);
-        if(!isNaN(v)) sum += v;
-        count++;
-      });
-      if(sum > 0){ _myCo2 = sum; return _myCo2; }
-      if(count > 0){ _myCo2 = count * 0.5; return _myCo2; } // 평균값 추정
-    } catch(e){console.log('[bunny] CO2 fetch 실패:', e.message);}
-    _myCo2 = 0;
-    return 0;
+      const q=window.FB.query(window.FB.collection(window.FB.db,"missionLogs"),window.FB.where("uid","==",window.ME.uid));
+      const snap=await window.FB.getDocs(q);
+      let sum=0,count=0;
+      snap.forEach(d=>{const dt=d.data(); const v=Number(dt.co2||dt.co2Reduced||0); if(!isNaN(v))sum+=v; count++;});
+      if(sum>0){_myCo2=sum;return _myCo2;}
+      if(count>0){_myCo2=count*0.5;return _myCo2;}
+    } catch(e){console.log('[bunny] CO2 fetch 실패:',e.message);}
+    _myCo2=0; return 0;
   }
 
   function bunnySvg(colorIdx, mood, withMask){
-    const p = PALETTES[Math.min(colorIdx, 4)];
-    let eye;
-    if(mood==='sleep') eye = `<path d="M 19 24 Q 22 27 25 24" stroke="${p.stroke}" stroke-width="1.2" fill="none" stroke-linecap="round"/><path d="M 31 24 Q 34 27 37 24" stroke="${p.stroke}" stroke-width="1.2" fill="none" stroke-linecap="round"/>`;
-    else if(mood==='happy') eye = `<path d="M 19 26 Q 22 23 25 26" stroke="#1a1a1a" stroke-width="1.4" fill="none" stroke-linecap="round"/><path d="M 31 26 Q 34 23 37 26" stroke="#1a1a1a" stroke-width="1.4" fill="none" stroke-linecap="round"/>`;
-    else eye = `<ellipse cx="22" cy="26" rx="2.6" ry="3.2" fill="#1a1a1a"/><ellipse cx="34" cy="26" rx="2.6" ry="3.2" fill="#1a1a1a"/><ellipse cx="23" cy="24.8" rx="1.2" ry="1.5" fill="#fff"/><ellipse cx="35" cy="24.8" rx="1.2" ry="1.5" fill="#fff"/><circle cx="21.3" cy="27.3" r=".4" fill="#fff" opacity=".7"/><circle cx="33.3" cy="27.3" r=".4" fill="#fff" opacity=".7"/>`;
-    const mask = withMask ? `<g><ellipse cx="28" cy="35" rx="11" ry="5" fill="#A8E6F0" stroke="#5d9aaa" stroke-width=".5" opacity=".95"/><line x1="17" y1="35" x2="14" y2="32" stroke="#5d9aaa" stroke-width=".5"/><line x1="39" y1="35" x2="42" y2="32" stroke="#5d9aaa" stroke-width=".5"/><line x1="28" y1="32" x2="28" y2="38" stroke="#88c5d3" stroke-width=".4" opacity=".5"/></g>` : '';
+    const p=PALETTES[Math.min(colorIdx,4)]; let eye;
+    if(mood==='sleep') eye=`<path d="M 19 24 Q 22 27 25 24" stroke="${p.stroke}" stroke-width="1.2" fill="none" stroke-linecap="round"/><path d="M 31 24 Q 34 27 37 24" stroke="${p.stroke}" stroke-width="1.2" fill="none" stroke-linecap="round"/>`;
+    else if(mood==='happy') eye=`<path d="M 19 26 Q 22 23 25 26" stroke="#1a1a1a" stroke-width="1.4" fill="none" stroke-linecap="round"/><path d="M 31 26 Q 34 23 37 26" stroke="#1a1a1a" stroke-width="1.4" fill="none" stroke-linecap="round"/>`;
+    else eye=`<ellipse cx="22" cy="26" rx="2.6" ry="3.2" fill="#1a1a1a"/><ellipse cx="34" cy="26" rx="2.6" ry="3.2" fill="#1a1a1a"/><ellipse cx="23" cy="24.8" rx="1.2" ry="1.5" fill="#fff"/><ellipse cx="35" cy="24.8" rx="1.2" ry="1.5" fill="#fff"/><circle cx="21.3" cy="27.3" r=".4" fill="#fff" opacity=".7"/><circle cx="33.3" cy="27.3" r=".4" fill="#fff" opacity=".7"/>`;
+    const mask=withMask?`<g><ellipse cx="28" cy="35" rx="11" ry="5" fill="#A8E6F0" stroke="#5d9aaa" stroke-width=".5" opacity=".95"/><line x1="17" y1="35" x2="14" y2="32" stroke="#5d9aaa" stroke-width=".5"/><line x1="39" y1="35" x2="42" y2="32" stroke="#5d9aaa" stroke-width=".5"/><line x1="28" y1="32" x2="28" y2="38" stroke="#88c5d3" stroke-width=".4" opacity=".5"/></g>`:'';
     return `<svg viewBox="0 0 60 70" style="width:60px;height:70px;display:block;overflow:visible">
       <ellipse cx="30" cy="68" rx="17" ry="1.5" fill="${p.stroke}" opacity=".15"/>
       <path d="M 16 52 C 13 65 22 66 30 65 C 38 66 47 65 44 52 C 46 42 38 38 30 38 C 22 38 14 42 16 52 Z" fill="${p.body}" stroke="${p.stroke}" stroke-width=".8" stroke-linejoin="round"/>
@@ -109,144 +103,195 @@
     </svg>`;
   }
 
-  let _myBunny = null, _petTimer = 0, _bunnyChars = [], _animLoop = null, _lastSpawnedKey = '', _adoptColor = 0, _lastStageId = -1;
+  let _myBunny=null,_petTimer=0,_bunnyChars=[],_animLoop=null,_lastSpawnedKey='',_adoptColor=0,_lastStageId=-1;
 
   async function loadBunny(){
-    if(!window.ME || !window.FB) return;
-    try {
-      const ref = window.FB.doc(window.FB.db, "bunnies", window.ME.uid);
-      const snap = await window.FB.getDoc(ref);
+    if(!window.ME||!window.FB) return;
+    try{
+      const ref=window.FB.doc(window.FB.db,"bunnies",window.ME.uid);
+      const snap=await window.FB.getDoc(ref);
       if(snap.exists()){
-        _myBunny = snap.data();
-        if(!_myBunny.bunnies || !Array.isArray(_myBunny.bunnies)){
-          const cnt = (_myBunny.friendCount || 0) + 1;
-          _myBunny.bunnies = [];
-          for(let i=0;i<cnt;i++) _myBunny.bunnies.push({name:i===0?"꼬미":`토끼${i+1}`, color:0});
+        _myBunny=snap.data();
+        if(!_myBunny.bunnies||!Array.isArray(_myBunny.bunnies)){
+          const cnt=(_myBunny.friendCount||0)+1;
+          _myBunny.bunnies=[];
+          for(let i=0;i<cnt;i++) _myBunny.bunnies.push({name:i===0?"꼬미":`토끼${i+1}`,color:0});
           delete _myBunny.friendCount;
-          await window.FB.setDoc(ref, _myBunny);
+          await window.FB.setDoc(ref,_myBunny);
         }
       } else {
-        _myBunny = {carrots:0, happiness:0, bunnies:[{name:"꼬미", color:0}], createdAt:window.FB.serverTimestamp()};
-        await window.FB.setDoc(ref, _myBunny);
+        _myBunny={carrots:0,happiness:0,bunnies:[{name:"꼬미",color:0}],createdAt:window.FB.serverTimestamp()};
+        await window.FB.setDoc(ref,_myBunny);
       }
       await refreshMyCo2();
-      _lastStageId = getStage(_myCo2).id;
+      _lastStageId=getStage(_myCo2).id;
       renderBunnyMap();
-    } catch(e){console.log("토끼 로드 실패:", e.message);}
+    } catch(e){console.log("토끼 로드 실패:",e.message);}
   }
 
   async function saveBunny(){
-    if(!window.ME || !_myBunny) return;
-    try {
-      await window.FB.setDoc(window.FB.doc(window.FB.db, "bunnies", window.ME.uid), _myBunny);
+    if(!window.ME||!_myBunny) return;
+    try{
+      await window.FB.setDoc(window.FB.doc(window.FB.db,"bunnies",window.ME.uid),_myBunny);
       renderBunnyStats();
-      const cnt = (_myBunny.bunnies || []).length;
-      const colors = (_myBunny.bunnies || []).map(b=>b.color).join(',');
-      const stageId = getStage(_myCo2).id;
-      const newKey = `${cnt}_${colors}_${stageId}`;
-      if(newKey !== _lastSpawnedKey){ spawnBunnies(_myBunny.bunnies || []); applyStageBg(getStage(_myCo2)); }
-    } catch(e){console.log("토끼 저장 실패:", e.message);}
+      const cnt=(_myBunny.bunnies||[]).length;
+      const colors=(_myBunny.bunnies||[]).map(b=>b.color).join(',');
+      const stageId=getStage(_myCo2).id;
+      const newKey=`${cnt}_${colors}_${stageId}`;
+      if(newKey!==_lastSpawnedKey){spawnBunnies(_myBunny.bunnies||[]); applyStageBg(getStage(_myCo2));}
+    } catch(e){console.log("토끼 저장 실패:",e.message);}
   }
 
   function checkStageUp(){
-    const cur = getStage(_myCo2);
-    if(_lastStageId >= 0 && cur.id > _lastStageId){
-      const prevId = _lastStageId;
-      _lastStageId = cur.id;
-      setTimeout(() => showStageUp(cur, prevId), 800);
-    } else _lastStageId = cur.id;
+    const cur=getStage(_myCo2);
+    if(_lastStageId>=0&&cur.id>_lastStageId){const prevId=_lastStageId; _lastStageId=cur.id; setTimeout(()=>showStageUp(cur,prevId),800);}
+    else _lastStageId=cur.id;
   }
 
   function initBunnyOnMap(){
-    const tryAdd = () => {
-      const mapPage = document.getElementById("page-map");
-      if(!mapPage) return false;
+    const tryAdd=()=>{
+      const mapPage=document.getElementById("page-map"); if(!mapPage) return false;
       if(document.getElementById("bunnyGameMain")) return true;
-      mapPage.innerHTML = '<div id="bunnyGameMain"><div style="text-align:center;padding:40px;color:#888;font-size:13px">🐰 토끼 게임 로딩 중...</div></div>';
-      window.drawMap = function(){ renderBunnyMap(); refreshAndUpdate(); };
+      mapPage.innerHTML='<div id="bunnyGameMain"><div style="text-align:center;padding:40px;color:#888;font-size:13px">🐰 토끼 게임 로딩 중...</div></div>';
+      window.drawMap=function(){renderBunnyMap(); refreshAndUpdate();};
       loadBunny();
       return true;
     };
-    if(!tryAdd()) setTimeout(initBunnyOnMap, 1000);
+    if(!tryAdd()) setTimeout(initBunnyOnMap,1000);
+  }
+
+  // ═══ 미션 완료 시 효과 ═══
+  function flashPlayground(){
+    const pg=document.getElementById('bunnyPlayground'); if(!pg) return;
+    const flash=document.createElement('div');
+    flash.style.cssText='position:absolute;inset:0;background:radial-gradient(circle,rgba(255,255,200,.6) 0%,transparent 70%);pointer-events:none;z-index:99;animation:flashFade 1s ease-out';
+    pg.appendChild(flash);
+    setTimeout(()=>flash.remove(),1000);
+  }
+  function sproutNewElement(){
+    const pg=document.getElementById('bunnyPlayground'); if(!pg) return;
+    const stage=getStage(_myCo2);
+    if(stage.id===0) return; // 회색 도시는 안 핌
+    const list=SUB_DECORS[stage.id]||['🌸','🌺','🌻','🌷'];
+    const e=document.createElement('div');
+    e.className='stage-decor sprout-anim';
+    const isSky=Math.random()<0.3 && stage.id>=2;
+    if(isSky){
+      e.style.cssText=`position:absolute;top:${30+Math.random()*60}px;left:${20+Math.random()*240}px;font-size:${14+Math.random()*6}px;z-index:3;transform-origin:center;animation:sproutGrow 1.4s cubic-bezier(.5,2,.3,.8)`;
+    } else {
+      e.style.cssText=`position:absolute;bottom:${4+Math.random()*22}px;left:${20+Math.random()*240}px;font-size:${14+Math.random()*8}px;z-index:3;transform-origin:center bottom;animation:sproutGrow 1.4s cubic-bezier(.5,2,.3,.8)`;
+    }
+    e.textContent=list[Math.floor(Math.random()*list.length)];
+    pg.appendChild(e);
   }
 
   async function refreshAndUpdate(){
-    const prev = _myCo2;
+    const prev=_myCo2;
     await refreshMyCo2();
-    if(prev !== _myCo2){
-      renderBunnyStats();
-      const stage = getStage(_myCo2);
-      applyStageBg(stage);
-      const cnt = (_myBunny?.bunnies || []).length;
-      const colors = (_myBunny?.bunnies || []).map(b=>b.color).join(',');
-      const newKey = `${cnt}_${colors}_${stage.id}`;
-      if(newKey !== _lastSpawnedKey) spawnBunnies(_myBunny?.bunnies || []);
-      checkStageUp();
+    if(prev!==_myCo2){
+      flashPlayground();
+      sproutNewElement();
+      setTimeout(()=>{
+        renderBunnyStats();
+        const stage=getStage(_myCo2);
+        applyStageBg(stage);
+        const cnt=(_myBunny?.bunnies||[]).length;
+        const colors=(_myBunny?.bunnies||[]).map(b=>b.color).join(',');
+        const newKey=`${cnt}_${colors}_${stage.id}`;
+        if(newKey!==_lastSpawnedKey) spawnBunnies(_myBunny?.bunnies||[]);
+        checkStageUp();
+      },1500);
     }
   }
 
   function renderBunnyMap(){
-    const c = document.getElementById("bunnyGameMain");
-    if(!c) return;
-    if(!_myBunny){ c.innerHTML = '<div style="text-align:center;padding:40px;color:#888;font-size:13px">🐰 토끼 데이터 로딩 중...</div>'; return; }
-    const stage = getStage(_myCo2);
-    const next = getNextStage(_myCo2);
+    const c=document.getElementById("bunnyGameMain"); if(!c) return;
+    if(!_myBunny){c.innerHTML='<div style="text-align:center;padding:40px;color:#888;font-size:13px">🐰 토끼 데이터 로딩 중...</div>'; return;}
+    const stage=getStage(_myCo2); const next=getNextStage(_myCo2);
 
-    c.innerHTML = `
+    c.innerHTML=`
       <div style="margin:12px;background:linear-gradient(135deg,#0f3d20,#1a6b3a);border-radius:14px;padding:10px 14px;color:#fff">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
           <div>
             <div style="font-size:9px;color:rgba(255,255,255,.6);font-weight:600;letter-spacing:1px">🌍 내 지구 — STAGE ${stage.id+1}/5</div>
             <div style="font-size:14px;font-weight:900;color:#a8f0c6;margin-top:1px">${stage.name} · CO₂ ${_myCo2.toFixed(1)}kg</div>
           </div>
-          <div style="font-size:10px;color:rgba(255,255,255,.7);text-align:right">${next ? `다음: ${next.name}<br/><b style="color:#a8f0c6">${(next.min - _myCo2).toFixed(1)}kg 더!</b>` : '<b style="color:#FFD700">최종 단계 도달! ✨</b>'}</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.7);text-align:right">${next?`다음: ${next.name}<br/><b style="color:#a8f0c6">${(next.min-_myCo2).toFixed(1)}kg 더!</b>`:'<b style="color:#FFD700">최종 단계 ✨</b>'}</div>
         </div>
-        ${next ? `<div style="height:5px;background:rgba(255,255,255,.2);border-radius:3px;overflow:hidden"><div style="width:${Math.min(100, ((_myCo2-stage.min)/(next.min-stage.min))*100)}%;height:100%;background:linear-gradient(90deg,#a8f0c6,#FFD700);transition:width .8s"></div></div>` : ''}
+        ${next?`<div style="height:5px;background:rgba(255,255,255,.2);border-radius:3px;overflow:hidden"><div style="width:${Math.min(100,getStageProgress(_myCo2)*100)}%;height:100%;background:linear-gradient(90deg,#a8f0c6,#FFD700);transition:width .8s"></div></div>`:''}
       </div>
-
       <div id="bunnyPlayground" style="position:relative;margin:0 12px;height:260px;border-radius:18px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.1);user-select:none;transition:background 1.5s">
         <div id="bunnyHelpText" style="position:absolute;top:8px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,.85);border-radius:12px;padding:3px 10px;font-size:10px;color:#444;font-weight:600;pointer-events:none;z-index:5">"${stage.msg}" · 토끼 탭하면 이름</div>
       </div>
-
       <div id="bunnyStats"></div>
     `;
     applyStageBg(stage);
     renderBunnyStats();
-    setTimeout(() => spawnBunnies(_myBunny.bunnies || []), 100);
+    setTimeout(()=>spawnBunnies(_myBunny.bunnies||[]),100);
   }
 
   function applyStageBg(stage){
-    const pg = document.getElementById('bunnyPlayground');
-    if(!pg) return;
-    pg.style.background = stage.bg;
-    pg.querySelectorAll('.stage-decor').forEach(el => el.remove());
-    const decors = [...(stage.skyDecor||[]).map(d=>({...d,zone:'sky'})), ...(stage.groundDecor||[]).map(d=>({...d,zone:'ground'}))];
-    decors.forEach(d => {
-      const el = document.createElement('div');
-      el.className = 'stage-decor';
-      let style = `position:absolute;font-size:${d.size||14}px;opacity:${d.op||.85};pointer-events:none;z-index:2;`;
-      if(d.top !== undefined) style += `top:${typeof d.top==='string'?d.top:d.top+'px'};`;
-      if(d.bottom !== undefined) style += `bottom:${d.bottom}px;`;
-      if(d.left !== undefined) style += `left:${typeof d.left==='string'?d.left:d.left+'px'};`;
-      if(d.right !== undefined) style += `right:${d.right}px;`;
-      el.style.cssText = style;
-      el.textContent = d.e;
+    const pg=document.getElementById('bunnyPlayground'); if(!pg) return;
+    pg.style.background=stage.bg;
+    pg.querySelectorAll('.stage-decor, .stage-car').forEach(el=>el.remove());
+
+    // 기본 데코
+    const decors=[...(stage.skyDecor||[]).map(d=>({...d,zone:'sky'})),...(stage.groundDecor||[]).map(d=>({...d,zone:'ground'}))];
+    decors.forEach(d=>{
+      const el=document.createElement('div'); el.className='stage-decor';
+      let s=`position:absolute;font-size:${d.size||14}px;opacity:${d.op||.85};pointer-events:none;z-index:2;`;
+      if(d.top!==undefined) s+=`top:${typeof d.top==='string'?d.top:d.top+'px'};`;
+      if(d.bottom!==undefined) s+=`bottom:${d.bottom}px;`;
+      if(d.left!==undefined) s+=`left:${typeof d.left==='string'?d.left:d.left+'px'};`;
+      if(d.right!==undefined) s+=`right:${d.right}px;`;
+      el.style.cssText=s; el.textContent=d.e;
       pg.appendChild(el);
     });
+
+    // Sub-stage 진행률에 따른 추가 데코
+    const progress=getStageProgress(_myCo2);
+    const slots=8;
+    const filled=Math.floor(progress*slots);
+    const subList=SUB_DECORS[stage.id]||[];
+    for(let i=0;i<filled && i<subList.length;i++){
+      const e=document.createElement('div'); e.className='stage-decor';
+      const isSky=stage.id>=2 && (i%3===0);
+      const seed=(i*97)%240;
+      if(isSky){
+        e.style.cssText=`position:absolute;top:${30+(i*23)%60}px;left:${20+seed}px;font-size:${13+(i%4)*2}px;opacity:.85;z-index:2;pointer-events:none`;
+      } else {
+        e.style.cssText=`position:absolute;bottom:${4+(i*7)%22}px;left:${20+seed}px;font-size:${13+(i%4)*2}px;opacity:.85;z-index:2;pointer-events:none`;
+      }
+      e.textContent=subList[i];
+      pg.appendChild(e);
+    }
+
+    // 회색 도시 자동차
+    if(stage.hasCars){
+      const cars=[
+        {emoji:'🚗',size:20,top:120,delay:0,duration:9,dir:'ltr'},
+        {emoji:'🚙',size:20,top:140,delay:3,duration:11,dir:'rtl'},
+        {emoji:'🚌',size:22,top:160,delay:6,duration:13,dir:'ltr'},
+        {emoji:'🚛',size:22,top:180,delay:1,duration:15,dir:'rtl'},
+      ];
+      cars.forEach(c=>{
+        const el=document.createElement('div');
+        el.className='stage-car stage-decor';
+        el.style.cssText=`position:absolute;top:${c.top}px;font-size:${c.size}px;z-index:3;pointer-events:none;${c.dir==='ltr'?'left:-40px':'right:-40px'};animation:${c.dir==='ltr'?'carLtr':'carRtl'} ${c.duration}s linear ${c.delay}s infinite;${c.dir==='rtl'?'transform:scaleX(-1);':''}`;
+        el.textContent=c.emoji;
+        pg.appendChild(el);
+      });
+    }
   }
 
   function renderBunnyStats(){
-    const c = document.getElementById("bunnyStats");
-    if(!c || !_myBunny) return;
-    const bunnies = _myBunny.bunnies || [];
-    const happiness = _myBunny.happiness || 0;
-    const carrots = _myBunny.carrots || 0;
-    const myPoints = window.UDATA?.point || 0;
-    const imp = getImpact(_myCo2);
+    const c=document.getElementById("bunnyStats"); if(!c||!_myBunny) return;
+    const bunnies=_myBunny.bunnies||[]; const happiness=_myBunny.happiness||0; const carrots=_myBunny.carrots||0;
+    const myPoints=window.UDATA?.point||0; const imp=getImpact(_myCo2);
 
-    c.innerHTML = `
+    c.innerHTML=`
       <div style="margin:12px">
-        ${_myCo2 > 0 ? `<div style="background:linear-gradient(135deg,#fff,#f0fbf4);border-radius:14px;padding:12px 14px;margin-bottom:12px;border:1.5px solid #a8e6c5">
+        ${_myCo2>0?`<div style="background:linear-gradient(135deg,#fff,#f0fbf4);border-radius:14px;padding:12px 14px;margin-bottom:12px;border:1.5px solid #a8e6c5">
           <div style="font-size:10px;color:#1a6b3a;font-weight:700;letter-spacing:1.5px;margin-bottom:8px">💚 내가 만든 임팩트</div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:11px">
             <div style="background:#fff;border-radius:8px;padding:8px;text-align:center"><div style="font-size:18px">🌳</div><div style="font-weight:900;color:#1B5E20;margin-top:2px">${imp.trees}그루</div><div style="font-size:9px;color:#888">나무 1년 분량</div></div>
@@ -254,14 +299,14 @@
             <div style="background:#fff;border-radius:8px;padding:8px;text-align:center"><div style="font-size:18px">☕</div><div style="font-weight:900;color:#1B5E20;margin-top:2px">${imp.cups}개</div><div style="font-size:9px;color:#888">일회용컵 안 만든 효과</div></div>
             <div style="background:#fff;border-radius:8px;padding:8px;text-align:center"><div style="font-size:18px">🐰</div><div style="font-weight:900;color:#1B5E20;margin-top:2px">${imp.sqm}평</div><div style="font-size:9px;color:#888">토끼가 살 숲</div></div>
           </div>
-        </div>` : ''}
+        </div>`:''}
 
         <div style="background:linear-gradient(135deg,#fff,#fff8e1);border-radius:14px;padding:14px 16px;text-align:center;border:2px solid #FFE082;margin-bottom:12px">
           <div style="font-size:11px;color:#689F38;font-weight:700;letter-spacing:2px">🐰 MY BUNNY FAMILY</div>
           <div style="font-size:18px;font-weight:900;color:#1B5E20;margin-top:4px">우리 토끼 ${bunnies.length}마리</div>
           <div style="display:flex;justify-content:space-between;font-size:12px;margin-top:10px"><span style="color:#555;font-weight:600">😊 행복도</span><span style="color:#e91e63;font-weight:700">${happiness}/100</span></div>
           <div style="height:8px;background:#fce4ec;border-radius:4px;overflow:hidden;margin-top:4px"><div style="width:${Math.min(100,happiness)}%;height:100%;background:linear-gradient(90deg,#f06292,#e91e63);transition:width .5s"></div></div>
-          ${happiness >= 100 ? '<div style="font-size:11px;color:#C44569;margin-top:6px;font-weight:700">✨ 새 토끼를 입양할 수 있어요!</div>' : ''}
+          ${happiness>=100?'<div style="font-size:11px;color:#C44569;margin-top:6px;font-weight:700">✨ 새 토끼를 입양할 수 있어요!</div>':''}
         </div>
 
         <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#FFF8E1;border-radius:14px;margin-bottom:12px;border:2px solid #FFE082">
@@ -275,31 +320,40 @@
         </div>
 
         <div style="margin-top:12px;padding:11px 13px;background:#f0fbf4;border-radius:10px;font-size:11px;color:#1B5E20;line-height:1.8">
-          💡 미션·깅 = 누적 CO₂ 자동 반영 · 단계 자동 갱신<br/>
-          💡 토끼 탭 = 이름 + 쓰다듬기 (행복+1)<br/>
-          💡 5단계(50kg) = 회복된 지구 도달!
+          💡 미션 1개 → 새 꽃 한 송이 즉시 피움 ✨<br/>
+          💡 단계 진행률만큼 풍경 풍성해져요<br/>
+          💡 5단계(50kg) 도달 후 → 멸종위기종 친구!
         </div>
 
         <div style="margin-top:12px;padding:14px 12px;background:#fff;border-radius:12px;border:1px solid #d8eedd">
           <div style="font-size:11px;font-weight:900;color:#1a2e1a;margin-bottom:12px;text-align:center">🐾 우리 토끼 가족</div>
           <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center">
-            ${bunnies.map((b)=>`<div style="text-align:center;padding:6px 4px;background:#f8fdf9;border-radius:10px;min-width:62px;border:1px solid #eee"><div style="height:54px;display:flex;justify-content:center;align-items:flex-end;overflow:hidden"><div style="transform:scale(.7);transform-origin:center bottom">${bunnySvg(b.color, 'normal', false)}</div></div><div style="font-size:10px;color:#444;margin-top:3px;font-weight:700">${b.name}</div></div>`).join('')}
+            ${bunnies.map((b)=>`<div style="text-align:center;padding:6px 4px;background:#f8fdf9;border-radius:10px;min-width:62px;border:1px solid #eee"><div style="height:54px;display:flex;justify-content:center;align-items:flex-end;overflow:hidden"><div style="transform:scale(.7);transform-origin:center bottom">${bunnySvg(b.color,'normal',false)}</div></div><div style="font-size:10px;color:#444;margin-top:3px;font-weight:700">${b.name}</div></div>`).join('')}
           </div>
         </div>
 
         <div style="margin-top:12px;padding:14px 12px;background:linear-gradient(135deg,#fff,#fff8e1);border-radius:14px;border:2px dashed #FFD54F">
-          <div style="font-size:11px;font-weight:900;color:#8D6E1B;margin-bottom:4px;text-align:center">🌟 다가올 시즌 — 한정판 친구</div>
-          <div style="font-size:10px;color:#888;text-align:center;margin-bottom:12px">매월 시즌 미션 완수 → 한국 멸종위기종 친구가 가족이 돼요</div>
+          <div style="font-size:11px;font-weight:900;color:#8D6E1B;margin-bottom:4px;text-align:center">🌟 한정판 친구 — 멸종위기종</div>
+          <div style="font-size:10px;color:#888;text-align:center;margin-bottom:12px">CO₂ 더 모으면 만날 수 있어요!</div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-            ${SEASONS.map(s=>`<div style="background:#fff;border-radius:10px;padding:10px 8px;text-align:center;border:1px solid #FFE082;position:relative;opacity:.85">
-              <div style="font-size:36px;line-height:1.1;filter:grayscale(.3)">${s.emoji}</div>
-              <div style="font-size:11px;font-weight:900;color:#5D4037;margin-top:6px">${s.month}월 · ${s.name}</div>
-              <div style="font-size:9px;color:#888;margin-top:2px">"${s.theme}"</div>
-              <div style="font-size:9px;color:#FF8F00;margin-top:4px;font-weight:700">${s.desc}</div>
-              <div style="position:absolute;top:6px;right:6px;background:#FFE082;color:#8D6E1B;font-size:8px;font-weight:700;padding:2px 5px;border-radius:7px">${s.tag}</div>
-            </div>`).join('')}
+            ${SEASONS.map(s=>{
+              const unlocked=_myCo2>=s.minCo2;
+              const remain=Math.max(0,s.minCo2-_myCo2);
+              const prog=Math.min(100,(_myCo2/s.minCo2)*100);
+              return `<div style="background:${unlocked?'#fff':'#fafafa'};border-radius:10px;padding:10px 8px;text-align:center;border:1px solid ${unlocked?'#FFE082':'#e8e8e8'};position:relative">
+                <div style="font-size:36px;line-height:1.1;filter:${unlocked?'none':'grayscale(.85) opacity(.5)'}">${s.emoji}</div>
+                <div style="font-size:11px;font-weight:900;color:${unlocked?'#5D4037':'#999'};margin-top:6px">${s.month}월 · ${s.name}</div>
+                <div style="font-size:9px;color:#888;margin-top:2px">"${s.theme}"</div>
+                <div style="height:4px;background:#f0f0f0;border-radius:2px;overflow:hidden;margin-top:6px">
+                  <div style="width:${prog}%;height:100%;background:linear-gradient(90deg,#FFD54F,#FF8F00);transition:width .8s"></div>
+                </div>
+                <div style="font-size:9px;color:${unlocked?'#27AE60':'#FF8F00'};margin-top:4px;font-weight:700">
+                  ${unlocked?'✨ 해금!':`CO₂ ${remain.toFixed(0)}kg 더 (${s.minCo2}kg)`}
+                </div>
+                <div style="position:absolute;top:6px;right:6px;background:#FFE082;color:#8D6E1B;font-size:8px;font-weight:700;padding:2px 5px;border-radius:7px">${s.tag}</div>
+              </div>`;
+            }).join('')}
           </div>
-          <div style="font-size:10px;color:#888;text-align:center;margin-top:10px;font-style:italic">곧 만날 수 있어요 🌱</div>
         </div>
 
         <div style="height:20px"></div>
@@ -307,119 +361,122 @@
     `;
   }
 
-  window.adoptBunny = function(){
+  window.adoptBunny=function(){
     if(!_myBunny) return;
-    if((_myBunny.happiness || 0) < 100){window.toast("행복도 100 필요해요!"); return;}
-    _adoptColor = 0;
-    const old = document.getElementById('ovAdopt'); if(old) old.remove();
-    const modal = document.createElement('div');
-    modal.id = 'ovAdopt'; modal.className = 'overlay on';
-    modal.innerHTML = `<div class="modal" style="padding:24px 20px 20px"><button class="modal-close" onclick="document.getElementById('ovAdopt').remove()">✕</button><div style="text-align:center;margin-bottom:14px"><div style="font-size:48px">🐰</div><div style="font-size:17px;font-weight:900;margin-top:6px;color:#1B5E20">새 토끼 입양하기</div><div style="font-size:12px;color:#888;margin-top:6px">우리 가족이 될 토끼를 골라요!</div></div><div style="font-size:12px;font-weight:700;margin-bottom:8px;color:#555">🎨 색깔 선택</div><div style="display:flex;gap:6px;justify-content:space-between;margin-bottom:16px">${PALETTES.map((p,i)=>`<button id="cpb-${i}" onclick="selectAdoptColor(${i})" style="flex:1;background:${i===0?'#f0fbf4':'#fff'};border:${i===0?'2.5px solid #2ECC71':'1.5px solid #ddd'};border-radius:12px;padding:6px 2px;cursor:pointer;font-family:inherit;text-align:center"><div style="height:60px;display:flex;justify-content:center;align-items:flex-end;overflow:hidden"><div style="transform:scale(.7);transform-origin:center bottom">${bunnySvg(i,'normal',false)}</div></div><div style="font-size:9px;color:#666;margin-top:2px;font-weight:700">${p.label}</div></button>`).join('')}</div><div style="font-size:12px;font-weight:700;margin-bottom:8px;color:#555">✏️ 이름</div><input id="newBunnyName" class="inp" placeholder="예: 꼬미, 토토, 보리, 마루..." maxlength="6" style="text-align:center;font-size:15px;font-weight:700"/><div style="font-size:10px;color:#aaa;text-align:center;margin-top:4px">최대 6글자</div><div style="display:flex;gap:8px;margin-top:16px"><button class="btn btn-gray" style="flex:1" onclick="document.getElementById('ovAdopt').remove()">취소</button><button class="btn btn-g" style="flex:1" onclick="confirmAdopt()">🎉 입양!</button></div></div>`;
+    if((_myBunny.happiness||0)<100){window.toast("행복도 100 필요해요!"); return;}
+    _adoptColor=0;
+    const old=document.getElementById('ovAdopt'); if(old) old.remove();
+    const modal=document.createElement('div');
+    modal.id='ovAdopt'; modal.className='overlay on';
+    modal.innerHTML=`<div class="modal" style="padding:24px 20px 20px"><button class="modal-close" onclick="document.getElementById('ovAdopt').remove()">✕</button><div style="text-align:center;margin-bottom:14px"><div style="font-size:48px">🐰</div><div style="font-size:17px;font-weight:900;margin-top:6px;color:#1B5E20">새 토끼 입양하기</div><div style="font-size:12px;color:#888;margin-top:6px">우리 가족이 될 토끼를 골라요!</div></div><div style="font-size:12px;font-weight:700;margin-bottom:8px;color:#555">🎨 색깔 선택</div><div style="display:flex;gap:6px;justify-content:space-between;margin-bottom:16px">${PALETTES.map((p,i)=>`<button id="cpb-${i}" onclick="selectAdoptColor(${i})" style="flex:1;background:${i===0?'#f0fbf4':'#fff'};border:${i===0?'2.5px solid #2ECC71':'1.5px solid #ddd'};border-radius:12px;padding:6px 2px;cursor:pointer;font-family:inherit;text-align:center"><div style="height:60px;display:flex;justify-content:center;align-items:flex-end;overflow:hidden"><div style="transform:scale(.7);transform-origin:center bottom">${bunnySvg(i,'normal',false)}</div></div><div style="font-size:9px;color:#666;margin-top:2px;font-weight:700">${p.label}</div></button>`).join('')}</div><div style="font-size:12px;font-weight:700;margin-bottom:8px;color:#555">✏️ 이름</div><input id="newBunnyName" class="inp" placeholder="예: 꼬미, 토토, 보리..." maxlength="6" style="text-align:center;font-size:15px;font-weight:700"/><div style="display:flex;gap:8px;margin-top:16px"><button class="btn btn-gray" style="flex:1" onclick="document.getElementById('ovAdopt').remove()">취소</button><button class="btn btn-g" style="flex:1" onclick="confirmAdopt()">🎉 입양!</button></div></div>`;
     document.body.appendChild(modal);
-    setTimeout(()=>{const inp=document.getElementById('newBunnyName'); if(inp){inp.focus(); inp.onkeydown=(e)=>{if(e.key==='Enter')window.confirmAdopt();};}}, 100);
+    setTimeout(()=>{const inp=document.getElementById('newBunnyName'); if(inp){inp.focus(); inp.onkeydown=(e)=>{if(e.key==='Enter')window.confirmAdopt();};}},100);
   };
-  window.selectAdoptColor = function(idx){
-    _adoptColor = idx;
+  window.selectAdoptColor=function(idx){
+    _adoptColor=idx;
     PALETTES.forEach((_,i)=>{const btn=document.getElementById('cpb-'+i); if(!btn)return; btn.style.background=i===idx?'#f0fbf4':'#fff'; btn.style.border=i===idx?'2.5px solid #2ECC71':'1.5px solid #ddd';});
   };
-  window.confirmAdopt = async function(){
+  window.confirmAdopt=async function(){
     if(!_myBunny) return;
-    const inp = document.getElementById('newBunnyName');
-    let name = inp?.value?.trim() || '';
-    if(!name) name = `토끼${(_myBunny.bunnies?.length || 0) + 1}`;
-    if(name.length > 6) name = name.substring(0, 6);
-    if(!_myBunny.bunnies) _myBunny.bunnies = [];
-    _myBunny.bunnies.push({name, color: _adoptColor});
-    _myBunny.happiness = 0;
+    const inp=document.getElementById('newBunnyName');
+    let name=inp?.value?.trim()||'';
+    if(!name) name=`토끼${(_myBunny.bunnies?.length||0)+1}`;
+    if(name.length>6) name=name.substring(0,6);
+    if(!_myBunny.bunnies) _myBunny.bunnies=[];
+    _myBunny.bunnies.push({name,color:_adoptColor});
+    _myBunny.happiness=0;
     await saveBunny();
     document.getElementById('ovAdopt')?.remove();
-    setTimeout(()=>{_bunnyChars.forEach((_,i)=>setTimeout(()=>bigJump(i), i*100));}, 300);
+    setTimeout(()=>{_bunnyChars.forEach((_,i)=>setTimeout(()=>bigJump(i),i*100));},300);
     window.toast(`🎉 "${name}" 우리 가족이 됐어요!`);
   };
 
   function spawnBunnies(bunniesData){
-    const playground = document.getElementById('bunnyPlayground');
-    if(!playground) return;
-    playground.querySelectorAll('.bunny-char, .bunny-extra').forEach(el => el.remove());
-    _bunnyChars = [];
-    const w = playground.offsetWidth || 320;
-    const groundTop = 130, groundBottom = 195;
-    const showCount = Math.min(bunniesData.length, 12);
-    const stage = getStage(_myCo2);
+    const playground=document.getElementById('bunnyPlayground'); if(!playground) return;
+    playground.querySelectorAll('.bunny-char, .bunny-extra').forEach(el=>el.remove());
+    _bunnyChars=[];
+    const w=playground.offsetWidth||320;
+    const groundTop=130, groundBottom=195;
+    const showCount=Math.min(bunniesData.length,12);
+    const stage=getStage(_myCo2);
 
     for(let i=0;i<showCount;i++){
-      const bdata = bunniesData[i];
-      const wrap = document.createElement('div');
-      wrap.className = 'bunny-char';
-      wrap.style.cssText = `position:absolute;cursor:pointer;user-select:none;z-index:${20+i};will-change:left,top,transform;line-height:0`;
-      const withMask = stage.mask && i === 0;
-      wrap.innerHTML = `<div class="bunny-svg">${bunnySvg(bdata.color, 'normal', withMask)}</div><div class="bunny-grass" style="position:absolute;top:30px;left:-12px;font-size:14px;display:none;line-height:1">🌿</div><div class="bunny-zzz" style="position:absolute;top:-10px;right:-4px;font-size:12px;display:none;line-height:1;animation:zzz 1.5s infinite">💤</div><div class="name-bubble" style="position:absolute;top:-22px;left:50%;transform:translateX(-50%);background:#fff;border:1.5px solid #FFB6C1;color:#5D4037;font-size:11px;font-weight:700;padding:2px 9px;border-radius:10px;white-space:nowrap;z-index:50;box-shadow:0 2px 8px rgba(0,0,0,.15);display:none;line-height:1.3">${bdata.name}</div>`;
-      const idx = i;
-      wrap.onclick = (e)=>{e.stopPropagation(); showName(idx); bigJump(idx); window.petBunny();};
+      const bdata=bunniesData[i];
+      const wrap=document.createElement('div');
+      wrap.className='bunny-char';
+      wrap.style.cssText=`position:absolute;cursor:pointer;user-select:none;z-index:${20+i};will-change:left,top,transform;line-height:0`;
+      const withMask=stage.mask&&i===0;
+      wrap.innerHTML=`<div class="bunny-svg">${bunnySvg(bdata.color,'normal',withMask)}</div><div class="bunny-grass" style="position:absolute;top:30px;left:-12px;font-size:14px;display:none;line-height:1">🌿</div><div class="bunny-zzz" style="position:absolute;top:-10px;right:-4px;font-size:12px;display:none;line-height:1;animation:zzz 1.5s infinite">💤</div><div class="name-bubble" style="position:absolute;top:-22px;left:50%;transform:translateX(-50%);background:#fff;border:1.5px solid #FFB6C1;color:#5D4037;font-size:11px;font-weight:700;padding:2px 9px;border-radius:10px;white-space:nowrap;z-index:50;box-shadow:0 2px 8px rgba(0,0,0,.15);display:none;line-height:1.3">${bdata.name}</div>`;
+      const idx=i;
+      wrap.onclick=(e)=>{e.stopPropagation(); showName(idx); bigJump(idx); window.petBunny();};
       playground.appendChild(wrap);
-
-      const bunny = {el:wrap, name:bdata.name, color:bdata.color, withMask,
+      const bunny={el:wrap,name:bdata.name,color:bdata.color,withMask,
         x:20+Math.random()*(w-80), y:groundTop+Math.random()*(groundBottom-groundTop),
         vx:0, hopOffset:Math.random()*Math.PI*2, facing:Math.random()<0.5?-1:1,
         stateTimer:60+Math.floor(Math.random()*80), state:'walk', groundTop, groundBottom, bubbleTimer:null};
-      setState(bunny, 'walk');
+      setState(bunny,'walk');
       _bunnyChars.push(bunny);
     }
 
-    if(bunniesData.length > 12){
-      const more = document.createElement('div');
-      more.className = 'bunny-extra';
-      more.style.cssText = 'position:absolute;bottom:8px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,.85);border-radius:10px;padding:3px 10px;font-size:11px;font-weight:700;color:#5D4037;z-index:100';
-      more.textContent = `+${bunniesData.length-12}마리 더!`;
+    if(bunniesData.length>12){
+      const more=document.createElement('div'); more.className='bunny-extra';
+      more.style.cssText='position:absolute;bottom:8px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,.85);border-radius:10px;padding:3px 10px;font-size:11px;font-weight:700;color:#5D4037;z-index:100';
+      more.textContent=`+${bunniesData.length-12}마리 더!`;
       playground.appendChild(more);
     }
-
-    const colors = bunniesData.map(b=>b.color).join(',');
-    _lastSpawnedKey = `${bunniesData.length}_${colors}_${stage.id}`;
+    const colors=bunniesData.map(b=>b.color).join(',');
+    _lastSpawnedKey=`${bunniesData.length}_${colors}_${stage.id}`;
     if(!document.getElementById('bunnyAnimStyle')){
-      const style = document.createElement('style');
-      style.id = 'bunnyAnimStyle';
-      style.textContent = `@keyframes zzz {0%{opacity:0;transform:translateY(0)} 50%{opacity:1} 100%{opacity:0;transform:translateY(-8px)}} @keyframes stageUpFade {0%{opacity:0;transform:scale(.8)} 100%{opacity:1;transform:scale(1)}}`;
+      const style=document.createElement('style');
+      style.id='bunnyAnimStyle';
+      style.textContent=`
+        @keyframes zzz {0%{opacity:0;transform:translateY(0)} 50%{opacity:1} 100%{opacity:0;transform:translateY(-8px)}}
+        @keyframes stageUpFade {0%{opacity:0;transform:scale(.8)} 100%{opacity:1;transform:scale(1)}}
+        @keyframes flashFade {0%{opacity:1} 100%{opacity:0}}
+        @keyframes sproutGrow {0%{transform:scale(0) rotate(-20deg)} 60%{transform:scale(1.4) rotate(10deg)} 100%{transform:scale(1) rotate(0)}}
+        @keyframes carLtr {0%{left:-40px} 100%{left:calc(100% + 40px)}}
+        @keyframes carRtl {0%{right:-40px} 100%{right:calc(100% + 40px)}}
+      `;
       document.head.appendChild(style);
     }
     startBunnyAnim();
   }
 
   function showName(idx){
-    const b = _bunnyChars[idx]; if(!b) return;
-    const bubble = b.el.querySelector('.name-bubble'); if(!bubble) return;
-    bubble.style.transform = `translateX(-50%) scaleX(${b.facing})`;
-    bubble.style.display = 'block';
+    const b=_bunnyChars[idx]; if(!b) return;
+    const bubble=b.el.querySelector('.name-bubble'); if(!bubble) return;
+    bubble.style.transform=`translateX(-50%) scaleX(${b.facing})`;
+    bubble.style.display='block';
     clearTimeout(b.bubbleTimer);
-    b.bubbleTimer = setTimeout(()=>{bubble.style.display='none';}, 2000);
+    b.bubbleTimer=setTimeout(()=>{bubble.style.display='none';},2000);
   }
-  function setState(b, newState){
-    b.state = newState;
-    const grass=b.el.querySelector('.bunny-grass'), zzz=b.el.querySelector('.bunny-zzz'), svg=b.el.querySelector('.bunny-svg');
-    if(grass) grass.style.display = newState==='eat'?'block':'none';
-    if(zzz) zzz.style.display = newState==='rest'?'block':'none';
+  function setState(b,newState){
+    b.state=newState;
+    const grass=b.el.querySelector('.bunny-grass'),zzz=b.el.querySelector('.bunny-zzz'),svg=b.el.querySelector('.bunny-svg');
+    if(grass) grass.style.display=newState==='eat'?'block':'none';
+    if(zzz) zzz.style.display=newState==='rest'?'block':'none';
     let mood='normal'; if(newState==='rest') mood='sleep'; else if(newState==='eat') mood='happy';
-    if(svg) svg.innerHTML = bunnySvg(b.color, mood, b.withMask);
+    if(svg) svg.innerHTML=bunnySvg(b.color,mood,b.withMask);
     if(newState==='walk'){b.vx=(Math.random()<0.5?-1:1)*(0.4+Math.random()*0.4); b.facing=b.vx>0?1:-1;}
     else if(newState==='run'){b.vx=(Math.random()<0.5?-1:1)*(1.4+Math.random()*0.6); b.facing=b.vx>0?1:-1;}
     else b.vx=0;
   }
   function startBunnyAnim(){
     if(_animLoop){clearInterval(_animLoop); _animLoop=null;}
-    let frame = 0;
-    _animLoop = setInterval(()=>{
+    let frame=0;
+    _animLoop=setInterval(()=>{
       frame++;
-      const playground = document.getElementById('bunnyPlayground');
+      const playground=document.getElementById('bunnyPlayground');
       if(!playground){clearInterval(_animLoop); _animLoop=null; return;}
-      const w = playground.offsetWidth || 320;
+      const w=playground.offsetWidth||320;
       _bunnyChars.forEach((b)=>{
         b.stateTimer--;
         if(b.stateTimer<=0){
           const r=Math.random(); let newState;
           if(r<0.40) newState='walk'; else if(r<0.60) newState='eat'; else if(r<0.75) newState='look'; else if(r<0.88) newState='rest'; else newState='run';
-          setState(b, newState); b.stateTimer = 70+Math.floor(Math.random()*110);
+          setState(b,newState); b.stateTimer=70+Math.floor(Math.random()*110);
         }
-        let yOffset=0, extraTransform='';
+        let yOffset=0,extraTransform='';
         if(b.state==='walk'){b.x+=b.vx; yOffset=Math.abs(Math.sin(frame*0.18+b.hopOffset))*8;}
         else if(b.state==='run'){b.x+=b.vx; yOffset=Math.abs(Math.sin(frame*0.32+b.hopOffset))*16;}
         else if(b.state==='eat') extraTransform=` rotate(${Math.sin(frame*0.4)*1.5}deg)`;
@@ -430,34 +487,34 @@
         b.el.style.left=b.x+'px'; b.el.style.top=(b.y-yOffset)+'px';
         b.el.style.transform=`scaleX(${b.facing})`+extraTransform;
         const bubble=b.el.querySelector('.name-bubble');
-        if(bubble && bubble.style.display==='block') bubble.style.transform=`translateX(-50%) scaleX(${b.facing})`;
+        if(bubble&&bubble.style.display==='block') bubble.style.transform=`translateX(-50%) scaleX(${b.facing})`;
       });
-    }, 50);
+    },50);
   }
   function bigJump(idx){
-    const b = _bunnyChars[idx]; if(!b) return;
-    const el = b.el;
-    el.style.transition = 'transform .35s cubic-bezier(.5,2,.3,.8)';
-    el.style.transform = `scaleX(${b.facing}) translateY(-25px) scale(1.2)`;
-    const svg = el.querySelector('.bunny-svg');
-    if(svg) svg.innerHTML = bunnySvg(b.color, 'happy', b.withMask);
+    const b=_bunnyChars[idx]; if(!b) return;
+    const el=b.el;
+    el.style.transition='transform .35s cubic-bezier(.5,2,.3,.8)';
+    el.style.transform=`scaleX(${b.facing}) translateY(-25px) scale(1.2)`;
+    const svg=el.querySelector('.bunny-svg');
+    if(svg) svg.innerHTML=bunnySvg(b.color,'happy',b.withMask);
     setTimeout(()=>{
-      el.style.transition = 'transform .25s';
-      el.style.transform = `scaleX(${b.facing}) scale(1)`;
+      el.style.transition='transform .25s';
+      el.style.transform=`scaleX(${b.facing}) scale(1)`;
       setTimeout(()=>{
-        el.style.transition = '';
-        if(svg && b.state!=='eat' && b.state!=='rest') svg.innerHTML = bunnySvg(b.color, 'normal', b.withMask);
-      }, 250);
-    }, 350);
+        el.style.transition='';
+        if(svg&&b.state!=='eat'&&b.state!=='rest') svg.innerHTML=bunnySvg(b.color,'normal',b.withMask);
+      },250);
+    },350);
   }
 
   function showStageUp(stage){
-    const imp = getImpact(_myCo2);
-    const old = document.getElementById('ovStageUp'); if(old) old.remove();
-    const modal = document.createElement('div');
-    modal.id = 'ovStageUp';
-    modal.style.cssText = `position:fixed;inset:0;background:${stage.bg};z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px 20px;animation:stageUpFade .8s ease-out;overflow-y:auto`;
-    modal.innerHTML = `
+    const imp=getImpact(_myCo2);
+    const old=document.getElementById('ovStageUp'); if(old) old.remove();
+    const modal=document.createElement('div');
+    modal.id='ovStageUp';
+    modal.style.cssText=`position:fixed;inset:0;background:${stage.bg};z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px 20px;animation:stageUpFade .8s ease-out;overflow-y:auto`;
+    modal.innerHTML=`
       <div style="text-align:center;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.3);max-width:340px">
         <div style="font-size:11px;font-weight:700;letter-spacing:3px;opacity:.85">STAGE ${stage.id+1}/5 도달</div>
         <div style="font-size:32px;font-weight:900;margin-top:8px">${stage.name}</div>
@@ -467,10 +524,10 @@
       <div style="background:rgba(255,255,255,.95);border-radius:18px;padding:18px;margin-top:24px;width:100%;max-width:340px;box-shadow:0 10px 30px rgba(0,0,0,.3)">
         <div style="font-size:10px;color:#1a6b3a;font-weight:700;letter-spacing:2px;text-align:center;margin-bottom:12px">💚 당신이 만든 진짜 변화</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px">
-          <div style="background:#f0fbf4;border-radius:10px;padding:10px;text-align:center"><div style="font-size:24px">🌳</div><div style="font-weight:900;color:#1B5E20;margin-top:2px">${imp.trees}그루</div><div style="font-size:9px;color:#666">나무 1년치</div></div>
-          <div style="background:#f0fbf4;border-radius:10px;padding:10px;text-align:center"><div style="font-size:24px">🚗</div><div style="font-weight:900;color:#1B5E20;margin-top:2px">${imp.carKm}km</div><div style="font-size:9px;color:#666">차 안 탄 거</div></div>
-          <div style="background:#f0fbf4;border-radius:10px;padding:10px;text-align:center"><div style="font-size:24px">☕</div><div style="font-weight:900;color:#1B5E20;margin-top:2px">${imp.cups}개</div><div style="font-size:9px;color:#666">일회용컵 안 쓴 거</div></div>
-          <div style="background:#f0fbf4;border-radius:10px;padding:10px;text-align:center"><div style="font-size:24px">🐰</div><div style="font-weight:900;color:#1B5E20;margin-top:2px">${imp.sqm}평</div><div style="font-size:9px;color:#666">토끼가 살 숲</div></div>
+          <div style="background:#f0fbf4;border-radius:10px;padding:10px;text-align:center"><div style="font-size:24px">🌳</div><div style="font-weight:900;color:#1B5E20;margin-top:2px">${imp.trees}그루</div></div>
+          <div style="background:#f0fbf4;border-radius:10px;padding:10px;text-align:center"><div style="font-size:24px">🚗</div><div style="font-weight:900;color:#1B5E20;margin-top:2px">${imp.carKm}km</div></div>
+          <div style="background:#f0fbf4;border-radius:10px;padding:10px;text-align:center"><div style="font-size:24px">☕</div><div style="font-weight:900;color:#1B5E20;margin-top:2px">${imp.cups}개</div></div>
+          <div style="background:#f0fbf4;border-radius:10px;padding:10px;text-align:center"><div style="font-size:24px">🐰</div><div style="font-weight:900;color:#1B5E20;margin-top:2px">${imp.sqm}평</div></div>
         </div>
       </div>
       <div style="display:flex;gap:8px;margin-top:20px;width:100%;max-width:340px">
@@ -480,109 +537,101 @@
     document.body.appendChild(modal);
   }
 
-  window.shareStageCard = async function(stageId){
-    const stage = STAGES[stageId];
-    const imp = getImpact(_myCo2);
-    const text = `🌍 EcoQuest STAGE ${stageId+1}/5 — ${stage.name} 도달!\n"${stage.msg}"\n\n💚 내가 만든 임팩트:\n🌳 나무 ${imp.trees}그루 · 🚗 자동차 ${imp.carKm}km · ☕ 일회용컵 ${imp.cups}개\n\n#에코퀘스트 #EcoQuest #환경챌린지\nhttps://eco-quest.kr`;
-    try {
-      if(navigator.share) await navigator.share({title:`EcoQuest STAGE ${stageId+1}`, text, url:'https://eco-quest.kr'});
-      else { await navigator.clipboard.writeText(text); window.toast('📋 복사됨! 인스타에 붙여넣기'); }
-    } catch(e){console.log('공유 취소:', e.message);}
+  window.shareStageCard=async function(stageId){
+    const stage=STAGES[stageId]; const imp=getImpact(_myCo2);
+    const text=`🌍 EcoQuest STAGE ${stageId+1}/5 — ${stage.name} 도달!\n"${stage.msg}"\n\n💚 내가 만든 임팩트:\n🌳 나무 ${imp.trees}그루 · 🚗 자동차 ${imp.carKm}km · ☕ 일회용컵 ${imp.cups}개\n\n#에코퀘스트 #EcoQuest\nhttps://eco-quest.kr`;
+    try{
+      if(navigator.share) await navigator.share({title:`EcoQuest STAGE ${stageId+1}`,text,url:'https://eco-quest.kr'});
+      else{await navigator.clipboard.writeText(text); window.toast('📋 복사됨!');}
+    }catch(e){console.log('공유 취소');}
   };
 
-  window.buyCarrot = async function(){
-    if(!window.ME || !_myBunny) return;
-    const myPoints = window.UDATA?.point || 0;
-    if(myPoints < 10){window.toast("포인트가 부족해요!"); return;}
-    try {
-      const newP = myPoints - 10;
-      await window.FB.updateDoc(window.FB.doc(window.FB.db, "users", window.ME.uid), {point:newP});
-      window.UDATA.point = newP;
-      _myBunny.carrots = (_myBunny.carrots || 0) + 1;
+  window.buyCarrot=async function(){
+    if(!window.ME||!_myBunny) return;
+    const myPoints=window.UDATA?.point||0;
+    if(myPoints<10){window.toast("포인트가 부족해요!"); return;}
+    try{
+      const newP=myPoints-10;
+      await window.FB.updateDoc(window.FB.doc(window.FB.db,"users",window.ME.uid),{point:newP});
+      window.UDATA.point=newP;
+      _myBunny.carrots=(_myBunny.carrots||0)+1;
       await saveBunny();
       if(window.updateUI) window.updateUI();
       window.toast("🥕 당근 1개 샀어요!");
-    } catch(e){window.toast("실패: "+e.message);}
+    }catch(e){window.toast("실패: "+e.message);}
   };
-  window.feedBunny = async function(){
+  window.feedBunny=async function(){
     if(!_myBunny) return;
-    if((_myBunny.carrots||0) < 1){window.toast("당근이 부족해요!"); return;}
+    if((_myBunny.carrots||0)<1){window.toast("당근이 부족해요!"); return;}
     _myBunny.carrots--;
-    _myBunny.happiness = Math.min(100, (_myBunny.happiness||0)+10);
+    _myBunny.happiness=Math.min(100,(_myBunny.happiness||0)+10);
     await saveBunny();
-    _bunnyChars.forEach((_,i)=>setTimeout(()=>bigJump(i), i*80));
-    window.toast("🍴 토끼들이 행복해해요! 행복도 +10");
+    _bunnyChars.forEach((_,i)=>setTimeout(()=>bigJump(i),i*80));
+    window.toast("🍴 토끼들이 행복해해요!");
   };
-  window.petBunny = async function(){
+  window.petBunny=async function(){
     if(!_myBunny) return;
-    if(Date.now()-_petTimer < 800) return;
-    _petTimer = Date.now();
-    _myBunny.happiness = Math.min(100, (_myBunny.happiness||0)+1);
+    if(Date.now()-_petTimer<800) return;
+    _petTimer=Date.now();
+    _myBunny.happiness=Math.min(100,(_myBunny.happiness||0)+1);
     await saveBunny();
   };
 
   function hookSaveMission(){
     if(window._bunnyHookedSaveMission) return;
-    const orig = window.saveMission;
-    if(typeof orig !== "function"){setTimeout(hookSaveMission, 1000); return;}
-    window.saveMission = async function(uid, m){
-      const res = await orig(uid, m);
-      if(res && uid === window.ME?.uid && _myBunny){
-        _myBunny.carrots = (_myBunny.carrots || 0) + 1;
+    const orig=window.saveMission;
+    if(typeof orig!=="function"){setTimeout(hookSaveMission,1000); return;}
+    window.saveMission=async function(uid,m){
+      const res=await orig(uid,m);
+      if(res&&uid===window.ME?.uid&&_myBunny){
+        _myBunny.carrots=(_myBunny.carrots||0)+1;
         await saveBunny();
-        setTimeout(()=>refreshAndUpdate(), 1500);
+        setTimeout(()=>refreshAndUpdate(),1500);
       }
       return res;
     };
-    window._bunnyHookedSaveMission = true;
+    window._bunnyHookedSaveMission=true;
   }
   function hookJoinGathering(){
     if(window._bunnyHookedJoinGathering) return;
-    const orig = window.joinGathering;
-    if(typeof orig !== "function"){setTimeout(hookJoinGathering, 1000); return;}
-    window.joinGathering = async function(gid){
+    const orig=window.joinGathering;
+    if(typeof orig!=="function"){setTimeout(hookJoinGathering,1000); return;}
+    window.joinGathering=async function(gid){
       await orig(gid);
       if(_myBunny){
-        _myBunny.carrots = (_myBunny.carrots || 0) + 5;
+        _myBunny.carrots=(_myBunny.carrots||0)+5;
         await saveBunny();
-        setTimeout(()=>refreshAndUpdate(), 1500);
-        setTimeout(()=>window.toast("🥕 깅 참여 +5!"), 1200);
+        setTimeout(()=>refreshAndUpdate(),1500);
+        setTimeout(()=>window.toast("🥕 깅 참여 +5!"),1200);
       }
     };
-    window._bunnyHookedJoinGathering = true;
+    window._bunnyHookedJoinGathering=true;
   }
 
   function changeTabIcon(){
-    const tryIt = () => {
-      const tabs = document.querySelectorAll('.tb');
-      if(!tabs.length) return false;
-      let found = false;
+    const tryIt=()=>{
+      const tabs=document.querySelectorAll('.tb'); if(!tabs.length) return false;
+      let found=false;
       tabs.forEach(tab=>{
-        if(tab.dataset.page === 'map'){
-          const ic = tab.querySelector('.ic');
-          if(ic) ic.textContent = '🌍';
-          for(const node of tab.childNodes){
-            if(node.nodeType===3 && node.textContent.trim()){node.textContent='지구'; break;}
-          }
-          found = true;
+        if(tab.dataset.page==='map'){
+          const ic=tab.querySelector('.ic'); if(ic) ic.textContent='🌍';
+          for(const node of tab.childNodes){if(node.nodeType===3&&node.textContent.trim()){node.textContent='지구'; break;}}
+          found=true;
         }
       });
       return found;
     };
-    if(!tryIt()){
-      let attempts = 0;
-      const interval = setInterval(()=>{attempts++; if(tryIt() || attempts>10) clearInterval(interval);}, 500);
-    }
+    if(!tryIt()){let attempts=0; const interval=setInterval(()=>{attempts++; if(tryIt()||attempts>10) clearInterval(interval);},500);}
   }
 
   function boot(){
-    if(!window.FB){setTimeout(boot, 500); return;}
+    if(!window.FB){setTimeout(boot,500); return;}
     initBunnyOnMap();
     hookSaveMission();
     hookJoinGathering();
     changeTabIcon();
   }
-  if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", ()=>setTimeout(boot, 1500));
-  else setTimeout(boot, 1500);
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",()=>setTimeout(boot,1500));
+  else setTimeout(boot,1500);
 
 })();

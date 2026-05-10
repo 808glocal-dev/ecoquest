@@ -142,7 +142,7 @@
   let _myBunny=null,_petTimer=0,_bunnyChars=[],_animLoop=null,_lastSpawnedKey='',_adoptColor=0,_lastStageId=-1,_isFirstAdopt=false;
 
   async function loadBunny(){
-    if(!window.ME||!window.FB) return;
+    if(!window.ME||!window.FB){setTimeout(loadBunny,500); return;}
     try{
       const ref=window.FB.doc(window.FB.db,"bunnies",window.ME.uid);
       const snap=await window.FB.getDoc(ref);
@@ -159,12 +159,17 @@
         }
       } else {
         _myBunny={happiness:0,bunnies:[],decorations:[],inventory:{},createdAt:window.FB.serverTimestamp()};
-        await window.FB.setDoc(ref,_myBunny);
+        try { await window.FB.setDoc(ref,_myBunny); }
+        catch(e) { console.log("[bunny] 첫 저장 실패 (권한?):",e.message); }
       }
       await refreshMyCo2();
       _lastStageId=getStage(_myCo2).id;
       renderBunnyMap();
-    }catch(e){console.log("토끼 로드 실패:",e.message);}
+    }catch(e){
+      console.log("토끼 로드 실패:",e.message);
+      const c=document.getElementById("bunnyGameMain");
+      if(c) c.innerHTML='<div style="text-align:center;padding:40px;color:#888;font-size:13px">⚠️ 토끼 로딩 실패<br/><br/><span style="color:#aaa;font-size:11px">'+e.message+'</span><br/><br/><button onclick="location.reload()" style="margin-top:12px;padding:10px 20px;background:#2ECC71;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-family:inherit">🔄 새로고침</button></div>';
+    }
   }
 
   async function saveBunny(){

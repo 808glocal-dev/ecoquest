@@ -62,8 +62,15 @@
           <span id="bunnyEntryInfo" style="font-size:11px;color:#8D6E63;font-weight:600">탭해서 시작!</span>
         </button>
       `;
-      if(adminArea) myPage.insertBefore(wrap, adminArea);
-      else myPage.appendChild(wrap);
+    const statCard = myPage.querySelector('.stat-card');
+      try{
+        if(statCard && statCard.nextSibling){
+          myPage.insertBefore(wrap, statCard.nextSibling);
+        } else {
+          myPage.appendChild(wrap);
+        }
+      }catch(e){ myPage.appendChild(wrap); }
+  
       loadBunny();
       return true;
     };

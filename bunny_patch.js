@@ -34,7 +34,7 @@
         _myBunny = {carrots: 0, happiness: 0, friendCount: 0, createdAt: window.FB.serverTimestamp()};
         await window.FB.setDoc(ref, _myBunny);
       }
-      updateBunnyEntry();
+      renderBunnyMap();
     } catch(e){console.log("토끼 로드 실패:", e.message);}
   }
 
@@ -42,68 +42,34 @@
     if(!window.ME || !_myBunny) return;
     try {
       await window.FB.setDoc(window.FB.doc(window.FB.db, "bunnies", window.ME.uid), _myBunny);
-      updateBunnyEntry();
-      if(document.getElementById("bunnyContent")) renderBunny();
+      renderBunnyMap();
     } catch(e){console.log("토끼 저장 실패:", e.message);}
   }
 
-  function initBunnyUI(){
+  function initBunnyOnMap(){
     const tryAdd = () => {
-      const myPage = document.getElementById("page-my");
-      if(!myPage) return false;
-      if(document.getElementById("bunnyEntryWrap")) return true;
-      const wrap = document.createElement("div");
-      wrap.id = "bunnyEntryWrap";
-      wrap.style.cssText = "padding:0 12px;margin-bottom:6px";
-      wrap.innerHTML = `
-        <button id="bunnyEntryBtn" onclick="openBunny()" style="width:100%;padding:14px;background:linear-gradient(135deg,#FFE0B2,#FFCCBC);color:#5D4037;border:none;border-radius:14px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 8px rgba(255,176,140,.25)">
-          <span>🐰 내 토끼 키우기</span>
-          <span id="bunnyEntryInfo" style="font-size:11px;color:#8D6E63;font-weight:600">탭해서 시작!</span>
-        </button>
-      `;
-      const statCard = myPage.querySelector('.stat-card');
-      try{
-        if(statCard && statCard.nextSibling){
-          myPage.insertBefore(wrap, statCard.nextSibling);
-        } else {
-          myPage.appendChild(wrap);
-        }
-      }catch(e){ myPage.appendChild(wrap); }
+      const mapPage = document.getElementById("page-map");
+      if(!mapPage) return false;
+      if(document.getElementById("bunnyGameMain")) return true;
+
+      mapPage.innerHTML = '<div id="bunnyGameMain"><div style="text-align:center;padding:40px;color:#888;font-size:13px">🐰 토끼 게임 로딩 중...</div></div>';
+
+      window.drawMap = function(){ renderBunnyMap(); };
+
       loadBunny();
       return true;
     };
-    if(!tryAdd()) setTimeout(initBunnyUI, 1000);
+    if(!tryAdd()) setTimeout(initBunnyOnMap, 1000);
   }
 
-  function updateBunnyEntry(){
-    const info = document.getElementById("bunnyEntryInfo");
-    if(!info || !_myBunny) return;
-    const lv = getBunnyLevel(_myBunny.friendCount || 0);
-    info.textContent = `${lv.emoji} ${lv.name} · 🥕${_myBunny.carrots||0}`;
-  }
+  function renderBunnyMap(){
+    const c = document.getElementById("bunnyGameMain");
+    if(!c) return;
+    if(!_myBunny){
+      c.innerHTML = '<div style="text-align:center;padding:40px;color:#888;font-size:13px">🐰 토끼 데이터 로딩 중...</div>';
+      return;
+    }
 
-  window.openBunny = function(){
-    if(!window.ME){window.toast("로그인이 필요해요!"); return;}
-    if(!_myBunny){loadBunny(); setTimeout(window.openBunny, 600); return;}
-    const old = document.getElementById("ovBunny");
-    if(old) old.remove();
-    const modal = document.createElement("div");
-    modal.id = "ovBunny";
-    modal.className = "overlay on";
-    modal.innerHTML = `
-      <div class="modal" style="padding:0;overflow:hidden">
-        <div class="handle" onclick="closeOv('ovBunny')" style="margin:14px auto 8px"></div>
-        <button class="modal-close" onclick="closeOv('ovBunny')">✕</button>
-        <div id="bunnyContent"></div>
-      </div>
-    `;
-    document.body.appendChild(modal);
-    renderBunny();
-  };
-
-  function renderBunny(){
-    const c = document.getElementById("bunnyContent");
-    if(!c || !_myBunny) return;
     const friends = _myBunny.friendCount || 0;
     const happiness = _myBunny.happiness || 0;
     const carrots = _myBunny.carrots || 0;
@@ -111,52 +77,87 @@
     const next = getNextLevel(friends);
     const myPoints = window.UDATA?.point || 0;
     const totalRabbits = friends + 1;
-    const rabbitDisplay = '🐰'.repeat(Math.min(totalRabbits, 5)) + (totalRabbits > 5 ? `+${totalRabbits-5}` : '');
+    const rabbitDisplay = '🐰'.repeat(Math.min(totalRabbits, 8));
+
+    const globalCo2 = parseFloat(document.getElementById("bCo2")?.textContent) || 0;
+    const totalUsers = parseInt(document.getElementById("bTotal")?.textContent?.replace(/,/g, "") || "0");
+    const totalTrees = (globalCo2 / 21.4).toFixed(1);
 
     c.innerHTML = `
-      <div style="background:linear-gradient(180deg,#E8F5E9,#FFF8E1);padding:24px 20px 20px;text-align:center">
-        <div style="font-size:10px;color:#689F38;font-weight:700;letter-spacing:2px;margin-bottom:6px">🐰 MY BUNNY</div>
-        <div style="font-size:48px;line-height:1.3;margin:8px 0;letter-spacing:-2px">${rabbitDisplay}</div>
-        <div style="font-size:17px;font-weight:900;color:#1B5E20">${lv.name}</div>
-        <div style="font-size:11px;color:#689F38;margin-top:3px">친구 토끼 ${friends}마리</div>
-        <div style="background:#fff;border-radius:12px;padding:12px 14px;margin-top:14px;text-align:left">
-          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px">
+      <div style="margin:12px;background:linear-gradient(135deg,#0f3d20,#1a6b3a);border-radius:14px;padding:12px 16px;color:#fff;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-size:10px;color:rgba(255,255,255,.6);font-weight:600;letter-spacing:1px">🌍 우리가 함께 지킨 지구</div>
+          <div style="font-size:14px;font-weight:900;color:#a8f0c6;margin-top:2px">CO₂ ${globalCo2.toFixed(1)}kg · 🌳 ${totalTrees}그루</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:10px;color:rgba(255,255,255,.6);font-weight:600">참여자</div>
+          <div style="font-size:14px;font-weight:900">${totalUsers ? totalUsers.toLocaleString() : 0}명</div>
+        </div>
+      </div>
+
+      <div style="margin:0 12px 12px;background:linear-gradient(180deg,#E8F5E9,#FFF8E1);border-radius:18px;padding:24px 20px;text-align:center;box-shadow:0 4px 16px rgba(46,204,113,.1)">
+        <div style="font-size:11px;color:#689F38;font-weight:700;letter-spacing:2px;margin-bottom:8px">🐰 MY BUNNY FAMILY</div>
+        <div style="font-size:60px;line-height:1.2;margin:12px 0;letter-spacing:-4px">${rabbitDisplay}</div>
+        <div style="font-size:20px;font-weight:900;color:#1B5E20">${lv.name}</div>
+        <div style="font-size:12px;color:#689F38;margin-top:4px">친구 토끼 ${friends}마리</div>
+
+        <div style="background:#fff;border-radius:14px;padding:14px;margin-top:18px;text-align:left">
+          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px">
             <span style="color:#555;font-weight:600">😊 행복도</span>
             <span style="color:#e91e63;font-weight:700">${happiness}/100</span>
           </div>
-          <div style="height:8px;background:#fce4ec;border-radius:4px;overflow:hidden">
+          <div style="height:10px;background:#fce4ec;border-radius:5px;overflow:hidden">
             <div style="width:${Math.min(100,happiness)}%;height:100%;background:linear-gradient(90deg,#f06292,#e91e63);transition:width .5s"></div>
           </div>
-          ${happiness >= 100 ? '<div style="font-size:10px;color:#C44569;margin-top:6px;font-weight:700">✨ 친구 토끼를 늘릴 수 있어요!</div>' : ''}
+          ${happiness >= 100 ? '<div style="font-size:11px;color:#C44569;margin-top:8px;font-weight:700;text-align:center">✨ 친구 토끼를 늘릴 수 있어요!</div>' : ''}
         </div>
       </div>
-      <div style="padding:14px 20px 20px">
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#FFF8E1;border-radius:12px;margin-bottom:12px;border:1.5px solid #FFE082">
-          <div style="font-size:13px;font-weight:700;color:#8D6E1B">🥕 내 당근</div>
-          <div style="font-size:18px;font-weight:900;color:#B8860B">${carrots}개</div>
+
+      <div style="margin:0 12px 12px">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#FFF8E1;border-radius:14px;margin-bottom:14px;border:2px solid #FFE082">
+          <div style="font-size:14px;font-weight:700;color:#8D6E1B">🥕 내 당근</div>
+          <div style="font-size:22px;font-weight:900;color:#B8860B">${carrots}개</div>
         </div>
-        <div style="display:flex;flex-direction:column;gap:8px">
-          <button onclick="buyCarrot()" ${myPoints < 10 ? 'disabled' : ''} style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:${myPoints < 10 ? '#f5f5f5' : '#fff'};color:${myPoints < 10 ? '#aaa' : '#5D4037'};border:1.5px solid ${myPoints < 10 ? '#e0e0e0' : '#FFD54F'};border-radius:12px;font-size:13px;cursor:${myPoints < 10 ? 'default' : 'pointer'};font-family:inherit;font-weight:700">
+
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <button onclick="buyCarrot()" ${myPoints < 10 ? 'disabled' : ''} style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:${myPoints < 10 ? '#f5f5f5' : '#fff'};color:${myPoints < 10 ? '#aaa' : '#5D4037'};border:1.5px solid ${myPoints < 10 ? '#e0e0e0' : '#FFD54F'};border-radius:14px;font-size:14px;cursor:${myPoints < 10 ? 'default' : 'pointer'};font-family:inherit;font-weight:700">
             <span>🥕 당근 사기</span>
             <span style="color:#FF8F00;font-weight:600">10P → 1개</span>
           </button>
-          <button onclick="feedBunny()" ${carrots < 1 ? 'disabled' : ''} style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:${carrots < 1 ? '#f5f5f5' : 'linear-gradient(135deg,#2ECC71,#27AE60)'};color:${carrots < 1 ? '#aaa' : '#fff'};border:none;border-radius:12px;font-size:13px;cursor:${carrots < 1 ? 'default' : 'pointer'};font-family:inherit;font-weight:700">
+
+          <button onclick="feedBunny()" ${carrots < 1 ? 'disabled' : ''} style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:${carrots < 1 ? '#f5f5f5' : 'linear-gradient(135deg,#2ECC71,#27AE60)'};color:${carrots < 1 ? '#aaa' : '#fff'};border:none;border-radius:14px;font-size:14px;cursor:${carrots < 1 ? 'default' : 'pointer'};font-family:inherit;font-weight:700">
             <span>🍴 먹이 주기</span>
             <span style="font-weight:600">${carrots < 1 ? '당근 부족' : '당근 -1, 행복+10'}</span>
           </button>
-          <button onclick="petBunny()" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#fff;color:#5D4037;border:1.5px solid #d8eedd;border-radius:12px;font-size:13px;cursor:pointer;font-family:inherit;font-weight:700">
+
+          <button onclick="petBunny()" style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:#fff;color:#5D4037;border:1.5px solid #d8eedd;border-radius:14px;font-size:14px;cursor:pointer;font-family:inherit;font-weight:700">
             <span>🤲 쓰다듬기</span>
             <span style="color:#888;font-weight:400">행복+1 (5초 쿨)</span>
           </button>
-          <button onclick="addFriend()" ${happiness < 100 ? 'disabled' : ''} style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:${happiness < 100 ? '#f5f5f5' : 'linear-gradient(135deg,#FF6B9D,#C44569)'};color:${happiness < 100 ? '#aaa' : '#fff'};border:none;border-radius:12px;font-size:13px;cursor:${happiness < 100 ? 'default' : 'pointer'};font-family:inherit;font-weight:700">
+
+          <button onclick="addFriend()" ${happiness < 100 ? 'disabled' : ''} style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:${happiness < 100 ? '#f5f5f5' : 'linear-gradient(135deg,#FF6B9D,#C44569)'};color:${happiness < 100 ? '#aaa' : '#fff'};border:none;border-radius:14px;font-size:14px;cursor:${happiness < 100 ? 'default' : 'pointer'};font-family:inherit;font-weight:700">
             <span>🐰 친구 토끼 늘리기</span>
             <span style="font-weight:600">${happiness < 100 ? `행복 ${100-happiness} 더` : '✨ 가능!'}</span>
           </button>
         </div>
-        <div style="margin-top:14px;padding:11px 13px;background:#f0fbf4;border-radius:10px;font-size:11px;color:#1B5E20;line-height:1.8">
-          💡 EcoQuest 미션 1개 완료 = 🥕 +1 자동<br/>
+
+        <div style="margin-top:14px;padding:12px 14px;background:#f0fbf4;border-radius:12px;font-size:12px;color:#1B5E20;line-height:1.8">
+          💡 EcoQuest 미션 1개 완료 = 🥕 +1 자동 지급<br/>
           💡 깅 모임 참여 = 🥕 +5 보너스<br/>
           💡 ${next ? `다음 단계: 친구 ${next.min}마리 → ${next.name}` : '✨ 최고 단계 도달!'}
+        </div>
+
+        <div style="margin-top:14px;padding:14px;background:#fff;border-radius:14px;border:1px solid #d8eedd">
+          <div style="font-size:12px;font-weight:900;color:#1a2e1a;margin-bottom:10px">🌱 토끼 가족 성장 단계</div>
+          <div style="display:flex;justify-content:space-between;text-align:center">
+            ${BUNNY_LEVELS.map((l) => `
+              <div style="opacity:${friends >= l.min ? 1 : 0.3};flex:1">
+                <div style="font-size:22px">${l.emoji}</div>
+                <div style="font-size:9px;color:#666;margin-top:3px;font-weight:700">${l.name}</div>
+                <div style="font-size:9px;color:#999;margin-top:1px">${l.min === 0 ? '시작' : '친구 ' + l.min + '+'}</div>
+              </div>
+            `).join('')}
+          </div>
         </div>
       </div>
     `;
@@ -188,10 +189,7 @@
 
   window.petBunny = async function(){
     if(!_myBunny) return;
-    if(Date.now() - _petTimer < 5000){
-      window.toast("토끼가 좀 쉬고 싶대요 ☺️");
-      return;
-    }
+    if(Date.now() - _petTimer < 5000){window.toast("토끼가 좀 쉬고 싶대요 ☺️"); return;}
     _petTimer = Date.now();
     _myBunny.happiness = Math.min(100, (_myBunny.happiness||0) + 1);
     await saveBunny();
@@ -240,10 +238,11 @@
 
   function boot(){
     if(!window.FB){setTimeout(boot, 500); return;}
-    initBunnyUI();
+    initBunnyOnMap();
     hookSaveMission();
     hookJoinGathering();
   }
+
   if(document.readyState === "loading"){
     document.addEventListener("DOMContentLoaded", () => setTimeout(boot, 1500));
   } else {

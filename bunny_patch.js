@@ -1,77 +1,50 @@
 (function(){
 
-  // ═══ SVG 토끼 캐릭터 (5단계 색상) ═══
+  // ═══ SVG 토끼 (모두 같은 작은 사이즈, 색상만 5종) ═══
   const PALETTES = [
-    {body:'#FFE4E1', ear:'#FFB6C1', earIn:'#FFCCD5', size:0.72, isBaby:true},  // 아기 (분홍)
-    {body:'#FFF8DC', ear:'#FFCBAA', earIn:'#FFE4C4', size:0.85},                // 청소년 (크림)
-    {body:'#FFFFFF', ear:'#FFB6C1', earIn:'#FFE4E1', size:1.0},                 // 어른 (흰색)
-    {body:'#F5DEB3', ear:'#D2B48C', earIn:'#DEB887', size:1.05},                // 부모 (베이지)
-    {body:'#A0826D', ear:'#7D5E47', earIn:'#8B6F47', size:1.0},                 // 가족 (갈색)
+    {head:'#A0826D', body:'#FAF0E6', ear:'#7D5E47', earIn:'#BFA088', muzzle:'#FFF8F0', tail:'#FFF'},
+    {head:'#D3D3D3', body:'#FFF',    ear:'#A9A9A9', earIn:'#C8C8C8', muzzle:'#FFF',    tail:'#FFF'},
+    {head:'#FFFFFF', body:'#FFFFFF', ear:'#E8B4BC', earIn:'#FFE4E1', muzzle:'#FFF',    tail:'#FFF'},
+    {head:'#E8C9A0', body:'#E8C9A0', ear:'#C8A878', earIn:'#D8B888', muzzle:'#FFF8DC', tail:'#FFF8DC'},
+    {head:'#8B6F47', body:'#8B6F47', ear:'#5C3A1E', earIn:'#7D5E47', muzzle:'#E8DCC4', tail:'#E8DCC4'},
   ];
+  const BUNNY_SIZE = 0.85;
 
-  const BUNNY_LEVELS = [
-    {min: 0,  name: "아기 토끼"},
-    {min: 3,  name: "청소년 토끼"},
-    {min: 7,  name: "어른 토끼"},
-    {min: 15, name: "부모 토끼"},
-    {min: 30, name: "가족 토끼"},
-  ];
-
-  function bunnySvg(stageIdx, mood){
-    const p = PALETTES[Math.min(stageIdx, 4)];
-    let eyes;
+  function bunnySvg(colorIdx, mood){
+    const p = PALETTES[Math.min(colorIdx, 4)];
+    let eye;
     if(mood === 'sleep'){
-      eyes = `<path d="M22 30 Q24 32 26 30" stroke="#222" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-              <path d="M34 30 Q36 32 38 30" stroke="#222" stroke-width="1.5" fill="none" stroke-linecap="round"/>`;
+      eye = `<path d="M61 27 Q63 28 65 27" stroke="#222" stroke-width="1.4" fill="none" stroke-linecap="round"/>`;
     } else if(mood === 'happy'){
-      eyes = `<path d="M22 31 Q24 28 26 31" stroke="#222" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-              <path d="M34 31 Q36 28 38 31" stroke="#222" stroke-width="1.5" fill="none" stroke-linecap="round"/>`;
+      eye = `<path d="M61 27 Q63 25.5 65 27" stroke="#222" stroke-width="1.4" fill="none" stroke-linecap="round"/>`;
     } else {
-      eyes = `<circle cx="24" cy="30" r="2.2" fill="#222"/>
-              <circle cx="36" cy="30" r="2.2" fill="#222"/>
-              <circle cx="24.7" cy="29.3" r=".8" fill="#fff"/>
-              <circle cx="36.7" cy="29.3" r=".8" fill="#fff"/>`;
+      eye = `<circle cx="63" cy="27" r="1.7" fill="#222"/>
+             <circle cx="63.5" cy="26.5" r=".5" fill="#fff"/>`;
     }
-    return `<svg viewBox="0 0 60 75" style="width:${60*p.size}px;height:${75*p.size}px;display:block;overflow:visible">
-      <ellipse cx="30" cy="73" rx="20" ry="2.5" fill="#000" opacity=".15"/>
-      <ellipse cx="22" cy="11" rx="4.5" ry="11" fill="${p.ear}"/>
-      <ellipse cx="22" cy="13" rx="2.2" ry="7.5" fill="${p.earIn}"/>
-      <ellipse cx="38" cy="11" rx="4.5" ry="11" fill="${p.ear}"/>
-      <ellipse cx="38" cy="13" rx="2.2" ry="7.5" fill="${p.earIn}"/>
-      <ellipse cx="30" cy="56" rx="19" ry="13" fill="${p.body}"/>
-      <circle cx="30" cy="32" r="16" fill="${p.body}"/>
-      ${eyes}
-      <ellipse cx="30" cy="36.5" rx="1.8" ry="1.3" fill="#FF6B9D"/>
-      <path d="M30 38 L30 39.5 M30 39.5 Q27.5 41.5 26 40.5 M30 39.5 Q32.5 41.5 34 40.5" stroke="#444" stroke-width="1" fill="none" stroke-linecap="round"/>
-      ${p.isBaby ? `<circle cx="19" cy="36" r="2.8" fill="#FFB6C1" opacity=".55"/>
-                    <circle cx="41" cy="36" r="2.8" fill="#FFB6C1" opacity=".55"/>` : ''}
-      <ellipse cx="18" cy="68" rx="6" ry="3.5" fill="${p.ear}"/>
-      <ellipse cx="42" cy="68" rx="6" ry="3.5" fill="${p.ear}"/>
-      <ellipse cx="22" cy="62" rx="3" ry="2" fill="${p.body}"/>
-      <ellipse cx="38" cy="62" rx="3" ry="2" fill="${p.body}"/>
+    const showMuzzle = p.muzzle && p.muzzle !== p.head;
+    return `<svg viewBox="0 0 80 58" style="width:${72*BUNNY_SIZE}px;height:${52*BUNNY_SIZE}px;display:block;overflow:visible">
+      <ellipse cx="40" cy="55" rx="30" ry="2" fill="#000" opacity=".18"/>
+      <ellipse cx="54" cy="13" rx="3.2" ry="9.5" fill="${p.ear}" transform="rotate(-15 54 13)"/>
+      <ellipse cx="54" cy="14" rx="1.4" ry="6.5" fill="${p.earIn}" transform="rotate(-15 54 14)"/>
+      <ellipse cx="62" cy="12" rx="3.2" ry="9.5" fill="${p.ear}" transform="rotate(10 62 12)"/>
+      <ellipse cx="62" cy="13" rx="1.4" ry="6.5" fill="${p.earIn}" transform="rotate(10 62 13)"/>
+      <circle cx="9" cy="36" r="4.5" fill="${p.tail}"/>
+      <ellipse cx="38" cy="38" rx="24" ry="15" fill="${p.body}"/>
+      <circle cx="20" cy="36" r="13" fill="${p.body}"/>
+      <circle cx="60" cy="28" r="13" fill="${p.head}"/>
+      ${showMuzzle ? `<ellipse cx="68" cy="32" rx="8" ry="6" fill="${p.muzzle}" opacity=".88"/>` : ''}
+      ${eye}
+      <ellipse cx="73" cy="32" rx="1.5" ry="1.2" fill="#E89AAB"/>
+      <path d="M73 33.3 Q72 34.5 70.5 34" stroke="#3D2817" stroke-width=".7" fill="none" stroke-linecap="round"/>
+      <ellipse cx="22" cy="51" rx="9" ry="3.5" fill="${p.body}"/>
+      <ellipse cx="52" cy="50" rx="3" ry="3.2" fill="${p.body}"/>
+      <ellipse cx="58" cy="50" rx="3" ry="3.2" fill="${p.head}"/>
     </svg>`;
   }
 
   // ═══ 상태 ═══
-  let _myBunny = null;
-  let _petTimer = 0;
-  let _bunnyChars = [];
-  let _animLoop = null;
-  let _lastSpawnedKey = '';
+  let _myBunny = null, _petTimer = 0, _bunnyChars = [], _animLoop = null, _lastSpawnedKey = '';
 
-  function getBunnyLevel(friends){
-    let lv = BUNNY_LEVELS[0], idx = 0;
-    for(let i = BUNNY_LEVELS.length - 1; i >= 0; i--){
-      if(friends >= BUNNY_LEVELS[i].min){lv = BUNNY_LEVELS[i]; idx = i; break;}
-    }
-    return {...lv, stage: idx};
-  }
-
-  function getNextLevel(friends){
-    return BUNNY_LEVELS.find(l => l.min > friends);
-  }
-
-  // ═══ Firestore ═══
   async function loadBunny(){
     if(!window.ME || !window.FB) return;
     try {
@@ -79,8 +52,25 @@
       const snap = await window.FB.getDoc(ref);
       if(snap.exists()){
         _myBunny = snap.data();
+        // 마이그레이션: friendCount → bunnies 배열
+        if(!_myBunny.bunnies || !Array.isArray(_myBunny.bunnies)){
+          const cnt = (_myBunny.friendCount || 0) + 1;
+          _myBunny.bunnies = [];
+          for(let i = 0; i < cnt; i++){
+            _myBunny.bunnies.push({
+              name: i === 0 ? "꼬미" : `토끼${i+1}`,
+              color: i === 0 ? 0 : Math.floor(Math.random() * 5)
+            });
+          }
+          delete _myBunny.friendCount;
+          await window.FB.setDoc(ref, _myBunny);
+        }
       } else {
-        _myBunny = {carrots: 0, happiness: 0, friendCount: 0, createdAt: window.FB.serverTimestamp()};
+        _myBunny = {
+          carrots: 0, happiness: 0,
+          bunnies: [{name: "꼬미", color: 0}],
+          createdAt: window.FB.serverTimestamp()
+        };
         await window.FB.setDoc(ref, _myBunny);
       }
       renderBunnyMap();
@@ -92,22 +82,18 @@
     try {
       await window.FB.setDoc(window.FB.doc(window.FB.db, "bunnies", window.ME.uid), _myBunny);
       renderBunnyStats();
-      const targetCount = (_myBunny.friendCount || 0) + 1;
-      const lv = getBunnyLevel(_myBunny.friendCount || 0);
-      const newKey = `${targetCount}_${lv.stage}`;
-      if(newKey !== _lastSpawnedKey){
-        spawnBunnies(targetCount, lv.stage);
-      }
+      const cnt = (_myBunny.bunnies || []).length;
+      const colors = (_myBunny.bunnies || []).map(b => b.color).join(',');
+      const newKey = `${cnt}_${colors}`;
+      if(newKey !== _lastSpawnedKey){ spawnBunnies(_myBunny.bunnies || []); }
     } catch(e){console.log("토끼 저장 실패:", e.message);}
   }
 
-  // ═══ 지도 페이지 초기화 ═══
   function initBunnyOnMap(){
     const tryAdd = () => {
       const mapPage = document.getElementById("page-map");
       if(!mapPage) return false;
       if(document.getElementById("bunnyGameMain")) return true;
-
       mapPage.innerHTML = '<div id="bunnyGameMain"><div style="text-align:center;padding:40px;color:#888;font-size:13px">🐰 토끼 게임 로딩 중...</div></div>';
       window.drawMap = function(){ renderBunnyMap(); };
       loadBunny();
@@ -119,19 +105,15 @@
   function renderBunnyMap(){
     const c = document.getElementById("bunnyGameMain");
     if(!c) return;
-    if(!_myBunny){
-      c.innerHTML = '<div style="text-align:center;padding:40px;color:#888;font-size:13px">🐰 토끼 데이터 로딩 중...</div>';
-      return;
-    }
+    if(!_myBunny){ c.innerHTML = '<div style="text-align:center;padding:40px;color:#888;font-size:13px">🐰 토끼 데이터 로딩 중...</div>'; return; }
     const globalCo2 = parseFloat(document.getElementById("bCo2")?.textContent) || 0;
-    const totalUsers = parseInt(document.getElementById("bTotal")?.textContent?.replace(/,/g, "") || "0");
     const totalTrees = (globalCo2 / 21.4).toFixed(1);
 
     c.innerHTML = `
       <div style="margin:12px;background:linear-gradient(135deg,#0f3d20,#1a6b3a);border-radius:14px;padding:10px 14px;color:#fff;display:flex;justify-content:space-between;align-items:center">
         <div>
           <div style="font-size:9px;color:rgba(255,255,255,.6);font-weight:600;letter-spacing:1px">🌍 우리가 함께 지킨 지구</div>
-          <div style="font-size:13px;font-weight:900;color:#a8f0c6;margin-top:1px">CO₂ ${globalCo2.toFixed(1)}kg · 🌳 ${totalTrees}그루 · 👥 ${totalUsers ? totalUsers.toLocaleString() : 0}명</div>
+          <div style="font-size:13px;font-weight:900;color:#a8f0c6;margin-top:1px">CO₂ ${globalCo2.toFixed(1)}kg · 🌳 ${totalTrees}그루</div>
         </div>
       </div>
 
@@ -146,33 +128,28 @@
         <div style="position:absolute;bottom:6px;right:60px;font-size:14px">🌱</div>
         <div style="position:absolute;bottom:10px;right:20px;font-size:18px">🌼</div>
         <div style="position:absolute;bottom:12px;left:140px;font-size:12px">🌾</div>
-        <div id="bunnyHelpText" style="position:absolute;top:8px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,.85);border-radius:12px;padding:3px 10px;font-size:10px;color:#444;font-weight:600;pointer-events:none;z-index:5">토끼를 탭해서 쓰다듬어요!</div>
+        <div id="bunnyHelpText" style="position:absolute;top:8px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,.85);border-radius:12px;padding:3px 10px;font-size:10px;color:#444;font-weight:600;pointer-events:none;z-index:5">토끼를 탭하면 이름이 보여요!</div>
       </div>
 
       <div id="bunnyStats"></div>
     `;
     renderBunnyStats();
-    setTimeout(() => {
-      const lv = getBunnyLevel(_myBunny.friendCount || 0);
-      spawnBunnies((_myBunny.friendCount || 0) + 1, lv.stage);
-    }, 100);
+    setTimeout(() => spawnBunnies(_myBunny.bunnies || []), 100);
   }
 
   function renderBunnyStats(){
     const c = document.getElementById("bunnyStats");
     if(!c || !_myBunny) return;
-    const friends = _myBunny.friendCount || 0;
+    const bunnies = _myBunny.bunnies || [];
     const happiness = _myBunny.happiness || 0;
     const carrots = _myBunny.carrots || 0;
-    const lv = getBunnyLevel(friends);
-    const next = getNextLevel(friends);
     const myPoints = window.UDATA?.point || 0;
 
     c.innerHTML = `
       <div style="margin:12px">
         <div style="background:linear-gradient(135deg,#fff,#fff8e1);border-radius:14px;padding:14px 16px;text-align:center;border:2px solid #FFE082;margin-bottom:12px">
           <div style="font-size:11px;color:#689F38;font-weight:700;letter-spacing:2px">🐰 MY BUNNY FAMILY</div>
-          <div style="font-size:18px;font-weight:900;color:#1B5E20;margin-top:4px">${lv.name} · 친구 ${friends}마리</div>
+          <div style="font-size:18px;font-weight:900;color:#1B5E20;margin-top:4px">우리 토끼 ${bunnies.length}마리</div>
           <div style="display:flex;justify-content:space-between;font-size:12px;margin-top:10px">
             <span style="color:#555;font-weight:600">😊 행복도</span>
             <span style="color:#e91e63;font-weight:700">${happiness}/100</span>
@@ -180,7 +157,7 @@
           <div style="height:8px;background:#fce4ec;border-radius:4px;overflow:hidden;margin-top:4px">
             <div style="width:${Math.min(100,happiness)}%;height:100%;background:linear-gradient(90deg,#f06292,#e91e63);transition:width .5s"></div>
           </div>
-          ${happiness >= 100 ? '<div style="font-size:11px;color:#C44569;margin-top:6px;font-weight:700">✨ 친구 토끼를 늘릴 수 있어요!</div>' : ''}
+          ${happiness >= 100 ? '<div style="font-size:11px;color:#C44569;margin-top:6px;font-weight:700">✨ 새 토끼를 입양할 수 있어요!</div>' : ''}
         </div>
 
         <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#FFF8E1;border-radius:14px;margin-bottom:12px;border:2px solid #FFE082">
@@ -195,27 +172,27 @@
           <button onclick="feedBunny()" ${carrots < 1 ? 'disabled' : ''} style="display:flex;align-items:center;justify-content:space-between;padding:13px 16px;background:${carrots < 1 ? '#f5f5f5' : 'linear-gradient(135deg,#2ECC71,#27AE60)'};color:${carrots < 1 ? '#aaa' : '#fff'};border:none;border-radius:12px;font-size:14px;cursor:${carrots < 1 ? 'default' : 'pointer'};font-family:inherit;font-weight:700">
             <span>🍴 먹이 주기</span><span style="font-weight:600">${carrots < 1 ? '당근 부족' : '당근 -1, 행복+10'}</span>
           </button>
-          <button onclick="addFriend()" ${happiness < 100 ? 'disabled' : ''} style="display:flex;align-items:center;justify-content:space-between;padding:13px 16px;background:${happiness < 100 ? '#f5f5f5' : 'linear-gradient(135deg,#FF6B9D,#C44569)'};color:${happiness < 100 ? '#aaa' : '#fff'};border:none;border-radius:12px;font-size:14px;cursor:${happiness < 100 ? 'default' : 'pointer'};font-family:inherit;font-weight:700">
-            <span>🐰 친구 토끼 늘리기</span><span style="font-weight:600">${happiness < 100 ? `행복 ${100-happiness} 더` : '✨ 가능!'}</span>
+          <button onclick="adoptBunny()" ${happiness < 100 ? 'disabled' : ''} style="display:flex;align-items:center;justify-content:space-between;padding:13px 16px;background:${happiness < 100 ? '#f5f5f5' : 'linear-gradient(135deg,#FF6B9D,#C44569)'};color:${happiness < 100 ? '#aaa' : '#fff'};border:none;border-radius:12px;font-size:14px;cursor:${happiness < 100 ? 'default' : 'pointer'};font-family:inherit;font-weight:700">
+            <span>🐰 새 토끼 입양하기</span><span style="font-weight:600">${happiness < 100 ? `행복 ${100-happiness} 더` : '✨ 가능!'}</span>
           </button>
         </div>
 
         <div style="margin-top:12px;padding:11px 13px;background:#f0fbf4;border-radius:10px;font-size:11px;color:#1B5E20;line-height:1.8">
           💡 미션 1개 완료 = 🥕 +1 자동 · 깅 참여 = 🥕 +5<br/>
-          💡 토끼 직접 탭 = 쓰다듬기 (행복+1)<br/>
-          💡 ${next ? `다음 단계: 친구 ${next.min}마리 → ${next.name}` : '✨ 최고 단계 도달!'}
+          💡 토끼 직접 탭 = 이름 보기 + 쓰다듬기 (행복+1)<br/>
+          💡 행복도 100 → 새 토끼 입양 가능
         </div>
 
-        <div style="margin-top:12px;padding:12px;background:#fff;border-radius:12px;border:1px solid #d8eedd">
-          <div style="font-size:11px;font-weight:900;color:#1a2e1a;margin-bottom:10px">🌱 토끼 가족 성장 단계</div>
-          <div style="display:flex;justify-content:space-between;align-items:flex-end;text-align:center">
-            ${BUNNY_LEVELS.map((l, idx) => `
-              <div style="opacity:${friends >= l.min ? 1 : 0.35};flex:1">
-                <div style="display:flex;justify-content:center;height:50px;align-items:flex-end">${bunnySvg(idx, 'normal').replace('width:'+(60*PALETTES[idx].size), 'width:'+(36*PALETTES[idx].size)).replace('height:'+(75*PALETTES[idx].size), 'height:'+(45*PALETTES[idx].size))}</div>
-                <div style="font-size:9px;color:#666;margin-top:3px;font-weight:700">${l.name}</div>
-                <div style="font-size:9px;color:#999">${l.min === 0 ? '시작' : l.min + '+'}</div>
-              </div>
-            `).join('')}
+        <div style="margin-top:12px;padding:14px 12px;background:#fff;border-radius:12px;border:1px solid #d8eedd">
+          <div style="font-size:11px;font-weight:900;color:#1a2e1a;margin-bottom:12px;text-align:center">🐾 우리 토끼 가족</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center">
+            ${bunnies.map((b, i) => {
+              const sm = bunnySvg(b.color, 'normal').replace(`width:${72*BUNNY_SIZE}px`, `width:42px`).replace(`height:${52*BUNNY_SIZE}px`, `height:30px`);
+              return `<div style="text-align:center;padding:6px 4px;background:#f8fdf9;border-radius:10px;min-width:54px;border:1px solid #eee">
+                <div style="height:34px;display:flex;justify-content:center;align-items:flex-end">${sm}</div>
+                <div style="font-size:10px;color:#444;margin-top:3px;font-weight:700">${b.name}</div>
+              </div>`;
+            }).join('')}
           </div>
         </div>
 
@@ -224,63 +201,113 @@
     `;
   }
 
+  // ═══ 입양 모달 ═══
+  window.adoptBunny = function(){
+    if(!_myBunny) return;
+    if((_myBunny.happiness || 0) < 100){window.toast("행복도 100 필요해요!"); return;}
+    const old = document.getElementById('ovAdopt');
+    if(old) old.remove();
+    const modal = document.createElement('div');
+    modal.id = 'ovAdopt';
+    modal.className = 'overlay on';
+    modal.innerHTML = `
+      <div class="modal" style="padding:24px 20px 20px">
+        <button class="modal-close" onclick="document.getElementById('ovAdopt').remove()">✕</button>
+        <div style="text-align:center;margin-bottom:16px">
+          <div style="font-size:48px">🐰</div>
+          <div style="font-size:17px;font-weight:900;margin-top:6px;color:#1B5E20">새 토끼 입양하기</div>
+          <div style="font-size:12px;color:#888;margin-top:6px">우리 가족이 될 토끼 이름을 지어주세요!</div>
+        </div>
+        <input id="newBunnyName" class="inp" placeholder="예: 꼬미, 토토, 보리, 마루..." maxlength="6" style="text-align:center;font-size:15px;font-weight:700"/>
+        <div style="font-size:10px;color:#aaa;text-align:center;margin-top:6px">최대 6글자</div>
+        <div style="display:flex;gap:8px;margin-top:16px">
+          <button class="btn btn-gray" style="flex:1" onclick="document.getElementById('ovAdopt').remove()">취소</button>
+          <button class="btn btn-g" style="flex:1" onclick="confirmAdopt()">🎉 입양!</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+    setTimeout(() => {
+      const inp = document.getElementById('newBunnyName');
+      if(inp){
+        inp.focus();
+        inp.onkeydown = (e) => { if(e.key === 'Enter') window.confirmAdopt(); };
+      }
+    }, 100);
+  };
+
+  window.confirmAdopt = async function(){
+    if(!_myBunny) return;
+    const inp = document.getElementById('newBunnyName');
+    let name = inp?.value?.trim() || '';
+    if(!name) name = `토끼${(_myBunny.bunnies?.length || 0) + 1}`;
+    if(name.length > 6) name = name.substring(0, 6);
+    if(!_myBunny.bunnies) _myBunny.bunnies = [];
+    _myBunny.bunnies.push({name, color: Math.floor(Math.random() * 5)});
+    _myBunny.happiness = 0;
+    await saveBunny();
+    document.getElementById('ovAdopt')?.remove();
+    setTimeout(() => { _bunnyChars.forEach((_, i) => setTimeout(() => bigJump(i), i * 100)); }, 300);
+    window.toast(`🎉 "${name}" 우리 가족이 됐어요!`);
+  };
+
   // ═══ 토끼 캐릭터 생성 + 행동 ═══
-  function spawnBunnies(count, stage){
+  function spawnBunnies(bunniesData){
     const playground = document.getElementById('bunnyPlayground');
     if(!playground) return;
-
     playground.querySelectorAll('.bunny-char, .bunny-extra').forEach(el => el.remove());
     _bunnyChars = [];
-
     const w = playground.offsetWidth || 320;
-    const groundTop = 130;
-    const groundBottom = 200;
-    const showCount = Math.min(count, 12);
+    const groundTop = 140;
+    const groundBottom = 210;
+    const showCount = Math.min(bunniesData.length, 12);
 
     for(let i = 0; i < showCount; i++){
+      const bdata = bunniesData[i];
       const wrap = document.createElement('div');
       wrap.className = 'bunny-char';
       wrap.style.cssText = `position:absolute;cursor:pointer;user-select:none;z-index:${20+i};will-change:left,top,transform;line-height:0`;
       wrap.innerHTML = `
-        <div class="bunny-svg">${bunnySvg(stage, 'normal')}</div>
-        <div class="bunny-grass" style="position:absolute;top:30px;left:-12px;font-size:14px;display:none;line-height:1">🌿</div>
-        <div class="bunny-zzz" style="position:absolute;top:-12px;right:-8px;font-size:12px;display:none;line-height:1;animation:zzz 1.5s infinite">💤</div>
+        <div class="bunny-svg">${bunnySvg(bdata.color, 'normal')}</div>
+        <div class="bunny-grass" style="position:absolute;top:24px;left:-10px;font-size:14px;display:none;line-height:1">🌿</div>
+        <div class="bunny-zzz" style="position:absolute;top:-10px;right:-4px;font-size:12px;display:none;line-height:1;animation:zzz 1.5s infinite">💤</div>
+        <div class="name-bubble" style="position:absolute;top:-20px;left:50%;transform:translateX(-50%);background:#fff;border:1.5px solid #FFB6C1;color:#5D4037;font-size:11px;font-weight:700;padding:2px 9px;border-radius:10px;white-space:nowrap;z-index:50;box-shadow:0 2px 8px rgba(0,0,0,.15);display:none;line-height:1.3">${bdata.name}</div>
       `;
       const idx = i;
       wrap.onclick = (e) => {
         e.stopPropagation();
+        showName(idx);
         bigJump(idx);
         window.petBunny();
       };
       playground.appendChild(wrap);
 
       const bunny = {
-        el: wrap,
-        x: 20 + Math.random() * (w - 80),
+        el: wrap, name: bdata.name, color: bdata.color,
+        x: 20 + Math.random() * (w - 90),
         y: groundTop + Math.random() * (groundBottom - groundTop),
         vx: 0,
         hopOffset: Math.random() * Math.PI * 2,
         facing: Math.random() < 0.5 ? -1 : 1,
         stateTimer: 60 + Math.floor(Math.random() * 80),
-        state: 'walk',
-        stage: stage,
-        groundTop, groundBottom
+        state: 'walk', groundTop, groundBottom,
+        bubbleTimer: null
       };
       setState(bunny, 'walk');
       _bunnyChars.push(bunny);
     }
 
-    if(count > 12){
+    if(bunniesData.length > 12){
       const more = document.createElement('div');
       more.className = 'bunny-extra';
       more.style.cssText = 'position:absolute;bottom:8px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,.85);border-radius:10px;padding:3px 10px;font-size:11px;font-weight:700;color:#5D4037;z-index:100';
-      more.textContent = `+${count - 12}마리 더!`;
+      more.textContent = `+${bunniesData.length - 12}마리 더!`;
       playground.appendChild(more);
     }
 
-    _lastSpawnedKey = `${count}_${stage}`;
+    const colors = bunniesData.map(b => b.color).join(',');
+    _lastSpawnedKey = `${bunniesData.length}_${colors}`;
 
-    // CSS 애니메이션 정의 (한 번만)
     if(!document.getElementById('bunnyAnimStyle')){
       const style = document.createElement('style');
       style.id = 'bunnyAnimStyle';
@@ -291,29 +318,36 @@
     startBunnyAnim();
   }
 
+  function showName(idx){
+    const b = _bunnyChars[idx];
+    if(!b) return;
+    const bubble = b.el.querySelector('.name-bubble');
+    if(!bubble) return;
+    // 말풍선은 facing 영향 받지 않게 transform 보정
+    bubble.style.transform = `translateX(-50%) scaleX(${b.facing})`;
+    bubble.style.display = 'block';
+    clearTimeout(b.bubbleTimer);
+    b.bubbleTimer = setTimeout(() => { bubble.style.display = 'none'; }, 2000);
+  }
+
   function setState(b, newState){
     b.state = newState;
     const grass = b.el.querySelector('.bunny-grass');
     const zzz = b.el.querySelector('.bunny-zzz');
     const svg = b.el.querySelector('.bunny-svg');
-
     if(grass) grass.style.display = newState === 'eat' ? 'block' : 'none';
     if(zzz) zzz.style.display = newState === 'rest' ? 'block' : 'none';
-
     let mood = 'normal';
     if(newState === 'rest') mood = 'sleep';
     else if(newState === 'eat') mood = 'happy';
-    if(svg) svg.innerHTML = bunnySvg(b.stage, mood);
-
+    if(svg) svg.innerHTML = bunnySvg(b.color, mood);
     if(newState === 'walk'){
       b.vx = (Math.random() < 0.5 ? -1 : 1) * (0.4 + Math.random() * 0.4);
       b.facing = b.vx > 0 ? 1 : -1;
     } else if(newState === 'run'){
       b.vx = (Math.random() < 0.5 ? -1 : 1) * (1.4 + Math.random() * 0.6);
       b.facing = b.vx > 0 ? 1 : -1;
-    } else {
-      b.vx = 0;
-    }
+    } else { b.vx = 0; }
   }
 
   function startBunnyAnim(){
@@ -324,9 +358,7 @@
       const playground = document.getElementById('bunnyPlayground');
       if(!playground){ clearInterval(_animLoop); _animLoop = null; return; }
       const w = playground.offsetWidth || 320;
-
       _bunnyChars.forEach((b) => {
-        // 상태 타이머
         b.stateTimer--;
         if(b.stateTimer <= 0){
           const r = Math.random();
@@ -339,36 +371,22 @@
           setState(b, newState);
           b.stateTimer = 70 + Math.floor(Math.random() * 110);
         }
-
-        // 상태별 동작
-        let yOffset = 0;
-        let extraTransform = '';
-
-        if(b.state === 'walk'){
-          b.x += b.vx;
-          yOffset = Math.abs(Math.sin(frame * 0.18 + b.hopOffset)) * 8;
-        } else if(b.state === 'run'){
-          b.x += b.vx;
-          yOffset = Math.abs(Math.sin(frame * 0.32 + b.hopOffset)) * 16;
-        } else if(b.state === 'eat'){
-          // 머리 살짝 흔들면서 풀 뜯는 느낌
-          const wiggle = Math.sin(frame * 0.4) * 4;
-          extraTransform = ` rotate(${wiggle * 0.5}deg)`;
-        } else if(b.state === 'rest'){
-          // 살짝 위아래 (숨쉬는 느낌)
-          yOffset = Math.sin(frame * 0.08) * 1.5;
-        } else if(b.state === 'look'){
-          // 가끔 살짝 움직임 (호흡)
-          yOffset = Math.sin(frame * 0.1) * 1;
-        }
-
-        // 경계 체크
+        let yOffset = 0, extraTransform = '';
+        if(b.state === 'walk'){ b.x += b.vx; yOffset = Math.abs(Math.sin(frame * 0.18 + b.hopOffset)) * 8; }
+        else if(b.state === 'run'){ b.x += b.vx; yOffset = Math.abs(Math.sin(frame * 0.32 + b.hopOffset)) * 16; }
+        else if(b.state === 'eat'){ const wiggle = Math.sin(frame * 0.4) * 3; extraTransform = ` rotate(${wiggle * 0.4}deg)`; }
+        else if(b.state === 'rest'){ yOffset = Math.sin(frame * 0.08) * 1.5; }
+        else if(b.state === 'look'){ yOffset = Math.sin(frame * 0.1) * 1; }
         if(b.x < 5){ b.x = 5; if(b.vx !== 0){ b.vx = Math.abs(b.vx); b.facing = 1; }}
-        if(b.x > w - 50){ b.x = w - 50; if(b.vx !== 0){ b.vx = -Math.abs(b.vx); b.facing = -1; }}
-
+        if(b.x > w - 75){ b.x = w - 75; if(b.vx !== 0){ b.vx = -Math.abs(b.vx); b.facing = -1; }}
         b.el.style.left = b.x + 'px';
         b.el.style.top = (b.y - yOffset) + 'px';
         b.el.style.transform = `scaleX(${b.facing})` + extraTransform;
+        // 말풍선 transform 보정 (display:block일 때만)
+        const bubble = b.el.querySelector('.name-bubble');
+        if(bubble && bubble.style.display === 'block'){
+          bubble.style.transform = `translateX(-50%) scaleX(${b.facing})`;
+        }
       });
     }, 50);
   }
@@ -378,17 +396,15 @@
     if(!b) return;
     const el = b.el;
     el.style.transition = 'transform .35s cubic-bezier(.5,2,.3,.8)';
-    el.style.transform = `scaleX(${b.facing}) translateY(-30px) scale(1.25)`;
-    // 행복 표정으로 잠깐 변경
+    el.style.transform = `scaleX(${b.facing}) translateY(-25px) scale(1.2)`;
     const svg = el.querySelector('.bunny-svg');
-    const oldHTML = svg ? svg.innerHTML : '';
-    if(svg) svg.innerHTML = bunnySvg(b.stage, 'happy');
+    if(svg) svg.innerHTML = bunnySvg(b.color, 'happy');
     setTimeout(() => {
       el.style.transition = 'transform .25s';
       el.style.transform = `scaleX(${b.facing}) scale(1)`;
       setTimeout(() => {
         el.style.transition = '';
-        if(svg && b.state !== 'eat' && b.state !== 'rest') svg.innerHTML = bunnySvg(b.stage, 'normal');
+        if(svg && b.state !== 'eat' && b.state !== 'rest') svg.innerHTML = bunnySvg(b.color, 'normal');
       }, 250);
     }, 350);
   }
@@ -408,7 +424,6 @@
       window.toast("🥕 당근 1개 샀어요!");
     } catch(e){window.toast("실패: " + e.message);}
   };
-
   window.feedBunny = async function(){
     if(!_myBunny) return;
     if((_myBunny.carrots||0) < 1){window.toast("당근이 부족해요!"); return;}
@@ -418,26 +433,12 @@
     _bunnyChars.forEach((_, i) => setTimeout(() => bigJump(i), i * 80));
     window.toast("🍴 토끼들이 행복해해요! 행복도 +10");
   };
-
   window.petBunny = async function(){
     if(!_myBunny) return;
     if(Date.now() - _petTimer < 800) return;
     _petTimer = Date.now();
     _myBunny.happiness = Math.min(100, (_myBunny.happiness||0) + 1);
     await saveBunny();
-  };
-
-  window.addFriend = async function(){
-    if(!_myBunny) return;
-    if((_myBunny.happiness||0) < 100){window.toast("행복도 100 필요해요!"); return;}
-    _myBunny.friendCount = (_myBunny.friendCount || 0) + 1;
-    _myBunny.happiness = 0;
-    await saveBunny();
-    const lv = getBunnyLevel(_myBunny.friendCount);
-    setTimeout(() => {
-      _bunnyChars.forEach((_, i) => setTimeout(() => bigJump(i), i * 100));
-    }, 200);
-    window.toast(`🎉 친구 토끼 늘었어요! (${_myBunny.friendCount}마리 · ${lv.name})`);
   };
 
   // ═══ 미션/깅 hook ═══
@@ -455,7 +456,6 @@
     };
     window._bunnyHookedSaveMission = true;
   }
-
   function hookJoinGathering(){
     if(window._bunnyHookedJoinGathering) return;
     const orig = window.joinGathering;
@@ -471,7 +471,7 @@
     window._bunnyHookedJoinGathering = true;
   }
 
-  // ═══ 탭바 아이콘 변경 (🌍 지도 → 🐰 토끼) ═══
+  // ═══ 탭바 아이콘 변경 ═══
   function changeTabIcon(){
     const tryIt = () => {
       const tabs = document.querySelectorAll('.tb');
@@ -483,8 +483,7 @@
           if(ic) ic.textContent = '🐰';
           for(const node of tab.childNodes){
             if(node.nodeType === 3 && node.textContent.trim()){
-              node.textContent = '토끼';
-              break;
+              node.textContent = '토끼'; break;
             }
           }
           found = true;
@@ -501,7 +500,6 @@
     }
   }
 
-  // ═══ Boot ═══
   function boot(){
     if(!window.FB){setTimeout(boot, 500); return;}
     initBunnyOnMap();

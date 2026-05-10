@@ -10,8 +10,8 @@
 
   const STAGES=[
     {id:0,min:0,name:'회색 도시',bg:'linear-gradient(180deg,#a8a8a8 0%,#888 50%,#666 100%)',
-     skyDecor:[{e:'💨',top:8,left:24,size:22,op:.6},{e:'🏭',top:14,right:30,size:24,op:.7},{e:'🌫️',top:36,left:'45%',size:14,op:.5},{e:'🏢',top:60,left:8,size:32,op:.7},{e:'🏬',top:62,right:8,size:30,op:.7},{e:'🏙️',top:70,left:'40%',size:24,op:.6}],
-     groundDecor:[{e:'🗑️',bottom:6,left:18,size:16},{e:'🚮',bottom:8,left:200,size:15},{e:'⚙️',bottom:6,right:60,size:13,op:.5},{e:'🛢️',bottom:4,right:14,size:14,op:.7}],
+     skyDecor:[{e:'💨',top:8,left:24,size:22,op:.6},{e:'🏭',top:14,right:30,size:24,op:.7},{e:'🌫️',top:36,left:'45%',size:14,op:.5},{e:'🏢',top:60,left:8,size:32,op:.7},{e:'🏬',top:62,right:8,size:30,op:.7}],
+     groundDecor:[{e:'🗑️',bottom:6,left:18,size:16},{e:'🚮',bottom:8,left:200,size:15},{e:'⚙️',bottom:6,right:60,size:13,op:.5}],
      msg:'지구가 아파요',sub:'당신의 작은 행동이 변화의 시작이에요',mask:true,hasCars:true},
     {id:1,min:1,name:'새싹',bg:'linear-gradient(180deg,#bee9d4 0%,#A8DC8E 50%,#8BC56F 100%)',
      skyDecor:[{e:'☁️',top:8,left:24,size:22,op:.85},{e:'🌤️',top:6,right:14,size:22}],
@@ -19,15 +19,15 @@
      msg:'당신이 시작했어요',sub:'첫 풀이 자라났어요',mask:false},
     {id:2,min:5,name:'들판',bg:'linear-gradient(180deg,#87CEEB 0%,#B5DCF0 45%,#A8DC8E 50%,#76B947 100%)',
      skyDecor:[{e:'☁️',top:8,left:24,size:22,op:.85},{e:'☀️',top:6,right:14,size:24},{e:'🦋',top:32,left:'50%',size:16},{e:'🐦',top:18,right:36,size:16,op:.8}],
-     groundDecor:[{e:'🌷',bottom:8,left:18,size:16},{e:'🌼',bottom:6,left:90,size:15},{e:'🌾',bottom:12,left:160,size:14},{e:'🌷',bottom:8,right:60,size:16}],
+     groundDecor:[{e:'🌷',bottom:8,left:18,size:16},{e:'🌼',bottom:6,left:90,size:15},{e:'🌾',bottom:12,left:160,size:14}],
      msg:'잃어버린 친구가 돌아와요',sub:'나비와 새가 다시 찾아왔어요',mask:false},
     {id:3,min:20,name:'숲',bg:'linear-gradient(180deg,#7AB85F 0%,#A8DC8E 40%,#5a9a3a 100%)',
-     skyDecor:[{e:'☀️',top:6,right:14,size:22,op:.9},{e:'🦋',top:30,left:'45%',size:16},{e:'🌳',top:50,left:8,size:34,op:.85},{e:'🌳',top:48,right:6,size:32,op:.85}],
+     skyDecor:[{e:'☀️',top:6,right:14,size:22,op:.9},{e:'🦋',top:30,left:'45%',size:16}],
      groundDecor:[{e:'🌲',bottom:6,left:60,size:24},{e:'🍄',bottom:4,left:130,size:14},{e:'💧',bottom:14,left:200,size:14},{e:'🐿️',bottom:8,right:80,size:16}],
      msg:'생태계가 살아나요',sub:'나무와 시냇물이 흐르는 숲이 됐어요',mask:false},
     {id:4,min:50,name:'회복된 지구',bg:'linear-gradient(180deg,#1a1a3e 0%,#3d2966 40%,#5a9a3a 75%,#76B947 100%)',
-     skyDecor:[{e:'🌙',top:8,right:14,size:24},{e:'⭐',top:18,left:50,size:14},{e:'⭐',top:36,left:'40%',size:12,op:.9},{e:'✨',top:8,left:140,size:14},{e:'⭐',top:28,right:50,size:14,op:.9}],
-     groundDecor:[{e:'🌳',bottom:6,left:18,size:24},{e:'🌸',bottom:4,left:80,size:14},{e:'✨',bottom:18,left:160,size:14},{e:'🌳',bottom:6,right:80,size:24}],
+     skyDecor:[{e:'🌙',top:8,right:14,size:24},{e:'⭐',top:18,left:50,size:14},{e:'⭐',top:36,left:'40%',size:12,op:.9},{e:'✨',top:8,left:140,size:14}],
+     groundDecor:[{e:'🌳',bottom:6,left:18,size:24},{e:'🌸',bottom:4,left:80,size:14},{e:'✨',bottom:18,left:160,size:14}],
      msg:'당신이 지킨 작은 지구',sub:'별빛 아래 평화로운 토끼 마을이 됐어요',mask:false},
   ];
 
@@ -40,7 +40,6 @@
     {month:8,minCo2:200,emoji:'🐢',name:'푸른바다거북',theme:'바다를 살려줘',desc:'해양 보호',tag:'멸종위기 2급'},
   ];
 
-  // ═══ 토끼 메시지 50종 (탭 시 랜덤) ═══
   const BUNNY_MSGS_STATIC=[
     "오늘 날씨 좋아!","주인 보고 싶었어 💕","쓰담쓰담 해줘서 고마워!","심심했는데 와줘서 좋아!",
     "햇볕 따스해 좋아!","주인 덕분에 우리가 살 수 있어 💕","환경 지켜줘서 너무 고마워!","우리 가족 행복해!",
@@ -48,13 +47,10 @@
     "내일도 미션 화이팅!","텀블러 써줘서 고마워!","줍깅 했다며? 멋져!","대중교통 타줘서 우리 공기 좋아졌어!",
     "자동차 1km 안 타면 CO₂ 0.21kg 줄어!","텀블러 한 번에 11g 절감!","나무 1그루는 1년에 21kg 흡수해!",
     "일회용컵 분해는 500년 걸려 😱","비닐봉지 분해는 100년!","수달은 한강에 다시 살게 됐어 🦦",
-    "하늘다람쥐는 천연기념물이야!","산양은 점점 줄어들어 ㅠㅠ","푸른바다거북도 우리 친구야!",
-    "주인이 최고야!","오늘도 고생했어!","쉬엄쉬엄 해, 환경은 마라톤이야 🏃","한 사람의 작은 행동이 큰 변화를 만들어!",
-    "사랑해 💕","안아줘! 🤗","포근해!","벚꽃 피는 봄이야! 🌸","녹음이 짙어! 🌿","단풍이 예뻐! 🍁",
-    "환기 자주 시켜!","오늘 점심은 뭐 먹을까?","잠이 솔솔 와... 😴","친구들이랑 놀고 있었어!",
-    "주인은 환경 영웅이야!","우리 오래오래 같이 살자 💕","미세먼지 없는 날이 좋아!",
-    "비 오면 풀이 더 잘 자라!","꽃밭 가꿔줘서 고마워!","작은 행동도 의미 있어!",
-    "환경의 날 알지? 6월 5일이야!","제로웨이스트 알지? 우리 다 살아!","에코퀘스트 짱! 💚",
+    "주인이 최고야!","오늘도 고생했어!","쉬엄쉬엄 해, 환경은 마라톤이야 🏃","사랑해 💕","안아줘! 🤗",
+    "포근해!","벚꽃 피는 봄이야! 🌸","녹음이 짙어! 🌿","환기 자주 시켜!","오늘 점심은 뭐 먹을까?",
+    "잠이 솔솔 와... 😴","친구들이랑 놀고 있었어!","주인은 환경 영웅이야!","우리 오래오래 같이 살자 💕",
+    "미세먼지 없는 날이 좋아!","비 오면 풀이 더 잘 자라!","꽃밭 가꿔줘서 고마워!","에코퀘스트 짱! 💚",
     "주인이 우리 마을 지킴이야!","어제보다 오늘이 더 푸르러!","주인 옆이 제일 좋아 ❤️"
   ];
 
@@ -67,12 +63,9 @@
     const imp=getImpact(_myCo2);
     const dynamic=[
       `지금까지 ${_myCo2.toFixed(1)}kg 줄였어! 멋지다!`,
-      `우리 가족 ${(_myBunny?.bunnies||[]).length}마리야! 🐰`,
+      `우리 가족 ${(_myBunny?.bunnies||[]).length}마리야!`,
       `주인 덕분에 나무 ${imp.trees}그루 산 거야!`,
       `자동차 ${imp.carKm}km 안 탄 효과야! 🚗`,
-      `일회용컵 ${imp.cups}개 안 만들었어! ☕`,
-      `우리 마을 ${imp.sqm}평이야 🏡`,
-      `다음 단계 ${getNextStage(_myCo2)?Math.max(0,getNextStage(_myCo2).min-_myCo2).toFixed(1):0}kg 남았어!`,
     ];
     const all=[...BUNNY_MSGS_STATIC,...dynamic];
     return all[Math.floor(Math.random()*all.length)];
@@ -88,7 +81,7 @@
         _airQuality={pm25:Math.round(d.current.pm2_5||0),pm10:Math.round(d.current.pm10||0)};
         if(document.getElementById('bunnyGameMain')&&_myBunny) renderBunnyMap();
       }
-    }catch(e){console.log('[bunny] 공기 실패:',e.message);}
+    }catch(e){console.log('[bunny] 공기 실패');}
   }
   function getAirStatus(){
     if(!_airQuality) return {label:'정보 없음',icon:'❓',color:'#888',mask:false,msg:''};
@@ -112,7 +105,7 @@
       snap.forEach(d=>{const dt=d.data(); const v=Number(dt.co2||dt.co2Reduced||0); if(!isNaN(v))sum+=v; count++;});
       if(sum>0){_myCo2=sum;return _myCo2;}
       if(count>0){_myCo2=count*0.5;return _myCo2;}
-    }catch(e){console.log('[bunny] CO2 fetch 실패');}
+    }catch(e){}
     _myCo2=0; return 0;
   }
 
@@ -157,17 +150,15 @@
         _myBunny=snap.data();
         if(!_myBunny.bunnies||!Array.isArray(_myBunny.bunnies)) _myBunny.bunnies=[];
         if(!_myBunny.decorations||!Array.isArray(_myBunny.decorations)) _myBunny.decorations=[];
-        // 기존 friendCount 마이그레이션 (있으면 토끼 데이터 보존)
+        if(!_myBunny.inventory) _myBunny.inventory={};
         if(_myBunny.friendCount!==undefined && _myBunny.bunnies.length===0){
           const cnt=_myBunny.friendCount+1;
           for(let i=0;i<cnt;i++) _myBunny.bunnies.push({name:i===0?"꼬미":`토끼${i+1}`,color:0});
-          delete _myBunny.friendCount;
-          delete _myBunny.carrots;
+          delete _myBunny.friendCount; delete _myBunny.carrots;
           await window.FB.setDoc(ref,_myBunny);
         }
       } else {
-        // 처음 → bunnies 비어있음. 입양 안내 화면 표시
-        _myBunny={happiness:0,bunnies:[],decorations:[],createdAt:window.FB.serverTimestamp()};
+        _myBunny={happiness:0,bunnies:[],decorations:[],inventory:{},createdAt:window.FB.serverTimestamp()};
         await window.FB.setDoc(ref,_myBunny);
       }
       await refreshMyCo2();
@@ -248,12 +239,7 @@
   function renderBunnyMap(){
     const c=document.getElementById("bunnyGameMain"); if(!c) return;
     if(!_myBunny){c.innerHTML='<div style="text-align:center;padding:40px;color:#888;font-size:13px">🐰 로딩 중...</div>'; return;}
-    
-    // 토끼가 없으면 첫 입양 안내
-    if((_myBunny.bunnies||[]).length===0){
-      renderFirstAdopt();
-      return;
-    }
+    if((_myBunny.bunnies||[]).length===0){renderFirstAdopt(); return;}
 
     const stage=getStage(_myCo2); const next=getNextStage(_myCo2); const air=getAirStatus();
 
@@ -264,22 +250,14 @@
             <div style="font-size:9px;color:rgba(255,255,255,.6);font-weight:600;letter-spacing:1px">🌍 내 지구 — STAGE ${stage.id+1}/5</div>
             <div style="font-size:14px;font-weight:900;color:#a8f0c6;margin-top:1px">${stage.name} · CO₂ ${_myCo2.toFixed(1)}kg</div>
           </div>
-          <div style="display:flex;gap:6px;align-items:center">
-            <button onclick="shareCurrentBunny()" style="background:rgba(255,255,255,.2);border:none;border-radius:10px;padding:6px 10px;font-size:11px;font-weight:700;color:#fff;cursor:pointer;font-family:inherit">📸 공유</button>
-          </div>
+          <button onclick="shareCurrentBunny()" style="background:rgba(255,255,255,.2);border:none;border-radius:10px;padding:6px 10px;font-size:11px;font-weight:700;color:#fff;cursor:pointer;font-family:inherit">📸 공유</button>
         </div>
         <div style="font-size:10px;color:rgba(255,255,255,.7);margin-bottom:5px">${next?`다음: ${next.name} <b style="color:#a8f0c6">${(next.min-_myCo2).toFixed(1)}kg 더!</b>`:'<b style="color:#FFD700">최종 단계 ✨</b>'}</div>
         ${next?`<div style="height:5px;background:rgba(255,255,255,.2);border-radius:3px;overflow:hidden"><div style="width:${Math.min(100,getStageProgress(_myCo2)*100)}%;height:100%;background:linear-gradient(90deg,#a8f0c6,#FFD700);transition:width .8s"></div></div>`:''}
       </div>
 
       ${_airQuality?`<div style="margin:0 12px 12px;background:#fff;border:1.5px solid ${air.color};border-radius:12px;padding:8px 12px;display:flex;align-items:center;justify-content:space-between">
-        <div style="display:flex;align-items:center;gap:8px">
-          <div style="font-size:20px">${air.icon}</div>
-          <div>
-            <div style="font-size:10px;color:#888;font-weight:600">오늘 미세먼지</div>
-            <div style="font-size:13px;font-weight:900;color:${air.color}">${air.label} <span style="font-size:10px;color:#888">PM2.5 ${_airQuality.pm25}</span></div>
-          </div>
-        </div>
+        <div style="display:flex;align-items:center;gap:8px"><div style="font-size:20px">${air.icon}</div><div><div style="font-size:10px;color:#888;font-weight:600">오늘 미세먼지</div><div style="font-size:13px;font-weight:900;color:${air.color}">${air.label} <span style="font-size:10px;color:#888">PM2.5 ${_airQuality.pm25}</span></div></div></div>
         ${air.msg?`<div style="font-size:10px;color:${air.color};font-weight:700;text-align:right">${air.msg}</div>`:''}
       </div>`:''}
 
@@ -300,23 +278,8 @@
         <div style="background:linear-gradient(135deg,#fff,#fff8e1);border-radius:20px;padding:32px 20px;border:2px solid #FFE082;box-shadow:0 4px 20px rgba(0,0,0,.05)">
           <div style="font-size:64px;margin-bottom:12px">🐰</div>
           <div style="font-size:20px;font-weight:900;color:#1B5E20;margin-bottom:8px">아직 토끼가 없어요!</div>
-          <div style="font-size:13px;color:#666;line-height:1.6;margin-bottom:24px">
-            나의 환경 행동이<br/>토끼 가족의 세계를 바꿔요 🌍<br/>
-            첫 토끼를 입양하고 시작해 볼까요?
-          </div>
-          <button onclick="adoptBunny(true)" style="background:linear-gradient(135deg,#FF6B9D,#C44569);color:#fff;border:none;border-radius:14px;padding:14px 32px;font-size:15px;font-weight:900;cursor:pointer;font-family:inherit;box-shadow:0 4px 16px rgba(196,69,105,.3)">
-            🐰 첫 토끼 입양하기
-          </button>
-        </div>
-
-        <div style="margin-top:20px;padding:16px;background:#f0fbf4;border-radius:14px;text-align:left">
-          <div style="font-size:11px;font-weight:900;color:#1B5E20;margin-bottom:8px">🌍 어떻게 작동하나요?</div>
-          <div style="font-size:11px;color:#444;line-height:1.8">
-            1️⃣ 미션을 하면 누적 CO₂가 쌓여요<br/>
-            2️⃣ 누적 CO₂에 따라 토끼 세계가 5단계로 변해요<br/>
-            3️⃣ 회색 도시 → 새싹 → 들판 → 숲 → 회복된 지구<br/>
-            4️⃣ 50kg 넘으면 멸종위기종 친구도 만나요!
-          </div>
+          <div style="font-size:13px;color:#666;line-height:1.6;margin-bottom:24px">나의 환경 행동이<br/>토끼 가족의 세계를 바꿔요 🌍<br/>첫 토끼를 입양하고 시작해 볼까요?</div>
+          <button onclick="adoptBunny(true)" style="background:linear-gradient(135deg,#FF6B9D,#C44569);color:#fff;border:none;border-radius:14px;padding:14px 32px;font-size:15px;font-weight:900;cursor:pointer;font-family:inherit;box-shadow:0 4px 16px rgba(196,69,105,.3)">🐰 첫 토끼 입양하기</button>
         </div>
       </div>
     `;
@@ -372,10 +335,10 @@
       });
     }
 
-    // 사용자 영구 데코 (싸이월드 꾸미기)
+    // 사용자 영구 데코 (z-index 5로 상승, 잘 보이게)
     (_myBunny?.decorations||[]).forEach(d=>{
       const el=document.createElement('div'); el.className='user-decor';
-      el.style.cssText=`position:absolute;left:${d.x}px;top:${d.y}px;font-size:${d.size||24}px;z-index:3;pointer-events:none;text-shadow:0 1px 2px rgba(0,0,0,.1)`;
+      el.style.cssText=`position:absolute;left:${d.x}px;top:${d.y}px;font-size:${d.size||28}px;z-index:5;pointer-events:none;text-shadow:0 2px 4px rgba(0,0,0,.15);filter:drop-shadow(0 2px 3px rgba(0,0,0,.2))`;
       el.textContent=d.emoji;
       pg.appendChild(el);
     });
@@ -384,7 +347,11 @@
   function renderBunnyStats(){
     const c=document.getElementById("bunnyStats"); if(!c||!_myBunny) return;
     const bunnies=_myBunny.bunnies||[]; const happiness=_myBunny.happiness||0;
-    const myPoints=window.UDATA?.point||0; const imp=getImpact(_myCo2);
+    const inv=_myBunny.inventory||{};
+    const invKeys=Object.keys(inv).filter(k=>inv[k] && inv[k].count>0);
+    const totalInv=invKeys.reduce((s,k)=>s+inv[k].count,0);
+    const decoCount=(_myBunny.decorations||[]).length;
+    const imp=getImpact(_myCo2);
 
     c.innerHTML=`
       <div style="margin:12px">
@@ -393,14 +360,14 @@
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:11px">
             <div style="background:#fff;border-radius:8px;padding:8px;text-align:center"><div style="font-size:18px">🌳</div><div style="font-weight:900;color:#1B5E20;margin-top:2px">${imp.trees}그루</div><div style="font-size:9px;color:#888">나무 1년 분량</div></div>
             <div style="background:#fff;border-radius:8px;padding:8px;text-align:center"><div style="font-size:18px">🚗</div><div style="font-weight:900;color:#1B5E20;margin-top:2px">${imp.carKm}km</div><div style="font-size:9px;color:#888">차 안 탄 효과</div></div>
-            <div style="background:#fff;border-radius:8px;padding:8px;text-align:center"><div style="font-size:18px">☕</div><div style="font-weight:900;color:#1B5E20;margin-top:2px">${imp.cups}개</div><div style="font-size:9px;color:#888">일회용컵 안 만든 효과</div></div>
+            <div style="background:#fff;border-radius:8px;padding:8px;text-align:center"><div style="font-size:18px">☕</div><div style="font-weight:900;color:#1B5E20;margin-top:2px">${imp.cups}개</div><div style="font-size:9px;color:#888">일회용컵 효과</div></div>
             <div style="background:#fff;border-radius:8px;padding:8px;text-align:center"><div style="font-size:18px">🐰</div><div style="font-weight:900;color:#1B5E20;margin-top:2px">${imp.sqm}평</div><div style="font-size:9px;color:#888">토끼가 살 숲</div></div>
           </div>
         </div>`:''}
 
         <div style="background:linear-gradient(135deg,#fff,#fff8e1);border-radius:14px;padding:14px 16px;text-align:center;border:2px solid #FFE082;margin-bottom:12px">
           <div style="font-size:11px;color:#689F38;font-weight:700;letter-spacing:2px">🐰 MY BUNNY FAMILY</div>
-          <div style="font-size:18px;font-weight:900;color:#1B5E20;margin-top:4px">우리 토끼 ${bunnies.length}마리</div>
+          <div style="font-size:18px;font-weight:900;color:#1B5E20;margin-top:4px">우리 토끼 ${bunnies.length}마리 · 정원 데코 ${decoCount}개 🌳</div>
           <div style="display:flex;justify-content:space-between;font-size:12px;margin-top:10px"><span style="color:#555;font-weight:600">😊 행복도</span><span style="color:#e91e63;font-weight:700">${happiness}/100</span></div>
           <div style="height:8px;background:#fce4ec;border-radius:4px;overflow:hidden;margin-top:4px"><div style="width:${Math.min(100,happiness)}%;height:100%;background:linear-gradient(90deg,#f06292,#e91e63);transition:width .5s"></div></div>
           ${happiness>=100?'<div style="font-size:11px;color:#C44569;margin-top:6px;font-weight:700">✨ 새 토끼를 입양할 수 있어요!</div>':''}
@@ -408,10 +375,35 @@
 
         <button onclick="adoptBunny()" ${happiness<100?'disabled':''} style="display:flex;align-items:center;justify-content:space-between;padding:13px 16px;background:${happiness<100?'#f5f5f5':'linear-gradient(135deg,#FF6B9D,#C44569)'};color:${happiness<100?'#aaa':'#fff'};border:none;border-radius:12px;font-size:14px;cursor:${happiness<100?'default':'pointer'};font-family:inherit;font-weight:700;width:100%;margin-bottom:12px"><span>🐰 새 토끼 입양하기</span><span style="font-weight:600">${happiness<100?`행복 ${100-happiness} 더`:'✨ 가능!'}</span></button>
 
+        <!-- 🎒 내 아이템 (인벤토리) -->
+        ${invKeys.length>0 ? `
+        <div style="background:linear-gradient(135deg,#fff,#fff0f5);border-radius:14px;padding:14px 12px;margin-bottom:12px;border:2px solid #FFB6C1">
+          <div style="font-size:12px;font-weight:900;color:#C44569;margin-bottom:10px;text-align:center">🎒 내 아이템 (총 ${totalInv}개)</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            ${invKeys.map(id=>{
+              const it=inv[id];
+              return `<button onclick="useItem('${id}')" style="display:flex;align-items:center;gap:8px;background:#fff;border:1.5px solid #FFE082;border-radius:10px;padding:8px 10px;cursor:pointer;font-family:inherit;text-align:left;width:100%">
+                <div style="font-size:24px;flex-shrink:0">${it.emoji}</div>
+                <div style="flex:1;min-width:0">
+                  <div style="font-size:11px;font-weight:900;color:#5D4037">${it.name}</div>
+                  <div style="font-size:9px;color:#888">x${it.count} · 😊+${it.happiness}</div>
+                </div>
+                <div style="background:linear-gradient(135deg,#FF6B9D,#C44569);color:#fff;border-radius:8px;padding:4px 8px;font-size:9px;font-weight:900;flex-shrink:0">사용</div>
+              </button>`;
+            }).join('')}
+          </div>
+          <div style="font-size:10px;color:#888;text-align:center;margin-top:8px;font-style:italic">탭하면 토끼한테 줘요!</div>
+        </div>
+        ` : `
+        <div style="margin-bottom:12px;padding:14px;background:#fafafa;border-radius:14px;border:1px dashed #ccc;text-align:center">
+          <div style="font-size:12px;color:#888;font-weight:700">🎒 아직 아이템이 없어요</div>
+          <div style="font-size:10px;color:#aaa;margin-top:4px">상점(🛒)에서 사면 여기 담겨요!</div>
+        </div>`}
+
         <div style="padding:11px 13px;background:#f0fbf4;border-radius:10px;font-size:11px;color:#1B5E20;line-height:1.8;margin-bottom:12px">
-          💡 미션 1개 → 새 꽃 즉시 피움 ✨<br/>
-          💡 토끼 탭 = 토끼가 한마디 해줘요<br/>
-          💡 상점에서 나무·꽃 사서 우리 마을 꾸미기!
+          💡 상점 (🛒) → 베리로 사기 → 인벤토리 (🎒) 담김<br/>
+          💡 인벤토리에서 [사용] 누르면 토끼한테 줘요!<br/>
+          💡 꾸미기 (🌳) 사면 정원에 영구 배치!
         </div>
 
         <div style="margin-bottom:12px;padding:14px 12px;background:#fff;border-radius:12px;border:1px solid #d8eedd">
@@ -433,7 +425,7 @@
                 <div style="font-size:11px;font-weight:900;color:${unlocked?'#5D4037':'#999'};margin-top:6px">${s.month}월 · ${s.name}</div>
                 <div style="font-size:9px;color:#888;margin-top:2px">"${s.theme}"</div>
                 <div style="height:4px;background:#f0f0f0;border-radius:2px;overflow:hidden;margin-top:6px"><div style="width:${prog}%;height:100%;background:linear-gradient(90deg,#FFD54F,#FF8F00);transition:width .8s"></div></div>
-                <div style="font-size:9px;color:${unlocked?'#27AE60':'#FF8F00'};margin-top:4px;font-weight:700">${unlocked?'✨ 해금!':`CO₂ ${remain.toFixed(0)}kg 더`}</div>
+                <div style="font-size:9px;color:${unlocked?'#27AE60':'#FF8F00'};margin-top:4px;font-weight:700">${unlocked?'✨ 해금!':`${remain.toFixed(0)}kg 더`}</div>
                 <div style="position:absolute;top:6px;right:6px;background:#FFE082;color:#8D6E1B;font-size:8px;font-weight:700;padding:2px 5px;border-radius:7px">${s.tag}</div>
               </div>`;
             }).join('')}
@@ -443,6 +435,47 @@
         <div style="height:20px"></div>
       </div>
     `;
+  }
+
+  // ═══ 아이템 사용 (인벤토리) ═══
+  window.useItem=async function(itemId){
+    if(!_myBunny || !_myBunny.inventory || !_myBunny.inventory[itemId]) return;
+    const item=_myBunny.inventory[itemId];
+    if(item.count<1) return;
+
+    // 시각 효과 먼저
+    showItemUsage(item);
+
+    // 차감
+    item.count--;
+    const usedItem={...item};
+    if(item.count<=0) delete _myBunny.inventory[itemId];
+    _myBunny.happiness=Math.min(100,(_myBunny.happiness||0)+(item.happiness||0));
+
+    await saveBunny();
+    
+    // 토끼들 신난 점프
+    setTimeout(()=>{_bunnyChars.forEach((_,i)=>setTimeout(()=>bigJump(i),i*80));},300);
+
+    setTimeout(()=>window.toast(`🎉 "${usedItem.name}" 사용! 행복 +${usedItem.happiness}`),200);
+  };
+
+  function showItemUsage(item){
+    const pg=document.getElementById('bunnyPlayground'); if(!pg) return;
+    
+    // 큰 이모지 등장
+    const big=document.createElement('div');
+    big.style.cssText=`position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:72px;z-index:60;pointer-events:none;animation:itemUse 1.6s ease-out;text-shadow:0 6px 16px rgba(0,0,0,.3);filter:drop-shadow(0 4px 12px rgba(0,0,0,.2))`;
+    big.textContent=item.emoji;
+    pg.appendChild(big);
+
+    // +N 😊
+    const heart=document.createElement('div');
+    heart.style.cssText=`position:absolute;top:30%;left:50%;transform:translateX(-50%);font-size:20px;font-weight:900;color:#e91e63;z-index:61;pointer-events:none;animation:heartFloat 2s ease-out;text-shadow:0 2px 8px rgba(255,255,255,.9)`;
+    heart.textContent=`+${item.happiness} 😊`;
+    pg.appendChild(heart);
+
+    setTimeout(()=>{big.remove(); heart.remove();},1700);
   }
 
   // ═══ 입양 ═══
@@ -475,10 +508,7 @@
     if(!_isFirstAdopt) _myBunny.happiness=0;
     await saveBunny();
     document.getElementById('ovAdopt')?.remove();
-    if(_isFirstAdopt){
-      // 첫 입양 → 토끼 게임 화면 다시 그리기
-      renderBunnyMap();
-    }
+    if(_isFirstAdopt) renderBunnyMap();
     setTimeout(()=>{_bunnyChars.forEach((_,i)=>setTimeout(()=>bigJump(i),i*100));},300);
     window.toast(`🎉 "${name}" 우리 가족이 됐어요!`);
     _isFirstAdopt=false;
@@ -521,7 +551,7 @@
     _lastSpawnedKey=`${bunniesData.length}_${colors}_${stage.id}_${decoCount}`;
     if(!document.getElementById('bunnyAnimStyle')){
       const style=document.createElement('style'); style.id='bunnyAnimStyle';
-      style.textContent=`@keyframes zzz{0%{opacity:0;transform:translateY(0)}50%{opacity:1}100%{opacity:0;transform:translateY(-8px)}}@keyframes stageUpFade{0%{opacity:0;transform:scale(.8)}100%{opacity:1;transform:scale(1)}}@keyframes flashFade{0%{opacity:1}100%{opacity:0}}@keyframes sproutGrow{0%{transform:scale(0) rotate(-20deg)}60%{transform:scale(1.4) rotate(10deg)}100%{transform:scale(1) rotate(0)}}@keyframes carLtr{0%{left:-40px}100%{left:calc(100% + 40px)}}@keyframes carRtl{0%{right:-40px}100%{right:calc(100% + 40px)}}`;
+      style.textContent=`@keyframes zzz{0%{opacity:0;transform:translateY(0)}50%{opacity:1}100%{opacity:0;transform:translateY(-8px)}}@keyframes stageUpFade{0%{opacity:0;transform:scale(.8)}100%{opacity:1;transform:scale(1)}}@keyframes flashFade{0%{opacity:1}100%{opacity:0}}@keyframes sproutGrow{0%{transform:scale(0) rotate(-20deg)}60%{transform:scale(1.4) rotate(10deg)}100%{transform:scale(1) rotate(0)}}@keyframes carLtr{0%{left:-40px}100%{left:calc(100% + 40px)}}@keyframes carRtl{0%{right:-40px}100%{right:calc(100% + 40px)}}@keyframes itemUse{0%{transform:translate(-50%,-50%) scale(0) rotate(-180deg);opacity:0}15%{transform:translate(-50%,-50%) scale(1.4) rotate(0);opacity:1}70%{transform:translate(-50%,-50%) scale(1.1) rotate(0);opacity:1}100%{transform:translate(-50%,-50%) scale(.6) rotate(360deg);opacity:0}}@keyframes heartFloat{0%{transform:translateX(-50%) translateY(0);opacity:0}20%{opacity:1}100%{transform:translateX(-50%) translateY(-50px);opacity:0}}`;
       document.head.appendChild(style);
     }
     startBunnyAnim();
@@ -530,8 +560,7 @@
   function showBunnyMsg(idx){
     const b=_bunnyChars[idx]; if(!b) return;
     const bubble=b.el.querySelector('.msg-bubble'); if(!bubble) return;
-    const msg=getRandomBunnyMsg();
-    bubble.textContent=`${b.name}: ${msg}`;
+    bubble.textContent=`${b.name}: ${getRandomBunnyMsg()}`;
     bubble.style.transform=`translateX(-50%) scaleX(${b.facing})`;
     bubble.style.display='block';
     clearTimeout(b.bubbleTimer);
@@ -623,7 +652,6 @@
     document.body.appendChild(modal);
   }
 
-  // ═══ SNS 공유 (현재 상태) ═══
   window.shareCurrentBunny=async function(){
     const stage=getStage(_myCo2); const imp=getImpact(_myCo2);
     const bunnies=_myBunny?.bunnies||[];
@@ -637,11 +665,11 @@
 
 "${stage.msg}"
 
-#에코퀘스트 #EcoQuest #환경챌린지 #제로웨이스트 #탄소중립
+#에코퀘스트 #EcoQuest #환경챌린지 #제로웨이스트
 https://eco-quest.kr`;
     try{
-      if(navigator.share) await navigator.share({title:`EcoQuest — 내 토끼 가족`,text,url:'https://eco-quest.kr'});
-      else{await navigator.clipboard.writeText(text); window.toast('📋 복사됨! SNS에 붙여넣어주세요!');}
+      if(navigator.share) await navigator.share({title:`EcoQuest`,text,url:'https://eco-quest.kr'});
+      else{await navigator.clipboard.writeText(text); window.toast('📋 복사됨! SNS에 붙여넣기!');}
     }catch(e){console.log('공유 취소');}
   };
 
@@ -653,14 +681,22 @@ https://eco-quest.kr`;
     await saveBunny();
   };
 
-  // 외부 (shop)에서 호출
-  window._bunnyUpdate=async function(updates){
+  // ═══ 외부 (shop)에서 호출 ═══
+  // 인벤토리에 추가
+  window._bunnyAddInventory=async function(item){
     if(!_myBunny) return;
-    if(updates.happiness) _myBunny.happiness=Math.min(100,(_myBunny.happiness||0)+updates.happiness);
-    if(updates.decoration){
-      if(!_myBunny.decorations) _myBunny.decorations=[];
-      _myBunny.decorations.push(updates.decoration);
+    if(!_myBunny.inventory) _myBunny.inventory={};
+    if(!_myBunny.inventory[item.id]){
+      _myBunny.inventory[item.id]={count:0, emoji:item.emoji, name:item.name, happiness:item.happiness||0};
     }
+    _myBunny.inventory[item.id].count++;
+    await saveBunny();
+  };
+  // 영구 데코 추가 (꾸미기)
+  window._bunnyAddDecoration=async function(deco){
+    if(!_myBunny) return;
+    if(!_myBunny.decorations) _myBunny.decorations=[];
+    _myBunny.decorations.push(deco);
     await saveBunny();
   };
 
@@ -670,9 +706,7 @@ https://eco-quest.kr`;
     if(typeof orig!=="function"){setTimeout(hookSaveMission,1000); return;}
     window.saveMission=async function(uid,m){
       const res=await orig(uid,m);
-      if(res&&uid===window.ME?.uid&&_myBunny){
-        setTimeout(()=>refreshAndUpdate(),1500);
-      }
+      if(res&&uid===window.ME?.uid&&_myBunny) setTimeout(()=>refreshAndUpdate(),1500);
       return res;
     };
     window._bunnyHookedSaveMission=true;

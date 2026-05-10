@@ -52,7 +52,6 @@
       const myPage = document.getElementById("page-my");
       if(!myPage) return false;
       if(document.getElementById("bunnyEntryWrap")) return true;
-      const adminArea = document.getElementById("adminArea");
       const wrap = document.createElement("div");
       wrap.id = "bunnyEntryWrap";
       wrap.style.cssText = "padding:0 12px;margin-bottom:6px";
@@ -62,7 +61,7 @@
           <span id="bunnyEntryInfo" style="font-size:11px;color:#8D6E63;font-weight:600">탭해서 시작!</span>
         </button>
       `;
-    const statCard = myPage.querySelector('.stat-card');
+      const statCard = myPage.querySelector('.stat-card');
       try{
         if(statCard && statCard.nextSibling){
           myPage.insertBefore(wrap, statCard.nextSibling);
@@ -70,7 +69,6 @@
           myPage.appendChild(wrap);
         }
       }catch(e){ myPage.appendChild(wrap); }
-  
       loadBunny();
       return true;
     };

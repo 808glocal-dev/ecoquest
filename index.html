@@ -3142,7 +3142,52 @@ document.querySelectorAll(".overlay").forEach(ov=>{
 <script src="berry_rename_patch.js"></script>
 <script src="bunny_shop_patch.js"></script>
 <script src="home_layout_fix_patch.js"></script>
+<script>
+// 홈 참여중 챌린지 카드 클릭 → 무조건 AI 사진 인증으로 가로채기
+(function(){
+  document.addEventListener('click', function(e){
+    const list = document.getElementById('homeChallList');
+    if(!list || !list.contains(e.target)) return;
 
+    // 취소 버튼은 그대로 동작하게 둠
+    const btn = e.target.closest('button');
+    if(btn && btn.getAttribute('onclick')?.includes('cancelChal')) return;
+
+    // 클릭된 카드 찾고, 그 안의 cancelChal 버튼에서 challengeId 추출
+    const cards = list.querySelectorAll(':scope > div');
+    let chalId = null;
+    for(const c of cards){
+      if(c.contains(e.target)){
+        const cancelBtn = c.querySelector('button[onclick*="cancelChal"]');
+        const m = cancelBtn?.getAttribute('onclick')?.match(/cancelChal\((\d+)\)/);
+        if(m) chalId = parseInt(m[1]);
+        break;
+      }
+    }
+    if(chalId === null) return;
+
+    // 다른 onclick들 다 막고
+    e.stopPropagation();
+    e.preventDefault();
+
+    // 오늘 이미 인증했는지 체크
+    const today = new Date().toISOString().split("T")[0];
+    if((window.UDATA?.verifiedDates||{})[chalId] === today){
+      if(typeof toast==='function') toast("오늘 이미 인증했어요! 내일 또 도전해요 ✅");
+      return;
+    }
+
+    // AI 사진 인증 모달 열기
+    const ac = (window.UDATA?.activeChallenges||[]).find(a=>a.challengeId===chalId);
+    if(!ac){ if(typeof toast==='function') toast("챌린지 정보를 찾을 수 없어요"); return; }
+    const m = (typeof MISSIONS!=='undefined') ? MISSIONS.find(x=>x.id===ac.missionId) : null;
+    if(!m){ if(typeof toast==='function') toast("미션 정보를 찾을 수 없어요"); return; }
+    if(typeof openAI === 'function'){
+      openAI(m, window.ME?.uid, chalId);
+    }
+  }, true); // ★ capture 단계 — 다른 onclick보다 먼저 실행됨
+})();
+</script>
 
   </body>
 </html>

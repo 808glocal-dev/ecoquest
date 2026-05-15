@@ -1901,15 +1901,11 @@ function renderHomeChalls(){
   }
   w.innerHTML=active.map(ac=>{
     const chal=CHALLENGES.find(c=>c.id===ac.challengeId);
-    if(!chal)return"";
-    const freqLabel=ac.freq==="daily"?"매일":ac.freq==="w5"?"주 5일":ac.freq==="w3"?"주 3일":"주 1일";
-    const totalNeeded=ac.freq==="daily"?ac.weeks*7:ac.freq==="w5"?ac.weeks*5:ac.freq==="w3"?ac.weeks*3:ac.weeks*1;
-    const completed=(window.UDATA?.completedDates||{})[ac.challengeId]||0;
-    const pct=Math.min(100,Math.floor(completed/totalNeeded*100));
-    const daysLeft=ac.endDate?Math.max(0,Math.ceil((new Date(ac.endDate)-new Date())/(86400000))):"?";
-    return`<div style="background:#fff;border-radius:12px;padding:12px 14px;margin-bottom:8px;border:1.5px solid var(--g1)">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;cursor:pointer" onclick="openChal(${chal.id})">
-        <div style="display:flex;align-items:center;gap:10px">
+    if(!chal)const today=new Date().toISOString().split("T")[0];
+const doneToday=(window.UDATA?.verifiedDates||{})[ac.challengeId]===today;
+return`<div style="background:#fff;border-radius:12px;padding:12px 14px;margin-bottom:8px;border:1.5px solid var(--g1)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div style="display:flex;align-items:center;gap:10px;flex:1;cursor:pointer" onclick="openChal(${chal.id})">
           <span style="font-size:24px">${chal.emoji}</span>
           <div>
             <div style="font-size:13px;font-weight:700;color:var(--txt)">${chal.title}</div>
@@ -1921,15 +1917,31 @@ function renderHomeChalls(){
       <div style="background:#e0f2e7;border-radius:6px;height:6px;overflow:hidden;margin-bottom:8px">
         <div style="width:${pct}%;background:linear-gradient(90deg,var(--g1),var(--acc));height:100%;border-radius:6px;transition:width .5s"></div>
       </div>
-      <div style="display:flex;justify-content:space-between;align-items:center">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:6px">
         <span style="font-size:11px;color:var(--sub)">${pct}% 달성</span>
-        <button onclick="event.stopPropagation();cancelChal(${ac.challengeId})" style="background:#fff0f0;color:var(--red);border:none;border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">취소</button>
+        <div style="display:flex;gap:6px">
+          ${doneToday
+            ? `<span style="background:#e8f5e9;color:var(--g2);font-size:11px;font-weight:700;padding:5px 12px;border-radius:8px">✅ 오늘 인증완료</span>`
+            : `<button onclick="startChalVerify(${ac.challengeId})" style="background:linear-gradient(135deg,var(--g1),var(--g2));color:#fff;border:none;border-radius:8px;padding:5px 14px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">📸 인증하기</button>`
+          }
+          <button onclick="event.stopPropagation();cancelChal(${ac.challengeId})" style="background:#fff0f0;color:var(--red);border:none;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">취소</button>
+        </div>
       </div>
     </div>`;
+
+
+      
   }).join("");
 }
 window.renderHomeChalls=renderHomeChalls;
-
+window.startChalVerify=function(challengeId){
+  if(!window.ME){toast("로그인이 필요해요!");return;}
+  const ac=(window.UDATA?.activeChallenges||[]).find(a=>a.challengeId===challengeId);
+  if(!ac){toast("챌린지 정보를 찾을 수 없어요");return;}
+  const m=MISSIONS.find(x=>x.id===ac.missionId);
+  if(!m){toast("미션 정보를 찾을 수 없어요");return;}
+  openAI(m,window.ME.uid,challengeId);
+};
 const API_KEY="";
 let _curM=null,_curUid=null,_b64=null,_passed=false,_curChalId=null,_verifPub=true,_treeCount=1;
 function openAI(m,uid,chalId){

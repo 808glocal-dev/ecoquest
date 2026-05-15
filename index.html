@@ -1888,7 +1888,7 @@ function renderTodayQuests(uid){
 }
 window.renderTodayQuests=renderTodayQuests;
 
-function renderHomeChalls(){
+  function renderHomeChalls(){
   const w=document.getElementById("homeChallList");
   const validMissionIds=CHALLENGES.map(c=>c.missionId);
   const active=(window.UDATA?.activeChallenges||[]).filter(ac=>validMissionIds.includes(ac.missionId));
@@ -1899,11 +1899,17 @@ function renderHomeChalls(){
     </div>`;
     return;
   }
+  const today=new Date().toISOString().split("T")[0];
   w.innerHTML=active.map(ac=>{
     const chal=CHALLENGES.find(c=>c.id===ac.challengeId);
-    if(!chal)const today=new Date().toISOString().split("T")[0];
-const doneToday=(window.UDATA?.verifiedDates||{})[ac.challengeId]===today;
-return`<div style="background:#fff;border-radius:12px;padding:12px 14px;margin-bottom:8px;border:1.5px solid var(--g1)">
+    if(!chal)return"";
+    const freqLabel=ac.freq==="daily"?"매일":ac.freq==="w5"?"주 5일":ac.freq==="w3"?"주 3일":"주 1일";
+    const totalNeeded=ac.freq==="daily"?ac.weeks*7:ac.freq==="w5"?ac.weeks*5:ac.freq==="w3"?ac.weeks*3:ac.weeks*1;
+    const completed=(window.UDATA?.completedDates||{})[ac.challengeId]||0;
+    const pct=Math.min(100,Math.floor(completed/totalNeeded*100));
+    const daysLeft=ac.endDate?Math.max(0,Math.ceil((new Date(ac.endDate)-new Date())/(86400000))):"?";
+    const doneToday=(window.UDATA?.verifiedDates||{})[ac.challengeId]===today;
+    return`<div style="background:#fff;border-radius:12px;padding:12px 14px;margin-bottom:8px;border:1.5px solid var(--g1)">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
         <div style="display:flex;align-items:center;gap:10px;flex:1;cursor:pointer" onclick="openChal(${chal.id})">
           <span style="font-size:24px">${chal.emoji}</span>
@@ -1928,12 +1934,10 @@ return`<div style="background:#fff;border-radius:12px;padding:12px 14px;margin-b
         </div>
       </div>
     </div>`;
-
-
-      
   }).join("");
 }
 window.renderHomeChalls=renderHomeChalls;
+
 window.startChalVerify=function(challengeId){
   if(!window.ME){toast("로그인이 필요해요!");return;}
   const ac=(window.UDATA?.activeChallenges||[]).find(a=>a.challengeId===challengeId);

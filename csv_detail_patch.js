@@ -1,4 +1,4 @@
-// csv_detail_patch.js v4 (doneMissions 배열 기반 카운트)
+// csv_detail_patch.js v5 (verifications + logs + doneMissions 통합 + 진단 로그)
 (function(){
   'use strict';
 
@@ -6,41 +6,73 @@
     const d = window._adminData;
     if(!d){ window.toast && window.toast("통계 탭에서 먼저 로딩해주세요!"); return; }
 
-    // ★★★ v4 핵심: missionLogs 대신 users.doneMissions에서 카운트
-    // (옛 데이터는 logs에 안 남아있어서 0으로 나오던 버그 수정)
-    const userMissionCount = {};
-    (d.users || []).forEach(u => {
-      if(!u.id) return;
-      userMissionCount[u.id] = {};
-      // doneMissions 배열에서 카운트 (메인)
-      (u.doneMissions || []).forEach(mid => {
-        userMissionCount[u.id][mid] = (userMissionCount[u.id][mid] || 0) + 1;
-      });
+    // ★★★ v5: 3개 소스에서 모두 카운트해서 max 값 사용
+    // 1) verifications 컬렉션 (사진 인증 = 가장 정확)
+    let verifs = [];
+    try {
+      const vSnap = await window.FB.getDocs(window.FB.collection(window.FB.db, 'verifications'));
+      verifs = vSnap.docs.map(x => x.data());
+    } catch(e){ console.warn('[csv v5] verifications 로딩 실패', e); }
+
+    const fromVerifs = {};
+    verifs.forEach(v => {
+      if(!v.uid || !v.missionId) return;
+      if(!fromVerifs[v.uid]) fromVerifs[v.uid] = {};
+      fromVerifs[v.uid][v.missionId] = (fromVerifs[v.uid][v.missionId]||0) + 1;
     });
-    // logs에서도 보강 (혹시 doneMissions에 누락된 게 있을 경우)
-    (d.logs || []).forEach(l => {
+
+    // 2) missionLogs 컬렉션
+    const fromLogs = {};
+    (d.logs||[]).forEach(l => {
       if(!l.uid || !l.missionId) return;
-      if(!userMissionCount[l.uid]) userMissionCount[l.uid] = {};
-      // logs와 doneMissions 둘 다 있을 때는 더 큰 값 신뢰
-      const fromLogs = (userMissionCount[l.uid][l.missionId + '__log'] || 0) + 1;
-      userMissionCount[l.uid][l.missionId + '__log'] = fromLogs;
+      if(!fromLogs[l.uid]) fromLogs[l.uid] = {};
+      fromLogs[l.uid][l.missionId] = (fromLogs[l.uid][l.missionId]||0) + 1;
     });
-    // 두 소스 비교해서 더 큰 값을 최종값으로
-    Object.keys(userMissionCount).forEach(uid => {
-      const counts = userMissionCount[uid];
-      Object.keys(counts).forEach(mid => {
-        if(mid.endsWith('__log')){
-          const realMid = mid.replace('__log', '');
-          counts[realMid] = Math.max(counts[realMid] || 0, counts[mid]);
-          delete counts[mid];
-        }
+
+    // 3) users.doneMissions 배열
+    const fromDone = {};
+    (d.users||[]).forEach(u => {
+      if(!u.id || !Array.isArray(u.doneMissions)) return;
+      fromDone[u.id] = {};
+      u.doneMissions.forEach(mid => {
+        fromDone[u.id][mid] = (fromDone[u.id][mid]||0) + 1;
       });
     });
 
-    // 모든 미션 ID 수집 (doneMissions + logs 합집합)
+    // 합치기 (각 미션별 max)
+    const userMissionCount = {};
+    const allUids = new Set([...Object.keys(fromVerifs), ...Object.keys(fromLogs), ...Object.keys(fromDone)]);
+    allUids.forEach(uid => {
+      userMissionCount[uid] = {};
+      const allMids = new Set([
+        ...Object.keys(fromVerifs[uid]||{}),
+        ...Object.keys(fromLogs[uid]||{}),
+        ...Object.keys(fromDone[uid]||{}),
+      ]);
+      allMids.forEach(mid => {
+        userMissionCount[uid][mid] = Math.max(
+          fromVerifs[uid]?.[mid] || 0,
+          fromLogs[uid]?.[mid] || 0,
+          fromDone[uid]?.[mid] || 0,
+        );
+      });
+    });
+
+    // 진단 로그
+    console.log('%c[csv v5 진단]','color:#fff;background:#2ECC71;padding:2px 8px;border-radius:4px;font-weight:bold', {
+      'verifications': verifs.length,
+      'missionLogs': d.logs?.length || 0,
+      'users w/ doneMissions': (d.users||[]).filter(u => u.doneMissions?.length > 0).length,
+      'verifications 카운트된 user 수': Object.keys(fromVerifs).length,
+      'logs 카운트된 user 수': Object.keys(fromLogs).length,
+      'doneMissions 카운트된 user 수': Object.keys(fromDone).length,
+    });
+
+    // 모든 미션 ID 합집합
     const allMissionIdsSet = new Set();
     (d.users || []).forEach(u => (u.doneMissions || []).forEach(mid => allMissionIdsSet.add(mid)));
     (d.logs || []).forEach(l => l.missionId && allMissionIdsSet.add(l.missionId));
+    verifs.forEach(v => v.missionId && allMissionIdsSet.add(v.missionId));
     const allMissionIds = [...allMissionIdsSet].sort((a,b)=>{
       const na = parseInt(String(a).replace('m','')) || 0;
       const nb = parseInt(String(b).replace('m','')) || 0;
@@ -54,7 +86,7 @@
     let companies = [];
     try {
       const coSnap = await window.FB.getDocs(window.FB.collection(window.FB.db, 'companies'));
-      companies = coSnap.docs.map(d => ({id: d.id, ...d.data()}));
+      companies = coSnap.docs.map(x => ({id: x.id, ...x.data()}));
     } catch(e){}
 
     const companyStats = companies.map(co => {
@@ -114,23 +146,18 @@
     if(noCompUsers.length) renderGroup('[(소속 없음)]', noCompUsers);
 
     rows.push(['=== 미션별 전체 인증 현황 ===']);
-    rows.push(['미션ID','미션명','총 인증횟수','참여 인원수','평균 CO2/회(kg)','총 CO2 절감(kg)']);
+    rows.push(['미션ID','미션명','총 인증횟수','참여 인원수','CO2/회(kg)','총 CO2 절감(kg)']);
     allMissionIds.forEach(id => {
-      // 전체 인증횟수 = 모든 user의 해당 미션 카운트 합
       let totalCount = 0;
-      let participantSet = new Set();
+      const participants = new Set();
       Object.keys(userMissionCount).forEach(uid => {
         const cnt = userMissionCount[uid][id] || 0;
-        if(cnt > 0){
-          totalCount += cnt;
-          participantSet.add(uid);
-        }
+        if(cnt > 0){ totalCount += cnt; participants.add(uid); }
       });
-      // 미션의 표준 CO2 값
       const mission = typeof MISSIONS !== 'undefined' ? MISSIONS.find(m=>m.id===id) : null;
       const co2PerMission = mission?.co2 || 0;
       rows.push([
-        id, mName(id), totalCount, participantSet.size,
+        id, mName(id), totalCount, participants.size,
         co2PerMission.toFixed(3),
         (totalCount * co2PerMission).toFixed(2)
       ]);
@@ -147,23 +174,23 @@
     a.download = `EcoQuest_상세_${new Date().toISOString().split('T')[0]}.csv`;
     a._eqOwn = true;
     a.click();
-    window.toast && window.toast('✅ 상세 CSV 다운로드 완료!');
-    console.log('%c[csv_detail v4] ✅ doneMissions 기반 카운트 완료','color:#2ECC71;font-weight:bold');
+    window.toast && window.toast('✅ CSV 다운로드 완료!');
+    console.log('%c[csv v5] ✅ 다운로드 완료','color:#2ECC71;font-weight:bold');
   }
 
-  // ★★★ 핵우산 1: anchor.click() 가로채기
+  // 핵우산 1: anchor.click() 가로채기
   const origAnchorClick = HTMLAnchorElement.prototype.click;
   HTMLAnchorElement.prototype.click = function(){
     const dl = (this.download || '').toLowerCase();
     if(dl.endsWith('.csv') && !this._eqOwn){
-      console.log('%c[csv_detail v4] ⚡ 다른 CSV 다운로드 가로채기:','color:#E74C3C;font-weight:bold', this.download);
+      console.log('[csv v5] ⚡ 다른 CSV 가로채기:', this.download);
       setTimeout(() => exportDetailedCSV(), 50);
       return;
     }
     return origAnchorClick.apply(this, arguments);
   };
 
-  // ★★★ 핵우산 2: 버튼/링크 클릭 capture 가로채기
+  // 핵우산 2: 버튼 클릭 가로채기
   document.addEventListener('click', function(e){
     const el = e.target.closest('button, a');
     if(!el) return;
@@ -173,13 +200,13 @@
       e.preventDefault();
       e.stopImmediatePropagation();
       e.stopPropagation();
-      console.log('%c[csv_detail v4] ⚡ 버튼 클릭 가로채기:','color:#3498DB;font-weight:bold', text || onclick);
+      console.log('[csv v5] ⚡ 버튼 가로채기:', text || onclick);
       exportDetailedCSV();
       return false;
     }
   }, true);
 
-  // ★★★ 핵우산 3: window.exportCSV 지속 덮어쓰기
+  // 핵우산 3: window.exportCSV 지속 덮어쓰기
   function install(){
     window.exportCSV = exportDetailedCSV;
     if('ehExportCSV' in window) window.ehExportCSV = exportDetailedCSV;
@@ -188,5 +215,5 @@
   install();
   setInterval(install, 1000);
 
-  console.log('%c[csv_detail v4] ☢️ 핵우산 모드 + doneMissions 카운트','color:#fff;background:#1a1a2e;padding:4px 8px;border-radius:4px;font-weight:bold');
+  console.log('%c[csv v5] ☢️ verifications + logs + doneMissions 통합','color:#fff;background:#1a1a2e;padding:4px 8px;border-radius:4px;font-weight:bold');
 })();

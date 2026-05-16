@@ -555,6 +555,54 @@
     }
   }
 
+
+/* ─── 6.5. 손상된 activeChallenges 자동 복구 ─── */
+  let _migrated = false;
+  async function migrateActiveChallenges() {
+    if (_migrated) return;
+    if (!window.ME?.uid || !window.FB?.updateDoc) return;
+    if (!Array.isArray(window.UDATA?.activeChallenges)) return;
+    if (typeof CHALLENGES === 'undefined') return;
+
+    const active = window.UDATA.activeChallenges;
+    let changed = false;
+    const fixed = active.map(ac => {
+      const chal = CHALLENGES.find(c => c.id === ac.challengeId);
+      if (!chal) return ac; // 존재하지 않는 챌린지는 그대로
+      if (ac.missionId !== chal.missionId) {
+        console.log(`[복구] 챌린지#${ac.challengeId} "${chal.title}" missionId: ${ac.missionId} → ${chal.missionId}`);
+        changed = true;
+        return { ...ac, missionId: chal.missionId, emoji: chal.emoji, challengeTitle: chal.title };
+      }
+      return ac;
+    });
+
+    if (changed) {
+      try {
+        await window.FB.updateDoc(
+          window.FB.doc(window.FB.db, 'users', window.ME.uid),
+          { activeChallenges: fixed }
+        );
+        window.UDATA.activeChallenges = fixed;
+        _migrated = true;
+        console.log('[복구] ✅ activeChallenges missionId 수정 완료');
+        if (typeof ehRenderHomeChalls === 'function') ehRenderHomeChalls();
+        if (typeof window.renderTodayQuests === 'function') {
+          window.renderTodayQuests(window.ME.uid);
+        }
+      } catch (e) {
+        console.error('[복구] 실패', e);
+      }
+    } else {
+      _migrated = true;
+    }
+  }
+
+
+   
+
+   
+
   /* ─── 실행 ─── */
   function run() {
     try { removeCompanyFromHome();        } catch(e){}
@@ -570,7 +618,8 @@
     try { ensureCategoryChips();          } catch(e){}
     try { addTooltips();                  } catch(e){}
     try { injectChallenges();             } catch(e){}
-    // 카테고리 칩 + 콘텐츠 챌린지 적용 후 다시 그리기
+      try { migrateActiveChallenges();      } catch(e){}   // ← 이 줄 추가
+     // 카테고리 칩 + 콘텐츠 챌린지 적용 후 다시 그리기
     if (typeof renderOfficialChallenges === 'function') {
       try { renderOfficialChallenges(); } catch(e){}
     }
@@ -625,4 +674,30 @@
   } else {
     setTimeout(startObserver, 500);
   }
+   /* ─── joinChal 가드: 패치 미적용 상태 가입 차단 ─── */
+  function installJoinChalGuard() {
+    if (window._ehJoinChalGuarded) return;
+    if (typeof window.joinChal !== 'function') return;
+    const origJoin = window.joinChal;
+    window.joinChal = async function(title, cid) {
+      injectChallenges();  // 패치 강제 적용
+      const chal = (typeof CHALLENGES !== 'undefined') ? CHALLENGES.find(c => c.id === cid) : null;
+      if (!chal) {
+        console.error('[joinChal 가드] 챌린지 매칭 실패', cid);
+        window.toast && window.toast('챌린지 정보 로딩 중이에요. 잠시 후 다시 시도해주세요!');
+        return;
+      }
+      if (typeof MISSIONS === 'undefined' || !MISSIONS.find(m => m.id === chal.missionId)) {
+        console.error('[joinChal 가드] 미션 매칭 실패', chal.missionId);
+        window.toast && window.toast('미션 정보 로딩 중이에요. 잠시 후 다시 시도해주세요!');
+        return;
+      }
+      return origJoin.apply(this, arguments);
+    };
+    window._ehJoinChalGuarded = true;
+    console.log('[home_mission_patch] ✅ joinChal 가드 적용됨');
+  }
+  installJoinChalGuard();
+  setTimeout(installJoinChalGuard, 1000);
+  setTimeout(installJoinChalGuard, 3000);
 })();

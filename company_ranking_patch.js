@@ -1,22 +1,30 @@
-// company_ranking_patch.js v6
-// v5 + 하단 중복 "소속 랭킹" 강제 숨김 (우리 거 이후 형제들 검사)
+// company_ranking_patch.js v8 — 1초 자동 보호 + 다른 patch 충돌 강제 해결
 (function(){
   'use strict';
 
-  async function renderCompanyTabRanking(){
-    const page = document.getElementById('page-company');
-    if(!page) return;
+  let _rendering = false;
+  let _lastTs = 0;
 
-    let wrap = document.getElementById('eqCompanyRanking');
-    if(wrap) wrap.remove();
-
-    wrap = document.createElement('div');
-    wrap.id = 'eqCompanyRanking';
-    wrap.style.cssText = 'padding: 0 12px 20px; order: -1;';
-    wrap.innerHTML = '<div style="text-align:center;padding:20px;color:var(--sub);font-size:13px">랭킹 불러오는 중...</div>';
-    page.insertBefore(wrap, page.firstChild);
+  /* ===== 우리 거 렌더링 ===== */
+  async function renderOurRanking(){
+    if(_rendering) return;
+    if(Date.now() - _lastTs < 800) return;
+    _rendering = true;
+    _lastTs = Date.now();
 
     try {
+      const page = document.getElementById('page-company');
+      if(!page) return;
+
+      let wrap = document.getElementById('eqCompanyRanking');
+      if(wrap) wrap.remove();
+
+      wrap = document.createElement('div');
+      wrap.id = 'eqCompanyRanking';
+      wrap.style.cssText = 'padding: 0 12px 20px;';
+      wrap.innerHTML = '<div style="text-align:center;padding:20px;color:var(--sub);font-size:13px">랭킹 불러오는 중...</div>';
+      page.insertBefore(wrap, page.firstChild);
+
       const [userSnap, coSnap] = await Promise.all([
         window.FB.getDocs(window.FB.collection(window.FB.db, 'users')),
         window.FB.getDocs(window.FB.collection(window.FB.db, 'companies')),
@@ -32,53 +40,45 @@
 
       const companyRanking = companies.map(co => {
         const members = allUsers.filter(u => u.companyId === co.id);
-        return {
-          co,
-          totalCo2: members.reduce((s,u) => s+(u.co2||0), 0),
-          totalMission: members.reduce((s,u) => s+(u.missionCount||0), 0),
-          memberCount: members.length,
-        };
+        return {co, totalCo2:members.reduce((s,u)=>s+(u.co2||0),0), totalMission:members.reduce((s,u)=>s+(u.missionCount||0),0), memberCount:members.length};
       }).filter(c => c.memberCount > 0).sort((a,b) => b.totalCo2 - a.totalCo2);
 
       const myRankAll = myUid ? allUsers.findIndex(u => u.id === myUid) + 1 : 0;
       const myCompanyRank = myCompanyId ? companyRanking.findIndex(c => c.co.id === myCompanyId) + 1 : 0;
       const totalUsers = allUsers.length;
-
       const medals = ['🥇','🥈','🥉'];
 
-      const renderUserRow = (u, i) => {
+      const renderUser = (u, i) => {
         const isMe = u.id === myUid;
-        const rankIcon = i < 3 ? medals[i] : `<span style="font-size:13px;font-weight:900;color:var(--sub)">${i+1}위</span>`;
-        return `
-          <div style="display:flex;align-items:center;gap:10px;padding:10px;background:${isMe?'#f0fbf4':'#fff'};border-radius:12px;margin-bottom:6px;border:1.5px solid ${isMe?'var(--g1)':'var(--bdr)'}">
-            <div style="font-size:20px;width:36px;text-align:center">${rankIcon}</div>
-            <div style="flex:1;min-width:0">
-              <div style="font-size:13px;font-weight:700;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${u.nickname || '익명'}${isMe?' 🌟':''}</div>
-              <div style="font-size:11px;color:var(--sub)">미션 ${u.missionCount||0}개 · ${(u.point||0).toLocaleString()}P</div>
-            </div>
-            <div style="text-align:right;flex-shrink:0">
-              <div style="font-size:13px;font-weight:900;color:var(--g2)">${(u.co2||0).toFixed(1)}kg</div>
-              <div style="font-size:10px;color:var(--sub)">CO₂ 절감</div>
-            </div>
-          </div>`;
+        const rk = i < 3 ? medals[i] : `<span style="font-size:13px;font-weight:900;color:var(--sub)">${i+1}위</span>`;
+        return `<div style="display:flex;align-items:center;gap:10px;padding:10px;background:${isMe?'#f0fbf4':'#fff'};border-radius:12px;margin-bottom:6px;border:1.5px solid ${isMe?'var(--g1)':'var(--bdr)'}">
+          <div style="font-size:20px;width:36px;text-align:center">${rk}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:700;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${u.nickname || '익명'}${isMe?' 🌟':''}</div>
+            <div style="font-size:11px;color:var(--sub)">미션 ${u.missionCount||0}개 · ${(u.point||0).toLocaleString()}P</div>
+          </div>
+          <div style="text-align:right;flex-shrink:0">
+            <div style="font-size:13px;font-weight:900;color:var(--g2)">${(u.co2||0).toFixed(1)}kg</div>
+            <div style="font-size:10px;color:var(--sub)">CO₂ 절감</div>
+          </div>
+        </div>`;
       };
 
-      const renderCoRow = (c, i) => {
+      const renderCo = (c, i) => {
         const isMine = myCompanyId === c.co.id;
-        const rankIcon = i < 3 ? medals[i] : `<span style="font-size:13px;font-weight:900;color:var(--sub)">${i+1}위</span>`;
-        return `
-          <div style="display:flex;align-items:center;gap:10px;padding:10px;background:${isMine?'#f0fbf4':'#fff'};border-radius:12px;margin-bottom:6px;border:1.5px solid ${isMine?'var(--g1)':'var(--bdr)'}">
-            <div style="font-size:20px;width:36px;text-align:center">${rankIcon}</div>
-            <div style="font-size:24px">${c.co.emoji||'🏢'}</div>
-            <div style="flex:1;min-width:0">
-              <div style="font-size:13px;font-weight:700;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.co.name}${isMine?' 🌟':''}</div>
-              <div style="font-size:11px;color:var(--sub)">${c.memberCount}명 · ${c.totalMission}건 인증</div>
-            </div>
-            <div style="text-align:right;flex-shrink:0">
-              <div style="font-size:13px;font-weight:900;color:var(--g2)">${c.totalCo2.toFixed(1)}kg</div>
-              <div style="font-size:10px;color:var(--sub)">CO₂ 절감</div>
-            </div>
-          </div>`;
+        const rk = i < 3 ? medals[i] : `<span style="font-size:13px;font-weight:900;color:var(--sub)">${i+1}위</span>`;
+        return `<div style="display:flex;align-items:center;gap:10px;padding:10px;background:${isMine?'#f0fbf4':'#fff'};border-radius:12px;margin-bottom:6px;border:1.5px solid ${isMine?'var(--g1)':'var(--bdr)'}">
+          <div style="font-size:20px;width:36px;text-align:center">${rk}</div>
+          <div style="font-size:24px">${c.co.emoji||'🏢'}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:700;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.co.name}${isMine?' 🌟':''}</div>
+            <div style="font-size:11px;color:var(--sub)">${c.memberCount}명 · ${c.totalMission}건 인증</div>
+          </div>
+          <div style="text-align:right;flex-shrink:0">
+            <div style="font-size:13px;font-weight:900;color:var(--g2)">${c.totalCo2.toFixed(1)}kg</div>
+            <div style="font-size:10px;color:var(--sub)">CO₂ 절감</div>
+          </div>
+        </div>`;
       };
 
       let html = '';
@@ -89,130 +89,135 @@
           cards.push(`<div style="text-align:center;flex:1"><div style="font-size:11px;color:rgba(255,255,255,.75);margin-bottom:2px">🏢 우리 회사</div><div style="font-size:24px;font-weight:900">${myCompanyRank}위</div><div style="font-size:10px;color:rgba(255,255,255,.65)">/ ${companyRanking.length}곳</div></div>`);
         }
         cards.push(`<div style="text-align:center;flex:1"><div style="font-size:11px;color:rgba(255,255,255,.75);margin-bottom:2px">🌍 전체 앱</div><div style="font-size:24px;font-weight:900">${myRankAll}위</div><div style="font-size:10px;color:rgba(255,255,255,.65)">/ ${totalUsers}명</div></div>`);
-        html += `
-          <div style="background:linear-gradient(135deg,#0f3d20,#2ECC71);border-radius:16px;padding:16px;margin:14px 0 16px;color:#fff;box-shadow:0 4px 14px rgba(46,204,113,.25)">
-            <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,.85);margin-bottom:10px;text-align:center">🌟 내 순위</div>
-            <div style="display:flex;gap:6px">${cards.join('<div style="width:1px;background:rgba(255,255,255,.2)"></div>')}</div>
-          </div>
-        `;
+        html += `<div style="background:linear-gradient(135deg,#0f3d20,#2ECC71);border-radius:16px;padding:16px;margin:14px 0 16px;color:#fff;box-shadow:0 4px 14px rgba(46,204,113,.25)">
+          <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,.85);margin-bottom:10px;text-align:center">🌟 내 순위</div>
+          <div style="display:flex;gap:6px">${cards.join('<div style="width:1px;background:rgba(255,255,255,.2)"></div>')}</div>
+        </div>`;
+      } else if(myUid && totalUsers > 0){
+        html += `<div style="background:linear-gradient(135deg,#74b9ff,#0984e3);border-radius:16px;padding:14px;margin:14px 0 16px;color:#fff;text-align:center">
+          <div style="font-size:13px;font-weight:700">🌱 첫 미션을 시작해서 랭킹에 도전해요!</div>
+        </div>`;
       }
 
       if(companyRanking.length){
         html += `<div style="font-size:15px;font-weight:900;color:var(--txt);margin:18px 0 10px">🏢 소속 랭킹 (${companyRanking.length}곳)</div>`;
-        html += companyRanking.slice(0, 10).map(renderCoRow).join('');
+        html += companyRanking.slice(0, 10).map(renderCo).join('');
         if(myCompanyId && myCompanyRank > 10){
           html += `<div style="text-align:center;color:var(--sub);font-size:11px;padding:6px">⋯</div>`;
-          html += renderCoRow(companyRanking[myCompanyRank - 1], myCompanyRank - 1);
+          html += renderCo(companyRanking[myCompanyRank - 1], myCompanyRank - 1);
         }
       }
 
       html += `<div style="font-size:15px;font-weight:900;color:var(--txt);margin:18px 0 10px">🌍 개인 랭킹 (전체 ${totalUsers}명)</div>`;
-      html += allUsers.slice(0, 10).map(renderUserRow).join('');
-      if(myUid && myRankAll > 10){
-        html += `<div style="text-align:center;color:var(--sub);font-size:11px;padding:6px">⋯</div>`;
-        html += renderUserRow(allUsers[myRankAll - 1], myRankAll - 1);
+      if(allUsers.length === 0){
+        html += '<div style="text-align:center;padding:20px;color:var(--sub);font-size:12px;background:#fafafa;border-radius:12px">아직 활동 중인 사용자가 없어요</div>';
+      } else {
+        html += allUsers.slice(0, 10).map(renderUser).join('');
+        if(myUid && myRankAll > 10){
+          html += `<div style="text-align:center;color:var(--sub);font-size:11px;padding:6px">⋯</div>`;
+          html += renderUser(allUsers[myRankAll - 1], myRankAll - 1);
+        }
       }
 
       wrap.innerHTML = html;
+      console.log('[company_ranking v8] ✅ 렌더 - 회사', companyRanking.length, '명/개인', totalUsers);
     } catch(e){
-      console.error('[company_ranking v6]', e);
-      wrap.innerHTML = '<div style="text-align:center;padding:20px;color:var(--sub);font-size:13px">랭킹 로딩 실패</div>';
+      console.error('[company_ranking v8]', e);
+    } finally {
+      _rendering = false;
     }
   }
 
-  /* ★★★ v6 강화: 우리 거 이후 형제 + 페이지 전체 후손 검사 */
-  function hideOldRanking(){
+  /* ===== 기존 중복 강제 숨김 (공격적) ===== */
+  function hideOld(){
     const page = document.getElementById('page-company');
     if(!page) return;
-    const ours = document.getElementById('eqCompanyRanking');
 
-    // 1. 우리 거 이후의 모든 형제 검사
-    if(ours){
-      let cur = ours.nextElementSibling;
-      while(cur){
-        const next = cur.nextElementSibling; // 미리 저장 (display:none 해도 안전)
-        const txt = (cur.textContent || '').slice(0, 200);
-        if(/소속\s*(CO|랭킹|순위)|Top\s*멤버|임직원\s*현황|기업\s*랭킹/i.test(txt) && !cur.dataset.eqHiddenOld){
-          cur.style.display = 'none';
-          cur.dataset.eqHiddenOld = '1';
-        }
-        cur = next;
-      }
-    }
+    // 페이지의 모든 div/section/h*를 검사
+    page.querySelectorAll('div, section, h1, h2, h3, h4, h5').forEach(el => {
+      if(el.dataset.eqHiddenOld) return;
+      if(el.id === 'eqCompanyRanking') return;
+      if(el.contains(document.getElementById('eqCompanyRanking'))) return;
 
-    // 2. 페이지 안의 모든 후손 검사 (헤더로 보이는 짧은 텍스트)
-    page.querySelectorAll('div, section, h1, h2, h3, h4').forEach(el => {
-      if(el.dataset?.eqHiddenOld) return;
-      if(ours && (el === ours || ours.contains(el) || el.contains(ours))) return;
-      const txt = (el.textContent || '').slice(0, 60).trim();
-      // 헤더 패턴 (짧은 텍스트 + 랭킹 관련 키워드)
-      if(txt.length > 0 && txt.length < 50 && /^[🏆🥇📊🌳🌱🥈🥉]?\s*(소속\s*(CO|랭킹|순위)|Top\s*멤버|임직원\s*현황|기업\s*랭킹)/i.test(txt)){
-        // 카드 컨테이너까지 올라가기
-        let target = el;
-        for(let i=0; i<5; i++){
-          if(!target.parentElement || target.parentElement === page) break;
-          target = target.parentElement;
-        }
-        if(target && target !== page && target !== ours && !target.dataset.eqHiddenOld && (!ours || !target.contains(ours))){
-          target.style.display = 'none';
-          target.dataset.eqHiddenOld = '1';
+      const txt = (el.textContent || '').slice(0, 300).trim();
+      if(!txt || txt.length > 800) return;
+
+      // 패턴 매칭: 우리 거가 아닌 중복 섹션
+      const patterns = [
+        /^[🏆📊🌳🌱🥇🥈🥉🏢]?\s*임직원\s*현황/,
+        /^[🏆📊🌳🌱🥇🥈🥉🏢]?\s*Top\s*멤버/,
+        /^[🏆📊🌳🌱🥇🥈🥉🏢]?\s*소속\s*(CO|랭킹|순위)/,
+        /^[🏆📊🌳🌱🥇🥈🥉🏢]?\s*기업\s*랭킹/,
+        /^[🏆📊🌳🌱🥇🥈🥉🏢]?\s*참여\s*인원/,
+      ];
+
+      for(const p of patterns){
+        if(p.test(txt)){
+          // 부모 컨테이너 찾기 (해당 섹션의 박스)
+          let target = el;
+          // 너무 좁으면 부모로 확장 (헤더 + 내용 박스 통째로 숨김)
+          for(let i = 0; i < 3; i++){
+            if(!target.parentElement || target.parentElement === page) break;
+            const ptxt = (target.parentElement.textContent || '').trim();
+            if(ptxt.length > 1500) break; // 너무 큰 영역은 멈춤
+            // 부모도 같은 패턴을 포함하면 부모로
+            if(p.test(ptxt.slice(0, 300))){
+              target = target.parentElement;
+            } else {
+              break;
+            }
+          }
+          if(target !== page && target !== document.getElementById('eqCompanyRanking') && !target.contains(document.getElementById('eqCompanyRanking'))){
+            target.style.display = 'none';
+            target.dataset.eqHiddenOld = '1';
+          }
+          break;
         }
       }
     });
   }
 
-  function setupAll(){
-    renderCompanyTabRanking();
-    setTimeout(hideOldRanking, 300);
-    setTimeout(hideOldRanking, 1000);
-    setTimeout(hideOldRanking, 2500);
-  }
+  /* ===== 1초마다 자동 보호 (공격적) ===== */
+  setInterval(() => {
+    const page = document.getElementById('page-company');
+    if(!page) return;
+    const isActive = page.classList.contains('on') || (page.style.display !== 'none' && page.offsetParent !== null);
+    if(!isActive) return;
 
+    hideOld();
+
+    if(!document.getElementById('eqCompanyRanking')){
+      renderOurRanking();
+    }
+  }, 1000);
+
+  /* ===== goPage 후킹 ===== */
   function hookGoPage(){
     if(window._eqRankingHooked) return;
     if(typeof window.goPage !== 'function'){ setTimeout(hookGoPage, 300); return; }
     const orig = window.goPage;
     window.goPage = function(name){
       const r = orig.apply(this, arguments);
-      if(name === 'company') setTimeout(setupAll, 400);
+      if(name === 'company'){
+        setTimeout(() => { renderOurRanking(); hideOld(); }, 300);
+        setTimeout(() => { renderOurRanking(); hideOld(); }, 800);
+        setTimeout(() => { hideOld(); }, 1500);
+      }
       return r;
     };
     window._eqRankingHooked = true;
   }
 
-  function watchPage(){
-    setTimeout(() => {
-      const page = document.getElementById('page-company');
-      if(!page) return;
-      let pending = false;
-      new MutationObserver(() => {
-        if(pending) return;
-        if(page.style.display === 'none' && !page.classList.contains('on')) return;
-        const ours = document.getElementById('eqCompanyRanking');
-        if(!ours || !page.contains(ours)){
-          pending = true;
-          setTimeout(() => { setupAll(); pending = false; }, 200);
-        } else {
-          pending = true;
-          setTimeout(() => { hideOldRanking(); pending = false; }, 200);
-        }
-      }).observe(page, { childList: true, subtree: false });
-    }, 1500);
-  }
-
-  // ★ 매 1.5초마다 한 번씩 강제 숨김 (다른 patch가 다시 그려도 우리가 다시 숨김)
-  setInterval(() => {
-    const page = document.getElementById('page-company');
-    if(page && page.classList.contains('on')) hideOldRanking();
-  }, 1500);
-
   hookGoPage();
-  watchPage();
 
+  // 즉시 한 번 시도
   setTimeout(() => {
     const page = document.getElementById('page-company');
-    if(page && page.classList.contains('on')) setupAll();
-  }, 1000);
+    if(page && (page.classList.contains('on') || page.offsetParent !== null)){
+      renderOurRanking();
+      hideOld();
+    }
+  }, 2000);
 
-  console.log('[company_ranking v6] ☢️ 강화 — 형제+후손 모두 검사 + setInterval');
+  console.log('%c[company_ranking v8] ☢️ 1초 강제 보호 + 강력 hide','color:#fff;background:#000;padding:4px 8px;border-radius:4px;font-weight:bold');
 })();

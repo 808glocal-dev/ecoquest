@@ -1,5 +1,5 @@
-// bunny_field_layout_patch.js v7
-// page-farm 강제 복구 + 페이지 보호 → 창고 무조건 보임
+// bunny_field_layout_patch.js v8
+// v7 + 강화된 모달/오버레이 보호 (씨앗 선택 모달 안 꺼지게)
 (function(){
   'use strict';
 
@@ -25,7 +25,6 @@
     {id:'other', name:'기타 매장 (직접 입력)', desc:''},
   ];
 
-  /* CSS: page-farm 직접 자식 숨김 + 우리 거 무조건 보이게 */
   function injectCss(){
     if(document.getElementById('eqFarmPageCss')) return;
     const s = document.createElement('style');
@@ -38,20 +37,31 @@
     document.head.appendChild(s);
   }
 
-  /* 🔒 안전: 우리 카드와 page-farm 자체는 절대 숨기지 않음 */
+  /* 🔒 강화된 보호 - 모달/오버레이/우리 거 모두 부모 체인까지 검사 */
   function isProtected(el){
     if(!el) return true;
-    if(el.id === 'eqMyHarvestStore') return true;
-    if(el.id?.startsWith('page-')) return true;
     if(el.tagName === 'BODY' || el.tagName === 'HTML') return true;
-    const store = document.getElementById('eqMyHarvestStore');
-    if(store && el.contains(store)) return true;
+
+    let p = el;
+    for(let i = 0; i < 12; i++){
+      if(!p) return false;
+      if(p.id === 'eqMyHarvestStore') return true;
+      if(p.id?.startsWith('page-')) return true;
+      if(p.id?.startsWith('ov')) return true;          // 모달 (ovSeedSel, ovExchange 등)
+      if(p.id?.startsWith('eq')) return true;          // 우리 거 (eqMySummaryCard 등)
+      const z = parseInt((p.style?.zIndex || '0').toString());
+      if(z >= 1000) return true;                       // 높은 z-index = 모달
+      if(p.style?.position === 'fixed') return true;   // position:fixed = 모달
+      // class 매칭 (overlay, modal 등)
+      const cls = (p.className || '').toString();
+      if(/overlay|modal|popup|dialog/i.test(cls)) return true;
+      p = p.parentElement;
+    }
     return false;
   }
 
-  /* 🌐 전역 강제 숨김 */
   function hideOldFarmEverywhere(){
-    // 패턴 A: "내 텃밭" / "MY FARM" 헤더 → 부모 + 다음 sibling
+    // 패턴 A: 헤더 매칭
     document.querySelectorAll('div, h1, h2, h3, h4, span, p').forEach(el => {
       if(isProtected(el)) return;
       if(el.dataset.eqHidF) return;
@@ -91,7 +101,7 @@
       }
     });
 
-    // 패턴 B: 격자 자체 (page- 보호 추가!)
+    // 패턴 B: 격자 자체
     document.querySelectorAll('div').forEach(el => {
       if(isProtected(el)) return;
       if(el.dataset.eqHidF) return;
@@ -104,7 +114,7 @@
       }
     });
 
-    // 패턴 C: "일반 씨앗" + "못난이 씨앗" (page- 보호 추가!)
+    // 패턴 C: MY FARM 통계
     document.querySelectorAll('div').forEach(el => {
       if(isProtected(el)) return;
       if(el.dataset.eqHidF) return;
@@ -117,7 +127,6 @@
     });
   }
 
-  /* 🚨 페이지 강제 복구 - 우리 patch가 page를 숨겼다면 복구 */
   function recoverFarmPage(){
     const farmPage = document.getElementById('page-farm');
     if(!farmPage) return;
@@ -125,7 +134,6 @@
       farmPage.style.display = '';
       delete farmPage.dataset.eqHidF;
     }
-    // 부모 체인도 확인
     let parent = farmPage.parentElement;
     while(parent && parent.tagName !== 'BODY'){
       if(parent.dataset.eqHidF){
@@ -136,7 +144,6 @@
     }
   }
 
-  /* 수확물 창고 */
   function ensureHarvestStore(){
     const farmPage = document.getElementById('page-farm');
     if(!farmPage) return;
@@ -147,7 +154,6 @@
       store.id = 'eqMyHarvestStore';
       farmPage.insertBefore(store, farmPage.firstChild);
     }
-    // 강제 표시 (행여 다른 patch가 숨겼다면 복구)
     store.style.display = 'block';
     store.style.visibility = 'visible';
     store.style.opacity = '1';
@@ -239,7 +245,6 @@
     `;
   }
 
-  /* 쿠폰 교환 모달 */
   window.openExchangeRequest = function(){
     const harvested = window.UDATA?.harvestedCrops || {};
     const hasCrops = CROPS.filter(c => (harvested[c.id]||0) > 0);
@@ -349,7 +354,6 @@
     }
   };
 
-  /* 가방·상점 버튼 위로 */
   function moveShopButtons(){
     const playground = document.getElementById('bunnyPlayground');
     if(!playground) return;
@@ -367,7 +371,6 @@
     }
   }
 
-  /* boot */
   function boot(){
     injectCss();
     recoverFarmPage();
@@ -377,7 +380,7 @@
 
     setInterval(() => {
       injectCss();
-      recoverFarmPage(); // 매번 페이지 복구
+      recoverFarmPage();
       moveShopButtons();
       hideOldFarmEverywhere();
       ensureHarvestStore();
@@ -385,7 +388,7 @@
 
     setInterval(updateHarvestStore, 30000);
 
-    console.log('%c[bunny_field_layout v7] 🌾 페이지 보호 + 강제 복구','color:#fff;background:#27AE60;padding:4px 8px;border-radius:4px;font-weight:bold');
+    console.log('%c[bunny_field_layout v8] 🌾 모달 보호 + 페이지 복구','color:#fff;background:#27AE60;padding:4px 8px;border-radius:4px;font-weight:bold');
   }
 
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => setTimeout(boot, 2000));

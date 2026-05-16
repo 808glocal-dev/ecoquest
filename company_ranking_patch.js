@@ -1,5 +1,5 @@
-// company_ranking_patch.js v5
-// 강제 맨 위 prepend + 기존 "Top 멤버" / "소속 CO₂ 랭킹" 숨김 + 지속 감시
+// company_ranking_patch.js v6
+// v5 + 하단 중복 "소속 랭킹" 강제 숨김 (우리 거 이후 형제들 검사)
 (function(){
   'use strict';
 
@@ -7,7 +7,6 @@
     const page = document.getElementById('page-company');
     if(!page) return;
 
-    // 우리 거 이미 있으면 데이터만 갱신
     let wrap = document.getElementById('eqCompanyRanking');
     if(wrap) wrap.remove();
 
@@ -15,8 +14,6 @@
     wrap.id = 'eqCompanyRanking';
     wrap.style.cssText = 'padding: 0 12px 20px; order: -1;';
     wrap.innerHTML = '<div style="text-align:center;padding:20px;color:var(--sub);font-size:13px">랭킹 불러오는 중...</div>';
-
-    // ★ 페이지 맨 위에 강제 prepend
     page.insertBefore(wrap, page.firstChild);
 
     try {
@@ -86,7 +83,6 @@
 
       let html = '';
 
-      // 🌟 내 순위 카드
       if(myUid && myRankAll > 0){
         const cards = [];
         if(myCompanyId && myCompanyRank > 0){
@@ -101,7 +97,6 @@
         `;
       }
 
-      // 🏢 소속 랭킹
       if(companyRanking.length){
         html += `<div style="font-size:15px;font-weight:900;color:var(--txt);margin:18px 0 10px">🏢 소속 랭킹 (${companyRanking.length}곳)</div>`;
         html += companyRanking.slice(0, 10).map(renderCoRow).join('');
@@ -111,7 +106,6 @@
         }
       }
 
-      // 🌍 개인 랭킹 (전체)
       html += `<div style="font-size:15px;font-weight:900;color:var(--txt);margin:18px 0 10px">🌍 개인 랭킹 (전체 ${totalUsers}명)</div>`;
       html += allUsers.slice(0, 10).map(renderUserRow).join('');
       if(myUid && myRankAll > 10){
@@ -120,30 +114,46 @@
       }
 
       wrap.innerHTML = html;
-      console.log('[company_ranking v5] 렌더 완료 - 회사', companyRanking.length, '개 / 개인', totalUsers, '명');
     } catch(e){
-      console.error('[company_ranking v5]', e);
+      console.error('[company_ranking v6]', e);
       wrap.innerHTML = '<div style="text-align:center;padding:20px;color:var(--sub);font-size:13px">랭킹 로딩 실패</div>';
     }
   }
 
-  /* 기존 "Top 멤버" + "소속 CO₂ 랭킹" 부분 숨김 (회사 정보/초대코드는 유지) */
+  /* ★★★ v6 강화: 우리 거 이후 형제 + 페이지 전체 후손 검사 */
   function hideOldRanking(){
     const page = document.getElementById('page-company');
     if(!page) return;
-    page.querySelectorAll('div').forEach(div => {
-      if(div.dataset?.eqHiddenOld) return;
-      if(div.id === 'eqCompanyRanking' || div.closest('#eqCompanyRanking')) return;
-      const txt = (div.textContent || '').slice(0, 50).trim();
-      // 기존 patch가 그린 Top 멤버 / 소속 CO₂ 랭킹 헤더 찾기
-      if(/^[🏆🥇📊🌳🌱]?\s*(Top\s*멤버|소속\s*CO|소속\s*랭킹|임직원\s*현황)/i.test(txt) && div.children.length < 30){
-        let target = div;
-        // 상위 컨테이너까지 올라가기
-        for(let i=0; i<4; i++){
+    const ours = document.getElementById('eqCompanyRanking');
+
+    // 1. 우리 거 이후의 모든 형제 검사
+    if(ours){
+      let cur = ours.nextElementSibling;
+      while(cur){
+        const next = cur.nextElementSibling; // 미리 저장 (display:none 해도 안전)
+        const txt = (cur.textContent || '').slice(0, 200);
+        if(/소속\s*(CO|랭킹|순위)|Top\s*멤버|임직원\s*현황|기업\s*랭킹/i.test(txt) && !cur.dataset.eqHiddenOld){
+          cur.style.display = 'none';
+          cur.dataset.eqHiddenOld = '1';
+        }
+        cur = next;
+      }
+    }
+
+    // 2. 페이지 안의 모든 후손 검사 (헤더로 보이는 짧은 텍스트)
+    page.querySelectorAll('div, section, h1, h2, h3, h4').forEach(el => {
+      if(el.dataset?.eqHiddenOld) return;
+      if(ours && (el === ours || ours.contains(el) || el.contains(ours))) return;
+      const txt = (el.textContent || '').slice(0, 60).trim();
+      // 헤더 패턴 (짧은 텍스트 + 랭킹 관련 키워드)
+      if(txt.length > 0 && txt.length < 50 && /^[🏆🥇📊🌳🌱🥈🥉]?\s*(소속\s*(CO|랭킹|순위)|Top\s*멤버|임직원\s*현황|기업\s*랭킹)/i.test(txt)){
+        // 카드 컨테이너까지 올라가기
+        let target = el;
+        for(let i=0; i<5; i++){
           if(!target.parentElement || target.parentElement === page) break;
           target = target.parentElement;
         }
-        if(target && target !== page && target.id !== 'eqCompanyRanking' && !target.dataset.eqHiddenOld){
+        if(target && target !== page && target !== ours && !target.dataset.eqHiddenOld && (!ours || !target.contains(ours))){
           target.style.display = 'none';
           target.dataset.eqHiddenOld = '1';
         }
@@ -158,7 +168,6 @@
     setTimeout(hideOldRanking, 2500);
   }
 
-  /* goPage 후킹 */
   function hookGoPage(){
     if(window._eqRankingHooked) return;
     if(typeof window.goPage !== 'function'){ setTimeout(hookGoPage, 300); return; }
@@ -171,7 +180,6 @@
     window._eqRankingHooked = true;
   }
 
-  /* MutationObserver: 다른 patch가 우리 거 지우면 다시 그림 */
   function watchPage(){
     setTimeout(() => {
       const page = document.getElementById('page-company');
@@ -192,14 +200,19 @@
     }, 1500);
   }
 
+  // ★ 매 1.5초마다 한 번씩 강제 숨김 (다른 patch가 다시 그려도 우리가 다시 숨김)
+  setInterval(() => {
+    const page = document.getElementById('page-company');
+    if(page && page.classList.contains('on')) hideOldRanking();
+  }, 1500);
+
   hookGoPage();
   watchPage();
 
-  // 페이지가 이미 활성화된 상태면 즉시 한 번 실행
   setTimeout(() => {
     const page = document.getElementById('page-company');
     if(page && page.classList.contains('on')) setupAll();
   }, 1000);
 
-  console.log('[company_ranking v5] ☢️ 강제 prepend + MutationObserver');
+  console.log('[company_ranking v6] ☢️ 강화 — 형제+후손 모두 검사 + setInterval');
 })();

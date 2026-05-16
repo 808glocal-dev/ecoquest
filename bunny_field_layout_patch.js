@@ -1,6 +1,5 @@
-// bunny_field_layout_patch.js v5
-// 1. 어디 페이지에 있든 MY FARM, 내 텃밭 카드 전역 숨김
-// 2. 농장 페이지(page-farm) = 수확물 창고 + 쿠폰 교환
+// bunny_field_layout_patch.js v7
+// page-farm 강제 복구 + 페이지 보호 → 창고 무조건 보임
 (function(){
   'use strict';
 
@@ -26,62 +25,118 @@
     {id:'other', name:'기타 매장 (직접 입력)', desc:''},
   ];
 
-  /* ===== CSS - page-farm 다른 콘텐츠 숨김 ===== */
+  /* CSS: page-farm 직접 자식 숨김 + 우리 거 무조건 보이게 */
   function injectCss(){
     if(document.getElementById('eqFarmPageCss')) return;
     const s = document.createElement('style');
     s.id = 'eqFarmPageCss';
     s.textContent = `
-      #page-farm > *:not(#eqMyHarvestStore) {
-        display: none !important;
-      }
-      #eqMyHarvestStore { display: block !important; }
+      #page-farm > *:not(#eqMyHarvestStore) { display: none !important; }
+      #eqMyHarvestStore { display: block !important; visibility: visible !important; opacity: 1 !important; }
+      #page-farm { display: block !important; }
     `;
     document.head.appendChild(s);
   }
 
-  /* ===== 🌐 전역 MY FARM / 내 텃밭 카드 강제 숨김 ===== */
+  /* 🔒 안전: 우리 카드와 page-farm 자체는 절대 숨기지 않음 */
+  function isProtected(el){
+    if(!el) return true;
+    if(el.id === 'eqMyHarvestStore') return true;
+    if(el.id?.startsWith('page-')) return true;
+    if(el.tagName === 'BODY' || el.tagName === 'HTML') return true;
+    const store = document.getElementById('eqMyHarvestStore');
+    if(store && el.contains(store)) return true;
+    return false;
+  }
+
+  /* 🌐 전역 강제 숨김 */
   function hideOldFarmEverywhere(){
-    // body 전체에서 검색 (어느 페이지에 있든)
-    document.querySelectorAll('div, section').forEach(el => {
-      if(el.id === 'eqMyHarvestStore') return;
-      if(el.contains(document.getElementById('eqMyHarvestStore'))) return;
-      if(el.dataset.eqHiddenFarmCard) return;
+    // 패턴 A: "내 텃밭" / "MY FARM" 헤더 → 부모 + 다음 sibling
+    document.querySelectorAll('div, h1, h2, h3, h4, span, p').forEach(el => {
+      if(isProtected(el)) return;
+      if(el.dataset.eqHidF) return;
 
-      const txt = (el.textContent || '').slice(0, 400).trim();
-      if(!txt || txt.length > 800) return;
+      const shortTxt = (el.textContent || '').slice(0, 80).trim();
+      if(!shortTxt) return;
 
-      // 식별 패턴
-      const isMyFarmCard = /MY\s*FARM/.test(txt) && /(일반\s*씨앗|못난이\s*씨앗|도감)/.test(txt);
-      const isFieldGrid = /내\s*텃밭/.test(txt) && /(칸\s*사용|심기|새싹|씨앗)/.test(txt);
-      const isPlotsBox = /일반\s*씨앗.*못난이\s*씨앗/.test(txt) || /못난이\s*씨앗.*일반\s*씨앗/.test(txt);
+      const isHeader = (
+        /^[🌱🌾🌻🥕🐰]?\s*내\s*텃밭/.test(shortTxt) ||
+        /^[🌱🌾🌻🥕🐰]?\s*MY\s*FARM/.test(shortTxt) ||
+        /^[🌱🌾🌻🥕🐰]?\s*내\s*농장/.test(shortTxt)
+      );
+      if(!isHeader) return;
 
-      if(isMyFarmCard || isFieldGrid || isPlotsBox){
+      let target = el;
+      for(let i = 0; i < 5; i++){
+        if(!target.parentElement) break;
+        if(isProtected(target.parentElement)) break;
+        const ptxt = (target.parentElement.textContent || '').slice(0, 1500);
+        if(ptxt.length > shortTxt.length && ptxt.length < 2500){
+          target = target.parentElement;
+        } else break;
+      }
+      if(isProtected(target)) return;
+
+      target.style.display = 'none';
+      target.dataset.eqHidF = '1';
+
+      let next = target.nextElementSibling;
+      if(next && !isProtected(next)){
+        const nextTxt = (next.textContent || '').slice(0, 500);
+        const plantWords = (nextTxt.match(/심기|새싹|씨앗/g) || []).length;
+        if(plantWords >= 3){
+          next.style.display = 'none';
+          next.dataset.eqHidF = '1';
+        }
+      }
+    });
+
+    // 패턴 B: 격자 자체 (page- 보호 추가!)
+    document.querySelectorAll('div').forEach(el => {
+      if(isProtected(el)) return;
+      if(el.dataset.eqHidF) return;
+
+      const txt = (el.textContent || '').slice(0, 800).trim();
+      const plantWords = (txt.match(/심기|새싹|씨앗/g) || []).length;
+      if(plantWords >= 4 && txt.length < 1200){
         el.style.display = 'none';
-        el.dataset.eqHiddenFarmCard = '1';
+        el.dataset.eqHidF = '1';
+      }
+    });
+
+    // 패턴 C: "일반 씨앗" + "못난이 씨앗" (page- 보호 추가!)
+    document.querySelectorAll('div').forEach(el => {
+      if(isProtected(el)) return;
+      if(el.dataset.eqHidF) return;
+
+      const txt = (el.textContent || '').slice(0, 500);
+      if(/일반\s*씨앗/.test(txt) && /못난이\s*씨앗/.test(txt) && txt.length < 800){
+        el.style.display = 'none';
+        el.dataset.eqHidF = '1';
       }
     });
   }
 
-  /* ===== 가방·상점 버튼 위로 ===== */
-  function moveShopButtons(){
-    const playground = document.getElementById('bunnyPlayground');
-    if(!playground) return;
-
-    const allBtns = Array.from(playground.querySelectorAll('button'));
-    const shopBtn = allBtns.find(b => /토끼\s*상점/.test(b.textContent || ''));
-    if(shopBtn && !shopBtn.dataset.eqMoved){
-      shopBtn.style.cssText = 'position:absolute;top:48px;right:8px;background:linear-gradient(135deg,#ff8a65,#ff5722);color:#fff;border:none;border-radius:14px;padding:6px 12px;font-size:11px;font-weight:900;cursor:pointer;font-family:inherit;box-shadow:0 4px 10px rgba(255,87,34,.4);z-index:31;display:flex;align-items:center;gap:4px';
-      shopBtn.dataset.eqMoved = '1';
+  /* 🚨 페이지 강제 복구 - 우리 patch가 page를 숨겼다면 복구 */
+  function recoverFarmPage(){
+    const farmPage = document.getElementById('page-farm');
+    if(!farmPage) return;
+    if(farmPage.dataset.eqHidF){
+      farmPage.style.display = '';
+      delete farmPage.dataset.eqHidF;
     }
-    const bagBtn = document.getElementById('bunnyInvBtn');
-    if(bagBtn && !bagBtn.dataset.eqMoved){
-      bagBtn.style.cssText = 'position:absolute;top:88px;right:8px;background:linear-gradient(135deg,#6c5ce7,#a29bfe);color:#fff;border:none;border-radius:14px;padding:6px 12px;font-size:11px;font-weight:900;cursor:pointer;font-family:inherit;box-shadow:0 4px 10px rgba(108,92,231,.4);z-index:31;display:flex;align-items:center;gap:4px';
-      bagBtn.dataset.eqMoved = '1';
+    // 부모 체인도 확인
+    let parent = farmPage.parentElement;
+    while(parent && parent.tagName !== 'BODY'){
+      if(parent.dataset.eqHidF){
+        parent.style.display = '';
+        delete parent.dataset.eqHidF;
+      }
+      parent = parent.parentElement;
     }
   }
 
-  /* ===== 수확물 창고 ===== */
+  /* 수확물 창고 */
   function ensureHarvestStore(){
     const farmPage = document.getElementById('page-farm');
     if(!farmPage) return;
@@ -92,6 +147,10 @@
       store.id = 'eqMyHarvestStore';
       farmPage.insertBefore(store, farmPage.firstChild);
     }
+    // 강제 표시 (행여 다른 patch가 숨겼다면 복구)
+    store.style.display = 'block';
+    store.style.visibility = 'visible';
+    store.style.opacity = '1';
     updateHarvestStore();
   }
 
@@ -150,14 +209,14 @@
         </div>
         `}
 
-        <div style="background:linear-gradient(135deg,#f0f4ff,#e8edff);border-radius:14px;padding:14px;margin-bottom:14px;border:1.5px solid #c5cae9;cursor:pointer;transition:transform .15s" onclick="window.openMyPokedex&&window.openMyPokedex()" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+        <div style="background:linear-gradient(135deg,#f0f4ff,#e8edff);border-radius:14px;padding:14px;margin-bottom:14px;border:1.5px solid #c5cae9;cursor:pointer" onclick="window.openMyPokedex&&window.openMyPokedex()">
           <div style="display:flex;align-items:center;gap:12px">
             <div style="font-size:32px">📔</div>
             <div style="flex:1">
               <div style="font-size:13px;font-weight:900;color:#1A237E">작물 도감</div>
               <div style="font-size:11px;color:#5C6BC0;margin-top:2px">${variety}/12 종 발견 · 탭해서 자세히 →</div>
               <div style="background:#fff;border-radius:6px;height:6px;margin-top:6px;overflow:hidden">
-                <div style="width:${(variety/12)*100}%;height:100%;background:linear-gradient(90deg,#5C6BC0,#3F51B5);transition:width .5s"></div>
+                <div style="width:${(variety/12)*100}%;height:100%;background:linear-gradient(90deg,#5C6BC0,#3F51B5)"></div>
               </div>
             </div>
           </div>
@@ -166,7 +225,7 @@
         ${noCrops.length > 0 ? `
         <div style="font-size:11px;font-weight:700;color:#999;margin-bottom:6px">🔍 아직 안 키운 작물 (${noCrops.length}종)</div>
         <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;background:#fafafa;border-radius:12px;padding:12px;justify-content:center">
-          ${noCrops.map(c => `<span style="font-size:24px;filter:grayscale(.9);opacity:.55" title="${c.name} 아직 미수확">${c.emoji}</span>`).join('')}
+          ${noCrops.map(c => `<span style="font-size:24px;filter:grayscale(.9);opacity:.55">${c.emoji}</span>`).join('')}
         </div>
         ` : ''}
 
@@ -180,7 +239,7 @@
     `;
   }
 
-  /* ===== 쿠폰 교환 모달 ===== */
+  /* 쿠폰 교환 모달 */
   window.openExchangeRequest = function(){
     const harvested = window.UDATA?.harvestedCrops || {};
     const hasCrops = CROPS.filter(c => (harvested[c.id]||0) > 0);
@@ -290,23 +349,43 @@
     }
   };
 
+  /* 가방·상점 버튼 위로 */
+  function moveShopButtons(){
+    const playground = document.getElementById('bunnyPlayground');
+    if(!playground) return;
+
+    const allBtns = Array.from(playground.querySelectorAll('button'));
+    const shopBtn = allBtns.find(b => /토끼\s*상점/.test(b.textContent || ''));
+    if(shopBtn && !shopBtn.dataset.eqMoved){
+      shopBtn.style.cssText = 'position:absolute;top:48px;right:8px;background:linear-gradient(135deg,#ff8a65,#ff5722);color:#fff;border:none;border-radius:14px;padding:6px 12px;font-size:11px;font-weight:900;cursor:pointer;font-family:inherit;box-shadow:0 4px 10px rgba(255,87,34,.4);z-index:31;display:flex;align-items:center;gap:4px';
+      shopBtn.dataset.eqMoved = '1';
+    }
+    const bagBtn = document.getElementById('bunnyInvBtn');
+    if(bagBtn && !bagBtn.dataset.eqMoved){
+      bagBtn.style.cssText = 'position:absolute;top:88px;right:8px;background:linear-gradient(135deg,#6c5ce7,#a29bfe);color:#fff;border:none;border-radius:14px;padding:6px 12px;font-size:11px;font-weight:900;cursor:pointer;font-family:inherit;box-shadow:0 4px 10px rgba(108,92,231,.4);z-index:31;display:flex;align-items:center;gap:4px';
+      bagBtn.dataset.eqMoved = '1';
+    }
+  }
+
   /* boot */
   function boot(){
     injectCss();
+    recoverFarmPage();
     moveShopButtons();
-    hideOldFarmEverywhere(); // 전역 숨김
+    hideOldFarmEverywhere();
     ensureHarvestStore();
 
     setInterval(() => {
       injectCss();
+      recoverFarmPage(); // 매번 페이지 복구
       moveShopButtons();
-      hideOldFarmEverywhere(); // 1초마다 전역 보호
+      hideOldFarmEverywhere();
       ensureHarvestStore();
     }, 1000);
 
     setInterval(updateHarvestStore, 30000);
 
-    console.log('%c[bunny_field_layout v5] 🌾 전역 숨김 + 수확물 창고','color:#fff;background:#27AE60;padding:4px 8px;border-radius:4px;font-weight:bold');
+    console.log('%c[bunny_field_layout v7] 🌾 페이지 보호 + 강제 복구','color:#fff;background:#27AE60;padding:4px 8px;border-radius:4px;font-weight:bold');
   }
 
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => setTimeout(boot, 2000));

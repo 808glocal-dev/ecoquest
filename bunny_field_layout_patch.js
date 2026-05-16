@@ -1,6 +1,6 @@
-// bunny_field_layout_patch.js v4
-// 1. 농장 페이지 = 수확물 창고 (CSS로 다른 콘텐츠 강제 숨김)
-// 2. 쿠폰 교환 신청 시스템 (Firebase couponRequests 저장, 관리자 수동 처리)
+// bunny_field_layout_patch.js v5
+// 1. 어디 페이지에 있든 MY FARM, 내 텃밭 카드 전역 숨김
+// 2. 농장 페이지(page-farm) = 수확물 창고 + 쿠폰 교환
 (function(){
   'use strict';
 
@@ -19,7 +19,6 @@
     {id:'apple',name:'사과',emoji:'🍎'},
   ];
 
-  // 제로웨이스트 매장 (루치아님 제휴 진행 중인 곳들)
   const STORES = [
     {id:'thepicker', name:'더피커', desc:'서울 성동구'},
     {id:'almang', name:'알맹상점', desc:'서울 마포구'},
@@ -27,7 +26,7 @@
     {id:'other', name:'기타 매장 (직접 입력)', desc:''},
   ];
 
-  /* ===== ☢️ CSS - 다른 콘텐츠 강제 숨김 ===== */
+  /* ===== CSS - page-farm 다른 콘텐츠 숨김 ===== */
   function injectCss(){
     if(document.getElementById('eqFarmPageCss')) return;
     const s = document.createElement('style');
@@ -39,6 +38,29 @@
       #eqMyHarvestStore { display: block !important; }
     `;
     document.head.appendChild(s);
+  }
+
+  /* ===== 🌐 전역 MY FARM / 내 텃밭 카드 강제 숨김 ===== */
+  function hideOldFarmEverywhere(){
+    // body 전체에서 검색 (어느 페이지에 있든)
+    document.querySelectorAll('div, section').forEach(el => {
+      if(el.id === 'eqMyHarvestStore') return;
+      if(el.contains(document.getElementById('eqMyHarvestStore'))) return;
+      if(el.dataset.eqHiddenFarmCard) return;
+
+      const txt = (el.textContent || '').slice(0, 400).trim();
+      if(!txt || txt.length > 800) return;
+
+      // 식별 패턴
+      const isMyFarmCard = /MY\s*FARM/.test(txt) && /(일반\s*씨앗|못난이\s*씨앗|도감)/.test(txt);
+      const isFieldGrid = /내\s*텃밭/.test(txt) && /(칸\s*사용|심기|새싹|씨앗)/.test(txt);
+      const isPlotsBox = /일반\s*씨앗.*못난이\s*씨앗/.test(txt) || /못난이\s*씨앗.*일반\s*씨앗/.test(txt);
+
+      if(isMyFarmCard || isFieldGrid || isPlotsBox){
+        el.style.display = 'none';
+        el.dataset.eqHiddenFarmCard = '1';
+      }
+    });
   }
 
   /* ===== 가방·상점 버튼 위로 ===== */
@@ -128,7 +150,6 @@
         </div>
         `}
 
-        <!-- 도감 진행도 (클릭 가능) -->
         <div style="background:linear-gradient(135deg,#f0f4ff,#e8edff);border-radius:14px;padding:14px;margin-bottom:14px;border:1.5px solid #c5cae9;cursor:pointer;transition:transform .15s" onclick="window.openMyPokedex&&window.openMyPokedex()" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
           <div style="display:flex;align-items:center;gap:12px">
             <div style="font-size:32px">📔</div>
@@ -152,21 +173,18 @@
         <div style="background:linear-gradient(135deg,#fff8e1,#fffde7);border-radius:14px;padding:14px;text-align:center;border:2px solid #FFD54F">
           <div style="font-size:28px;margin-bottom:4px">🎟️</div>
           <div style="font-size:13px;font-weight:900;color:#8D6E1B">쿠폰 교환으로 받아가요!</div>
-          <div style="font-size:11px;color:#8D6E1B;margin-top:6px;line-height:1.7">신청한 작물을 제로웨이스트 상점으로<br/>발송해드려요 · 현장에서 본인 확인 후 수령 🥬</div>
+          <div style="font-size:11px;color:#8D6E1B;margin-top:6px;line-height:1.7">신청한 작물을 제로웨이스트 상점으로<br/>발송 · 현장에서 본인 확인 후 수령 🥬</div>
         </div>
 
       </div>
     `;
   }
 
-  /* ===== 쿠폰 교환 신청 모달 ===== */
+  /* ===== 쿠폰 교환 모달 ===== */
   window.openExchangeRequest = function(){
     const harvested = window.UDATA?.harvestedCrops || {};
     const hasCrops = CROPS.filter(c => (harvested[c.id]||0) > 0);
-    if(!hasCrops.length){
-      window.toast?.('교환할 작물이 없어요!');
-      return;
-    }
+    if(!hasCrops.length){ window.toast?.('교환할 작물이 없어요!'); return; }
 
     const old = document.getElementById('ovExchange'); if(old) old.remove();
     const modal = document.createElement('div');
@@ -181,8 +199,7 @@
           <div style="font-size:18px;font-weight:900;color:#5D4037">쿠폰 교환 신청</div>
           <div style="font-size:11px;color:#888;margin-top:6px">수확물을 제로웨이스트 상점에서 받아가세요</div>
         </div>
-
-        <div style="font-size:13px;font-weight:900;color:#5D4037;margin-bottom:8px">📦 교환할 작물 (수량 조정)</div>
+        <div style="font-size:13px;font-weight:900;color:#5D4037;margin-bottom:8px">📦 교환할 작물</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:16px">
           ${hasCrops.map(c => `
             <div style="background:#f8fdf9;border:1.5px solid #c8e6c9;border-radius:12px;padding:10px;display:flex;align-items:center;gap:8px">
@@ -195,22 +212,18 @@
             </div>
           `).join('')}
         </div>
-
-        <div style="font-size:13px;font-weight:900;color:#5D4037;margin-bottom:8px">🏪 받을 매장 선택</div>
+        <div style="font-size:13px;font-weight:900;color:#5D4037;margin-bottom:8px">🏪 받을 매장</div>
         <select id="exchangeStore" style="width:100%;border:1.5px solid #ddd;border-radius:12px;padding:12px;font-size:14px;font-family:inherit;outline:none;margin-bottom:8px;background:#fff;font-weight:700">
           ${STORES.map(s => `<option value="${s.id}|${s.name}">${s.name}${s.desc?` · ${s.desc}`:''}</option>`).join('')}
         </select>
         <input id="exchangeStoreOther" placeholder="기타 매장명 직접 입력" style="width:100%;border:1.5px solid #ddd;border-radius:12px;padding:12px;font-size:14px;font-family:inherit;outline:none;margin-bottom:14px;display:none"/>
-
         <div style="font-size:13px;font-weight:900;color:#5D4037;margin-bottom:8px">📞 연락처 <span style="font-size:11px;color:#888;font-weight:400">(선택)</span></div>
         <input id="exchangeContact" placeholder="전화 또는 카톡 ID" style="width:100%;border:1.5px solid #ddd;border-radius:12px;padding:12px;font-size:14px;font-family:inherit;outline:none;margin-bottom:14px"/>
-
         <div style="background:#fff8e1;border-radius:10px;padding:11px 13px;font-size:11px;color:#8D6E1B;line-height:1.7;margin-bottom:16px">
-          💡 신청하시면 EcoQuest가 매장에 작물을 보내드려요<br/>
-          💡 매장에서 본인 확인 후 수령 (1-2주 소요)<br/>
-          💡 신청한 만큼 창고에서 차감돼요
+          💡 신청 후 EcoQuest가 매장에 발송<br/>
+          💡 매장에서 본인 확인 후 수령 (1-2주)<br/>
+          💡 신청한 만큼 창고에서 차감
         </div>
-
         <div style="display:flex;gap:8px">
           <button onclick="document.getElementById('ovExchange').remove()" style="flex:1;background:#f0f0f0;border:none;border-radius:12px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;color:#666">취소</button>
           <button onclick="window._submitExchange()" style="flex:2;background:linear-gradient(135deg,#FF6B9D,#C44569);color:#fff;border:none;border-radius:12px;padding:13px;font-size:14px;font-weight:900;cursor:pointer;font-family:inherit">🎟️ 신청하기</button>
@@ -219,14 +232,12 @@
     `;
     document.body.appendChild(modal);
 
-    // 기타 매장 선택 시 입력란 표시
     document.getElementById('exchangeStore').addEventListener('change', (e) => {
       const otherInput = document.getElementById('exchangeStoreOther');
       otherInput.style.display = e.target.value.startsWith('other') ? 'block' : 'none';
     });
   };
 
-  /* ===== 신청 제출 ===== */
   window._submitExchange = async function(){
     const harvested = window.UDATA?.harvestedCrops || {};
     const items = [];
@@ -242,35 +253,24 @@
       }
     });
 
-    if(!totalCount){
-      window.toast?.('교환할 수량을 입력해주세요');
-      return;
-    }
+    if(!totalCount){ window.toast?.('교환할 수량을 입력해주세요'); return; }
 
     const storeSel = document.getElementById('exchangeStore').value;
     let storeName = storeSel.split('|')[1] || '';
     if(storeSel.startsWith('other')){
-      const otherInp = document.getElementById('exchangeStoreOther');
-      storeName = otherInp?.value?.trim() || '기타 매장';
+      storeName = document.getElementById('exchangeStoreOther')?.value?.trim() || '기타 매장';
     }
-
     const contact = document.getElementById('exchangeContact')?.value?.trim() || '';
 
     try {
-      // 1. Firebase에 신청 저장
       await window.FB.addDoc(window.FB.collection(window.FB.db, 'couponRequests'), {
         uid: window.ME.uid,
         userName: window.UDATA?.nickname || window.ME.displayName || '익명',
         userEmail: window.ME.email || '',
-        items,
-        totalCount,
-        targetStore: storeName,
-        contact,
-        status: 'pending',
-        createdAt: window.FB.serverTimestamp(),
+        items, totalCount, targetStore: storeName, contact,
+        status: 'pending', createdAt: window.FB.serverTimestamp(),
       });
 
-      // 2. 창고에서 차감
       const newHarvested = {...harvested};
       items.forEach(item => {
         newHarvested[item.cropId] = Math.max(0, (newHarvested[item.cropId] || 0) - item.count);
@@ -294,17 +294,19 @@
   function boot(){
     injectCss();
     moveShopButtons();
+    hideOldFarmEverywhere(); // 전역 숨김
     ensureHarvestStore();
 
     setInterval(() => {
       injectCss();
       moveShopButtons();
+      hideOldFarmEverywhere(); // 1초마다 전역 보호
       ensureHarvestStore();
     }, 1000);
 
     setInterval(updateHarvestStore, 30000);
 
-    console.log('%c[bunny_field_layout v4] 🌾 수확물 창고 + 쿠폰 교환','color:#fff;background:#27AE60;padding:4px 8px;border-radius:4px;font-weight:bold');
+    console.log('%c[bunny_field_layout v5] 🌾 전역 숨김 + 수확물 창고','color:#fff;background:#27AE60;padding:4px 8px;border-radius:4px;font-weight:bold');
   }
 
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => setTimeout(boot, 2000));

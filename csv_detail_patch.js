@@ -1,4 +1,4 @@
-// csv_detail_patch.js
+// csv_detail_patch.js v2 (강력 가로채기)
 (function(){
   'use strict';
 
@@ -6,7 +6,6 @@
     const d = window._adminData;
     if(!d){ window.toast && window.toast("통계 탭에서 먼저 로딩해주세요!"); return; }
 
-    // 1) 모든 미션 ID + 이름 수집
     const allMissionIds = [...new Set((d.logs||[]).map(l=>l.missionId).filter(Boolean))]
       .sort((a,b)=>{
         const na = parseInt(String(a).replace('m','')) || 0;
@@ -17,7 +16,6 @@
     const mEmoji = id => (typeof MISSIONS!=='undefined' && MISSIONS.find(m=>m.id===id)?.emoji) || '';
     const missionCols = allMissionIds.map(id => `${mEmoji(id)}${mName(id)}`);
 
-    // 2) uid별 미션 횟수 집계
     const userMissionCount = {};
     (d.logs||[]).forEach(l => {
       if(!l.uid || !l.missionId) return;
@@ -25,7 +23,6 @@
       userMissionCount[l.uid][l.missionId] = (userMissionCount[l.uid][l.missionId]||0) + 1;
     });
 
-    // 3) 회사 정보
     let companies = [];
     try {
       const coSnap = await window.FB.getDocs(window.FB.collection(window.FB.db, 'companies'));
@@ -43,10 +40,8 @@
     }).sort((a,b)=>b.totalCo2-a.totalCo2);
 
     const noCompUsers = (d.users||[]).filter(u => !u.companyId);
-
     const rows = [];
 
-    // 4) === 기업별 요약 ===
     rows.push(['=== 기업별 요약 ===']);
     rows.push(['기업명','유형','회원수','총 CO2(kg)','총 미션','총 포인트','평균 CO2/명','초대코드']);
     companyStats.forEach(s => {
@@ -65,7 +60,6 @@
     }
     rows.push([]);
 
-    // 5) 회원 상세 (미션별 횟수 컬럼 포함) — 기업별 + 소속없음
     const baseCols = ['닉네임','이메일','미션수','CO2(kg)','포인트','지역','나이대','성별','직업'];
     const renderGroup = (label, members) => {
       rows.push([`=== ${label} 소속 회원 (${members.length}명) ===`]);
@@ -91,7 +85,6 @@
     companyStats.forEach(s => renderGroup(`[${s.co.name}]`, s.members));
     if(noCompUsers.length) renderGroup('[(소속 없음)]', noCompUsers);
 
-    // 6) === 미션별 전체 인증 현황 ===
     rows.push(['=== 미션별 전체 인증 현황 ===']);
     rows.push(['미션ID','미션명','총 인증횟수','참여 인원수','평균 CO2/회(kg)','총 CO2 절감(kg)']);
     allMissionIds.forEach(id => {
@@ -105,7 +98,6 @@
       ]);
     });
 
-    // CSV escape
     const escape = v => {
       const s = String(v ?? '');
       return /[",\n]/.test(s) ? `"${s.replace(/"/g,'""')}"` : s;
@@ -116,16 +108,30 @@
     a.href = URL.createObjectURL(blob);
     a.download = `EcoQuest_상세_${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
-    window.toast && window.toast('✅ 상세 CSV 다운로드 완료!');
+    window.toast && window.toast('✅ 상세 CSV 다운로드 완료! (미션별 횟수 포함)');
+    console.log('[csv_detail_patch] ✅ 미션별 횟수 포함 CSV 다운로드');
   }
 
-  // 늦은 시점에 강제 덮어쓰기 (다른 patch들 다음에)
+  // ★ capture 단계에서 CSV 버튼 가로채기 (다른 patch보다 먼저 실행)
+  document.addEventListener('click', function(e){
+    const btn = e.target.closest('button');
+    if(!btn) return;
+    const onclick = btn.getAttribute('onclick') || '';
+    if(onclick.includes('exportCSV')){
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      console.log('[csv_detail_patch] CSV 버튼 클릭 가로채기 → 상세 버전 실행');
+      exportDetailedCSV();
+    }
+  }, true); // capture: true
+
+  // window.exportCSV도 덮어쓰기 (이중 안전장치)
   function install(){
     window.exportCSV = exportDetailedCSV;
-    console.log('[csv_detail_patch] ✅ 미션별 횟수 컬럼 포함 CSV 활성화');
   }
-
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', install);
   else install();
   [500, 2000, 5000, 10000].forEach(t => setTimeout(install, t));
+
+  console.log('[csv_detail_patch] ✅ 강력 가로채기 모드 활성화');
 })();

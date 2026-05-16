@@ -1,4 +1,4 @@
-// csv_detail_patch.js v2 (강력 가로채기 — 미션별 횟수 컬럼 포함)
+// csv_detail_patch.js v3 (NUCLEAR — anchor 다운로드까지 가로채기)
 (function(){
   'use strict';
 
@@ -42,7 +42,6 @@
     const noCompUsers = (d.users||[]).filter(u => !u.companyId);
     const rows = [];
 
-    // === 기업별 요약 ===
     rows.push(['=== 기업별 요약 ===']);
     rows.push(['기업명','유형','회원수','총 CO2(kg)','총 미션','총 포인트','평균 CO2/명','초대코드']);
     companyStats.forEach(s => {
@@ -61,7 +60,6 @@
     }
     rows.push([]);
 
-    // 회원 상세 (미션별 횟수 컬럼 포함)
     const baseCols = ['닉네임','이메일','미션수','CO2(kg)','포인트','지역','나이대','성별','직업'];
     const renderGroup = (label, members) => {
       rows.push([`=== ${label} 소속 회원 (${members.length}명) ===`]);
@@ -87,7 +85,6 @@
     companyStats.forEach(s => renderGroup(`[${s.co.name}]`, s.members));
     if(noCompUsers.length) renderGroup('[(소속 없음)]', noCompUsers);
 
-    // === 미션별 전체 인증 현황 ===
     rows.push(['=== 미션별 전체 인증 현황 ===']);
     rows.push(['미션ID','미션명','총 인증횟수','참여 인원수','평균 CO2/회(kg)','총 CO2 절감(kg)']);
     allMissionIds.forEach(id => {
@@ -101,7 +98,6 @@
       ]);
     });
 
-    // CSV escape
     const escape = v => {
       const s = String(v ?? '');
       return /[",\n]/.test(s) ? `"${s.replace(/"/g,'""')}"` : s;
@@ -111,31 +107,48 @@
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
     a.download = `EcoQuest_상세_${new Date().toISOString().split('T')[0]}.csv`;
+    a._eqOwn = true;  // ★ 우리 거 표시 - 가로채기 우회용
     a.click();
     window.toast && window.toast('✅ 상세 CSV 다운로드 완료! (미션별 횟수 포함)');
-    console.log('[csv_detail_patch v2] ✅ 미션별 횟수 포함 CSV 다운로드');
+    console.log('%c[csv_detail v3] ✅ 미션별 횟수 포함 CSV 다운로드','color:#2ECC71;font-weight:bold');
   }
 
-  // ★ capture 단계에서 CSV 버튼 가로채기 (다른 patch보다 먼저 실행)
+  // ★★★ 핵우산 1: anchor.click() 가로채기
+  const origAnchorClick = HTMLAnchorElement.prototype.click;
+  HTMLAnchorElement.prototype.click = function(){
+    const dl = (this.download || '').toLowerCase();
+    if(dl.endsWith('.csv') && !this._eqOwn){
+      console.log('%c[csv_detail v3] ⚡ 다른 CSV 다운로드 가로채기:','color:#E74C3C;font-weight:bold', this.download);
+      setTimeout(() => exportDetailedCSV(), 50);
+      return;
+    }
+    return origAnchorClick.apply(this, arguments);
+  };
+
+  // ★★★ 핵우산 2: 버튼/링크 클릭 capture 가로채기
   document.addEventListener('click', function(e){
-    const btn = e.target.closest('button');
-    if(!btn) return;
-    const onclick = btn.getAttribute('onclick') || '';
-    if(onclick.includes('exportCSV')){
+    const el = e.target.closest('button, a');
+    if(!el) return;
+    const text = (el.textContent || '').trim();
+    const onclick = el.getAttribute('onclick') || '';
+    if(/CSV|csv/i.test(text) || /CSV|csv|exportCSV/i.test(onclick)){
       e.preventDefault();
       e.stopImmediatePropagation();
-      console.log('[csv_detail_patch v2] CSV 버튼 클릭 가로채기 → 상세 버전 실행');
+      e.stopPropagation();
+      console.log('%c[csv_detail v3] ⚡ 버튼 클릭 가로채기:','color:#3498DB;font-weight:bold', text || onclick);
       exportDetailedCSV();
+      return false;
     }
-  }, true); // capture: true
+  }, true);
 
-  // window.exportCSV도 덮어쓰기 (이중 안전장치)
+  // ★★★ 핵우산 3: window.exportCSV 지속 덮어쓰기
   function install(){
     window.exportCSV = exportDetailedCSV;
+    if('ehExportCSV' in window) window.ehExportCSV = exportDetailedCSV;
+    if('esgExportCSV' in window) window.esgExportCSV = exportDetailedCSV;
   }
-  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', install);
-  else install();
-  [500, 2000, 5000, 10000].forEach(t => setTimeout(install, t));
+  install();
+  setInterval(install, 1000);
 
-  console.log('[csv_detail_patch v2] ✅ 강력 가로채기 모드 활성화');
+  console.log('%c[csv_detail v3] ☢️ 핵우산 모드 활성화','color:#fff;background:#1a1a2e;padding:4px 8px;border-radius:4px;font-weight:bold');
 })();

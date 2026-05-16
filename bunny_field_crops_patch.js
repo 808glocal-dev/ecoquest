@@ -1,5 +1,6 @@
-// bunny_field_crops_patch.js v4
-// 씨앗 베리 구매 + 수확 시 베리 X + 토끼 수 보너스 + 동물 특수 효과
+// bunny_field_crops_patch.js v5
+// 씨앗 모달 자체 보호 (MutationObserver로 스스로 복원)
+// + 토끼 수 + 동물 특수 효과 (v4 기능 유지)
 (function(){
   'use strict';
 
@@ -18,7 +19,6 @@
     {id:'apple',      name:'사과',     emoji:'🍎', growMin:15, cost:120},
   ];
 
-  // 동물별 특수 능력
   const ANIMAL_EFFECTS = {
     otter:    {emoji:'🦦', name:'수달',         crops:['strawberry'],         mult: 0.66, desc:'딸기 ×1.5배'},
     goral:    {emoji:'🐐', name:'산양',         crops:['pumpkin','pepper'],   mult: 0.66, desc:'호박·고추 ×1.5배'},
@@ -30,18 +30,15 @@
 
   const STAGE_EMOJI = ['💧', '🌱', '🌿'];
 
-  /* 🎯 보너스 계산 (가족 수 + 동물 특수) */
   function getCropBonus(crop){
     const bunnies = window._myBunny?.bunnies || [];
     let mult = 1.0;
     const applied = new Set();
     const effects = [];
 
-    // A. 가족 보너스 (마리당 -2%, 최대 -60%)
     const familyPercent = Math.min(60, bunnies.length * 2);
     mult -= familyPercent / 100;
 
-    // C. 동물 특수 (각 종 1회만)
     for(const b of bunnies){
       if(!b.species || applied.has(b.species)) continue;
       const eff = ANIMAL_EFFECTS[b.species];
@@ -112,7 +109,6 @@
     const plots = window.UDATA.bunnyField.plots;
     const readyCount = plots.filter(p => getStage(p) === 3).length;
 
-    // 들판 라벨 - 가족 보너스 표시
     const bunnies = window._myBunny?.bunnies || [];
     const familyPercent = Math.min(60, bunnies.length * 2);
 
@@ -144,7 +140,11 @@
       el.style.cssText = `position:absolute;left:${pos};bottom:8px;transform:translateX(-50%);font-size:${isReady?32:isEmpty?22:26}px;cursor:pointer;z-index:7;line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,.3));transition:transform .15s;opacity:${isEmpty?.6:1}${isReady ? ';animation:eqFieldBounce 1.6s ease-in-out infinite' : ''}`;
       el.textContent = display;
       el.dataset.plotIdx = i;
-      el.onclick = (e) => { e.stopPropagation(); handleCropClick(i); };
+      el.onclick = (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        handleCropClick(i);
+      };
       el.onmouseover = () => { el.style.transform = 'translateX(-50%) scale(1.25)'; };
       el.onmouseout = () => { el.style.transform = 'translateX(-50%)'; };
       playground.appendChild(el);
@@ -200,14 +200,36 @@
     }
   }
 
-  /* 씨앗 선택 모달 (보너스 시간 표시) */
+  /* ===== 🔒 씨앗 모달 자체 보호 (스스로 복원) ===== */
+  let _modalObserver = null;
+
   function openSeedSelector(plotIdx){
     const curP = window.UDATA?.point || 0;
-    const old = document.getElementById('ovSeedSel'); if(old) old.remove();
+
+    // 기존 모달 제거 + observer 해제
+    const old = document.getElementById('ovSeedSel');
+    if(old) old.remove();
+    if(_modalObserver){ _modalObserver.disconnect(); _modalObserver = null; }
+
+    // 다른 overlay 강제 닫기 (혹시 자동으로 뜬 미션 모달 등)
+    document.querySelectorAll('.overlay.on').forEach(el => {
+      if(el.id !== 'ovSeedSel') el.classList.remove('on');
+    });
+
     const modal = document.createElement('div');
     modal.id = 'ovSeedSel';
-    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9500;display:flex;align-items:center;justify-content:center;padding:20px';
-    modal.onclick = (e) => { if(e.target === modal) modal.remove(); };
+    modal.dataset.eqProtected = '1';
+
+    // 🔒 inline style !important — 어떤 외부 CSS도 못 덮음
+    const protectedStyle = `position:fixed !important;inset:0 !important;background:rgba(0,0,0,.6) !important;z-index:999999 !important;display:flex !important;align-items:center !important;justify-content:center !important;padding:20px !important;visibility:visible !important;opacity:1 !important;pointer-events:auto !important`;
+    modal.setAttribute('style', protectedStyle);
+
+    modal.onclick = (e) => {
+      if(e.target === modal){
+        if(_modalObserver){ _modalObserver.disconnect(); _modalObserver = null; }
+        modal.remove();
+      }
+    };
 
     const bunnies = window._myBunny?.bunnies || [];
     const familyPercent = Math.min(60, bunnies.length * 2);
@@ -260,13 +282,48 @@
           💡 수확하면 농장 창고로 자동 보관<br/>💡 베리는 환경 미션 인증으로만!<br/>💡 가족·동물이 많을수록 더 빨라요 ⚡
         </div>
 
-        <button onclick="document.getElementById('ovSeedSel').remove()" style="background:#f0f0f0;border:none;border-radius:12px;padding:11px 20px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;width:100%;color:#666">취소</button>
+        <button onclick="document.getElementById('ovSeedSel')?.remove()" style="background:#f0f0f0;border:none;border-radius:12px;padding:11px 20px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;width:100%;color:#666">취소</button>
       </div>
     `;
+
     document.body.appendChild(modal);
+
+    // 🛡️ MutationObserver — 누군가 style 변경하면 즉시 복원
+    _modalObserver = new MutationObserver(() => {
+      if(!document.getElementById('ovSeedSel')){
+        // 모달이 제거됨 → observer 해제
+        if(_modalObserver){ _modalObserver.disconnect(); _modalObserver = null; }
+        return;
+      }
+      // style 변경 시도 감지 → 강제 복원
+      const cur = modal.getAttribute('style') || '';
+      if(!cur.includes('display: flex') && !cur.includes('display:flex')){
+        console.log('[seed modal] 보호: style 복원');
+        modal.setAttribute('style', protectedStyle);
+      }
+      if(modal.style.display === 'none'){
+        modal.setAttribute('style', protectedStyle);
+      }
+    });
+    _modalObserver.observe(modal, { attributes: true, attributeFilter: ['style', 'class'] });
+
+    // 자동 복원 - 만약 모달이 사라지면 다시 띄우기 (최대 5초)
+    let autoRecoverCount = 0;
+    const autoRecover = setInterval(() => {
+      autoRecoverCount++;
+      if(autoRecoverCount > 50){ clearInterval(autoRecover); return; }
+      const current = document.getElementById('ovSeedSel');
+      if(!current){
+        clearInterval(autoRecover);
+        // 모달이 _의도적으로_ 닫혔다면 (취소 버튼 등) 복원 안 함
+        return;
+      }
+      if(current.style.display === 'none' || !current.offsetParent){
+        current.setAttribute('style', protectedStyle);
+      }
+    }, 100);
   }
 
-  /* 씨앗 심기 (베리 차감) */
   window.plantSeed = async function(plotIdx, cropId){
     ensureField();
     const crop = CROPS.find(c => c.id === cropId);
@@ -291,6 +348,9 @@
     };
     await saveField();
     renderCrops();
+
+    // observer 해제 + 모달 제거
+    if(_modalObserver){ _modalObserver.disconnect(); _modalObserver = null; }
     document.getElementById('ovSeedSel')?.remove();
 
     const bonus = getCropBonus(crop);
@@ -298,7 +358,6 @@
     window.toast?.(`🌱 ${crop.emoji} ${crop.name} 심었어요! -${crop.cost}P · ${bonus.actualMin.toFixed(1)}분${speedMsg}`);
   };
 
-  /* 수확 (베리 X · 농장 창고에 누적) */
   async function harvest(plotIdx){
     const plot = window.UDATA.bunnyField.plots[plotIdx];
     if(!plot) return;
@@ -322,7 +381,6 @@
     window.toast?.(`🎉 ${crop.emoji} ${crop.name} 수확! 농장 창고 ×${total}개`);
   }
 
-  /* boot */
   async function boot(){
     if(!window.FB || !window.ME || !window.UDATA){ setTimeout(boot, 800); return; }
 
@@ -345,7 +403,7 @@
 
     setInterval(renderCrops, 20000);
 
-    console.log('%c[bunny_field_crops v4] 🌱⚡ 토끼수+동물 보너스 활성','color:#fff;background:#27AE60;padding:4px 8px;border-radius:4px;font-weight:bold');
+    console.log('%c[bunny_field_crops v5] 🌱🔒 모달 자체 보호 + 보너스','color:#fff;background:#27AE60;padding:4px 8px;border-radius:4px;font-weight:bold');
   }
 
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => setTimeout(boot, 3500));

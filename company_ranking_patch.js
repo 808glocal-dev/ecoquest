@@ -1,5 +1,5 @@
-// company_ranking_patch.js v3
-// 소속 탭에 [기업 랭킹] + [회사 내 개인 랭킹] + [전체 앱 개인 랭킹]
+// company_ranking_patch.js v4
+// 소속 탭 = 🏢 소속 랭킹(회사들) + 🌍 개인 랭킹(전체 앱)
 (function(){
   'use strict';
 
@@ -22,7 +22,6 @@
         window.FB.getDocs(window.FB.collection(window.FB.db, 'companies')),
       ]);
 
-      // 활동 있는 사람만 (소속 없는 사람도 포함)
       const allUsers = userSnap.docs.map(d => ({id: d.id, ...d.data()}))
         .filter(u => (u.missionCount||0) > 0)
         .sort((a,b) => (b.co2||0)-(a.co2||0));
@@ -31,7 +30,7 @@
       const myUid = window.ME?.uid;
       const myCompanyId = window.UDATA?.companyId;
 
-      // 1) 기업 랭킹 (회사들 순위)
+      // 소속(기업) 랭킹
       const companyRanking = companies.map(co => {
         const members = allUsers.filter(u => u.companyId === co.id);
         return {
@@ -40,18 +39,11 @@
           totalMission: members.reduce((s,u) => s+(u.missionCount||0), 0),
           memberCount: members.length,
         };
-      })
-      .filter(c => c.memberCount > 0)
-      .sort((a,b) => b.totalCo2 - a.totalCo2);
+      }).filter(c => c.memberCount > 0).sort((a,b) => b.totalCo2 - a.totalCo2);
 
-      // 2) 전체 개인 (소속 무관)
       const myRankAll = myUid ? allUsers.findIndex(u => u.id === myUid) + 1 : 0;
-      const totalUsers = allUsers.length;
-
-      // 3) 우리 회사 개인
-      const companyUsers = myCompanyId ? allUsers.filter(u => u.companyId === myCompanyId) : [];
-      const myRankCompany = myUid ? companyUsers.findIndex(u => u.id === myUid) + 1 : 0;
       const myCompanyRank = myCompanyId ? companyRanking.findIndex(c => c.co.id === myCompanyId) + 1 : 0;
+      const totalUsers = allUsers.length;
 
       const medals = ['🥇','🥈','🥉'];
 
@@ -92,16 +84,13 @@
 
       let html = '';
 
-      // ★ 내 순위 요약 카드
+      // ★ 내 순위 카드
       if(myUid && myRankAll > 0){
         const cards = [];
         if(myCompanyId && myCompanyRank > 0){
-          cards.push(`<div style="text-align:center;flex:1"><div style="font-size:11px;color:rgba(255,255,255,.75);margin-bottom:2px">🏢 우리 회사</div><div style="font-size:22px;font-weight:900">${myCompanyRank}위</div><div style="font-size:10px;color:rgba(255,255,255,.65)">/ ${companyRanking.length}곳</div></div>`);
+          cards.push(`<div style="text-align:center;flex:1"><div style="font-size:11px;color:rgba(255,255,255,.75);margin-bottom:2px">🏢 우리 회사</div><div style="font-size:24px;font-weight:900">${myCompanyRank}위</div><div style="font-size:10px;color:rgba(255,255,255,.65)">/ ${companyRanking.length}곳</div></div>`);
         }
-        if(myCompanyId && myRankCompany > 0 && companyUsers.length > 1){
-          cards.push(`<div style="text-align:center;flex:1"><div style="font-size:11px;color:rgba(255,255,255,.75);margin-bottom:2px">👥 회사 내</div><div style="font-size:22px;font-weight:900">${myRankCompany}위</div><div style="font-size:10px;color:rgba(255,255,255,.65)">/ ${companyUsers.length}명</div></div>`);
-        }
-        cards.push(`<div style="text-align:center;flex:1"><div style="font-size:11px;color:rgba(255,255,255,.75);margin-bottom:2px">🌍 전체 앱</div><div style="font-size:22px;font-weight:900">${myRankAll}위</div><div style="font-size:10px;color:rgba(255,255,255,.65)">/ ${totalUsers}명</div></div>`);
+        cards.push(`<div style="text-align:center;flex:1"><div style="font-size:11px;color:rgba(255,255,255,.75);margin-bottom:2px">🌍 전체 앱</div><div style="font-size:24px;font-weight:900">${myRankAll}위</div><div style="font-size:10px;color:rgba(255,255,255,.65)">/ ${totalUsers}명</div></div>`);
 
         html += `
           <div style="background:linear-gradient(135deg,#0f3d20,#2ECC71);border-radius:16px;padding:16px;margin:14px 0 16px;color:#fff;box-shadow:0 4px 14px rgba(46,204,113,.25)">
@@ -111,7 +100,7 @@
         `;
       }
 
-      // 1) 소속(기업) 랭킹
+      // 🏢 소속 랭킹
       if(companyRanking.length){
         html += `<div style="font-size:15px;font-weight:900;color:var(--txt);margin:18px 0 10px">🏢 소속 랭킹 (${companyRanking.length}곳)</div>`;
         html += companyRanking.slice(0, 10).map(renderCoRow).join('');
@@ -121,18 +110,8 @@
         }
       }
 
-      // 2) (소속 있을 때만) 회사 내 개인 랭킹
-      if(myCompanyId && companyUsers.length > 1){
-        html += `<div style="font-size:15px;font-weight:900;color:var(--txt);margin:18px 0 10px">👥 우리 회사 개인 랭킹 (${companyUsers.length}명)</div>`;
-        html += companyUsers.slice(0, 10).map(renderUserRow).join('');
-        if(myRankCompany > 10){
-          html += `<div style="text-align:center;color:var(--sub);font-size:11px;padding:6px">⋯</div>`;
-          html += renderUserRow(companyUsers[myRankCompany - 1], myRankCompany - 1);
-        }
-      }
-
-      // 3) 전체 앱 개인 랭킹 (소속 없는 사람도 포함)
-      html += `<div style="font-size:15px;font-weight:900;color:var(--txt);margin:18px 0 10px">🌍 전체 앱 개인 랭킹 (${totalUsers}명)</div>`;
+      // 🌍 개인 랭킹 (= 전체 앱, 소속 없는 사람 포함)
+      html += `<div style="font-size:15px;font-weight:900;color:var(--txt);margin:18px 0 10px">🌍 개인 랭킹 (전체 ${totalUsers}명)</div>`;
       html += allUsers.slice(0, 10).map(renderUserRow).join('');
       if(myUid && myRankAll > 10){
         html += `<div style="text-align:center;color:var(--sub);font-size:11px;padding:6px">⋯</div>`;
@@ -140,8 +119,9 @@
       }
 
       wrap.innerHTML = html;
+      console.log('[company_ranking v4] 렌더링 완료 - 회사', companyRanking.length, '개 / 개인', totalUsers, '명');
     } catch(e){
-      console.error('[company_ranking v3]', e);
+      console.error('[company_ranking v4]', e);
       wrap.innerHTML = '<div style="text-align:center;padding:20px;color:var(--sub);font-size:13px">랭킹 로딩 실패</div>';
     }
   }
@@ -156,7 +136,7 @@
       return r;
     };
     window._eqRankingHooked = true;
-    console.log('[company_ranking v3] ✅ 소속+개인 랭킹 통합');
+    console.log('[company_ranking v4] ✅ 소속+개인 두 랭킹');
   }
   hookGoPage();
 })();

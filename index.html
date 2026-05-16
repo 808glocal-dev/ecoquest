@@ -3153,18 +3153,21 @@ document.querySelectorAll(".overlay").forEach(ov=>{
     const btn = e.target.closest('button');
     if(btn && btn.getAttribute('onclick')?.includes('cancelChal')) return;
 
-    // 클릭된 카드 찾고, 그 안의 cancelChal 버튼에서 challengeId 추출
-    const cards = list.querySelectorAll(':scope > div');
-    let chalId = null;
-    for(const c of cards){
-      if(c.contains(e.target)){
-        const cancelBtn = c.querySelector('button[onclick*="cancelChal"]');
-        const m = cancelBtn?.getAttribute('onclick')?.match(/cancelChal\((\d+)\)/);
-        if(m) chalId = parseInt(m[1]);
-        break;
-      }
+
+   // 클릭된 위치에서 위로 올라가면서, cancelChal 버튼이 정확히 1개만 있는 노드 = 그 카드
+let node = e.target;
+let chalId = null;
+while(node && node !== list && node !== document.body){
+  if(node.querySelectorAll){
+    const cbs = node.querySelectorAll('button[onclick*="cancelChal"]');
+    if(cbs.length === 1){
+      const m = cbs[0].getAttribute('onclick').match(/cancelChal\((\d+)\)/);
+      if(m){ chalId = parseInt(m[1]); break; }
     }
-    if(chalId === null) return;
+  }
+  node = node.parentElement;
+}
+if(chalId === null) return;
 
     // 다른 onclick들 다 막고
     e.stopPropagation();

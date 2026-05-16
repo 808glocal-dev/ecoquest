@@ -1,22 +1,19 @@
-// bunny_interactions_patch.js v2
-// 모달 X → 들판 바로 아래 미니 플로팅 바 (행복도 + 6개 버튼)
-// PC·모바일 둘 다 토끼 가리지 않음
+// bunny_interactions_patch.js v3
+// 미니 플로팅 바 = 행복도 + 6개 액션 + 당근 + 먹이 + 입양 모두 통합
 (function(){
   'use strict';
 
-  // 6가지 행위 (이모지 + 행복도 + 쿨다운초)
   const ACTIONS = [
-    {id:'brush',  emoji:'🪮', name:'빗질',     happy:5,  cool:20},
-    {id:'bath',   emoji:'🧼', name:'목욕',     happy:8,  cool:30},
-    {id:'snack',  emoji:'🥕', name:'간식',     happy:10, cool:25},
-    {id:'play',   emoji:'⚽', name:'공놀이',    happy:6,  cool:20},
-    {id:'pet',    emoji:'🤚', name:'쓰담',     happy:3,  cool:10},
-    {id:'sing',   emoji:'🎵', name:'노래',     happy:7,  cool:30},
+    {id:'brush',  emoji:'🪮', name:'빗질',  happy:5,  cool:20},
+    {id:'bath',   emoji:'🧼', name:'목욕',  happy:8,  cool:30},
+    {id:'snack',  emoji:'🥕', name:'간식',  happy:10, cool:25},
+    {id:'play',   emoji:'⚽', name:'공놀이', happy:6,  cool:20},
+    {id:'pet',    emoji:'🤚', name:'쓰담',  happy:3,  cool:10},
+    {id:'sing',   emoji:'🎵', name:'노래',  happy:7,  cool:30},
   ];
 
   const _lastAct = {};
 
-  /* 미니 플로팅 바 ensure + render */
   function ensureMiniBar(){
     const playground = document.getElementById('bunnyPlayground');
     if(!playground) return;
@@ -35,11 +32,13 @@
     if(!bar) return;
     const happiness = window._myBunny?.happiness || 0;
     const bunniesCount = (window._myBunny?.bunnies || []).length;
+    const carrots = window._myBunny?.carrots || 0;
+    const myPoints = window.UDATA?.point || 0;
 
     bar.innerHTML = `
       <div style="margin:8px 12px;background:linear-gradient(135deg,#fff,#fff8e1);border-radius:14px;padding:12px 14px;border:1.5px solid #FFE082;box-shadow:0 2px 8px rgba(0,0,0,.06)">
 
-        <!-- 행복도 + 토끼 수 (한 줄) -->
+        <!-- 행복도 + 토끼 수 -->
         <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px">
           <div style="font-size:12px;font-weight:900;color:#5D4037">😊 토끼 돌보기 <span style="color:#888;font-weight:400">· ${bunniesCount}마리</span></div>
           <div style="display:flex;align-items:center;gap:6px;flex:1;max-width:160px">
@@ -50,8 +49,8 @@
           </div>
         </div>
 
-        <!-- 6개 액션 버튼 가로 -->
-        <div style="display:grid;grid-template-columns:repeat(6, 1fr);gap:5px">
+        <!-- 6개 액션 -->
+        <div style="display:grid;grid-template-columns:repeat(6, 1fr);gap:5px;margin-bottom:10px">
           ${ACTIONS.map(a => {
             const last = _lastAct[a.id] || 0;
             const remain = Math.max(0, Math.ceil((a.cool * 1000 - (Date.now() - last)) / 1000));
@@ -66,17 +65,31 @@
           }).join('')}
         </div>
 
+        <!-- 당근 + 먹이 -->
+        <div style="display:flex;align-items:center;gap:6px;padding:9px 11px;background:#FFF8E1;border-radius:10px;border:1px solid #FFE082">
+          <div style="flex:1;font-size:12px;color:#8D6E1B;font-weight:700">🥕 당근 <span style="font-size:15px;color:#B8860B;font-weight:900">${carrots}</span><span style="font-size:10px;color:#999">개</span></div>
+          <button onclick="window.buyCarrot&&window.buyCarrot()" ${myPoints<10?'disabled':''} style="background:${myPoints<10?'#e0e0e0':'#FFD54F'};color:${myPoints<10?'#aaa':'#5D4037'};border:none;border-radius:8px;padding:7px 11px;font-size:10px;font-weight:900;cursor:${myPoints<10?'not-allowed':'pointer'};font-family:inherit">+ 사기 10P</button>
+          <button onclick="window.feedBunny&&window.feedBunny()" ${carrots<1?'disabled':''} style="background:${carrots<1?'#e0e0e0':'linear-gradient(135deg,#2ECC71,#27AE60)'};color:${carrots<1?'#aaa':'#fff'};border:none;border-radius:8px;padding:7px 11px;font-size:10px;font-weight:900;cursor:${carrots<1?'not-allowed':'pointer'};font-family:inherit">🍴 먹이</button>
+        </div>
+
         ${happiness >= 100 ? `
-        <button onclick="window.openAdoptFarmer&&window.openAdoptFarmer()" style="width:100%;background:linear-gradient(135deg,#FF6B9D,#C44569);color:#fff;border:none;border-radius:10px;padding:9px;font-size:12px;font-weight:900;cursor:pointer;font-family:inherit;margin-top:8px;box-shadow:0 3px 8px rgba(196,69,105,.3)">
+        <button onclick="window.openAdoptFarmer&&window.openAdoptFarmer()" style="width:100%;background:linear-gradient(135deg,#FF6B9D,#C44569);color:#fff;border:none;border-radius:10px;padding:10px;font-size:13px;font-weight:900;cursor:pointer;font-family:inherit;margin-top:8px;box-shadow:0 3px 10px rgba(196,69,105,.35);animation:eqPulse 1.5s infinite">
           🎉 새 토끼 입양 가능!
         </button>
         ` : ''}
 
       </div>
     `;
+
+    if(!document.getElementById('eqPulseCss')){
+      const s = document.createElement('style');
+      s.id = 'eqPulseCss';
+      s.textContent = `@keyframes eqPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.03); } }`;
+      document.head.appendChild(s);
+    }
   }
 
-  /* 액션 실행 (모달 X · 즉시) */
+  /* 액션 실행 */
   window.eqDoAction = async function(actionId){
     if(!window.ME || !window._myBunny) return;
     const action = ACTIONS.find(a => a.id === actionId);
@@ -91,23 +104,18 @@
     }
     _lastAct[actionId] = now;
 
-    // 행복도 증가
     window._myBunny.happiness = Math.min(100, (window._myBunny.happiness || 0) + action.happy);
 
     try {
       await window.FB.setDoc(window.FB.doc(window.FB.db, 'bunnies', window.ME.uid), window._myBunny);
     } catch(e){ console.error('[interactions]', e); }
 
-    // 토끼 위 액션 이모지 띄우기
     showActionAnimation(action.emoji);
-
-    // UI 갱신
     renderMiniBar();
     if(window.renderBunnyStats) window.renderBunnyStats();
 
     window.toast?.(`${action.emoji} ${action.name}! 행복도 +${action.happy}`);
 
-    // 쿨다운 카운트다운 (1초마다 새로고침)
     const intId = setInterval(() => {
       const r = Math.max(0, action.cool - Math.floor((Date.now() - _lastAct[actionId]) / 1000));
       if(r <= 0) { clearInterval(intId); renderMiniBar(); return; }
@@ -115,7 +123,7 @@
     }, 1000);
   };
 
-  /* 토끼들 위에 액션 이모지 떠오름 */
+  /* 토끼 위 액션 이모지 */
   function showActionAnimation(emoji){
     const playground = document.getElementById('bunnyPlayground');
     if(!playground) return;
@@ -140,44 +148,18 @@
     }
   }
 
-  /* ===== 도감 자동 추적 (수확 카운트) — 안전망 ===== */
-  let _lastPlots = null;
-  function trackHarvest(){
-    if(!window.UDATA?.bunnyField?.plots) return;
-    const plots = window.UDATA.bunnyField.plots;
-    if(_lastPlots === null){ _lastPlots = JSON.stringify(plots); return; }
-    const cur = JSON.stringify(plots);
-    if(cur === _lastPlots) return;
-
-    // 이전 plot 중 stage 3였는데 사라진 거 찾기
-    try {
-      const prev = JSON.parse(_lastPlots);
-      for(let i = 0; i < 6; i++){
-        const pp = prev[i], cp = plots[i];
-        if(pp && pp.crop && !cp){
-          // 수확됨 — harvestedCrops는 crops_patch v3에서 처리됨
-        }
-      }
-    } catch(e){}
-    _lastPlots = cur;
-  }
-
   /* boot */
   function boot(){
     ensureMiniBar();
+    setInterval(ensureMiniBar, 1500);
 
-    setInterval(() => {
-      ensureMiniBar();
-      trackHarvest();
-    }, 1500);
-
-    // 액션 모달 / 사이드 패널 제거 (기존 v1 잔존)
+    // 기존 v1 잔존 제거
     const oldModal = document.getElementById('ovInteraction');
     if(oldModal) oldModal.remove();
     const oldFix = document.getElementById('eqActionPanelFixCss');
     if(oldFix) oldFix.remove();
 
-    // 기존 v1의 액션 버튼 (들판 우측 상단 🎮 액션) 제거
+    // 기존 들판 우측 🎮 액션 버튼 제거
     setInterval(() => {
       const playground = document.getElementById('bunnyPlayground');
       if(!playground) return;
@@ -186,7 +168,7 @@
       if(oldActionBtn) oldActionBtn.remove();
     }, 1500);
 
-    console.log('%c[bunny_interactions v2] 🎮 미니 플로팅 바 활성화','color:#fff;background:#e91e63;padding:4px 8px;border-radius:4px;font-weight:bold');
+    console.log('%c[bunny_interactions v3] 🎮 통합 미니 바 (액션+당근+먹이+입양)','color:#fff;background:#e91e63;padding:4px 8px;border-radius:4px;font-weight:bold');
   }
 
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => setTimeout(boot, 4000));

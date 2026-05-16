@@ -1,33 +1,31 @@
-// bunny_field_crops_patch.js v2
-// 들판에서 직접 농사 - 페이지 이동 없이 자라고 수확
+// bunny_field_crops_patch.js v3
+// 씨앗은 베리로 구매 · 수확 시 베리 X (농작물만 창고로)
 (function(){
   'use strict';
 
-  // 12가지 작물 (자라는 시간 짧게 - 게임처럼)
+  // 12종 작물 (cost 추가 = 씨앗 베리 가격)
   const CROPS = [
-    {id:'carrot',     name:'당근',     emoji:'🥕', growMin:5,  reward:50},
-    {id:'lettuce',    name:'상추',     emoji:'🥬', growMin:4,  reward:40},
-    {id:'strawberry', name:'딸기',     emoji:'🍓', growMin:6,  reward:60},
-    {id:'tomato',     name:'토마토',   emoji:'🍅', growMin:7,  reward:65},
-    {id:'corn',       name:'옥수수',   emoji:'🌽', growMin:8,  reward:75},
-    {id:'pepper',     name:'고추',     emoji:'🌶️', growMin:6,  reward:55},
-    {id:'broccoli',   name:'브로콜리', emoji:'🥦', growMin:8,  reward:70},
-    {id:'onion',      name:'양파',     emoji:'🧅', growMin:7,  reward:55},
-    {id:'garlic',     name:'마늘',     emoji:'🧄', growMin:9,  reward:65},
-    {id:'eggplant',   name:'가지',     emoji:'🍆', growMin:10, reward:80},
-    {id:'pumpkin',    name:'호박',     emoji:'🎃', growMin:12, reward:100},
-    {id:'apple',      name:'사과',     emoji:'🍎', growMin:15, reward:120},
+    {id:'lettuce',    name:'상추',     emoji:'🥬', growMin:4,  cost:20},
+    {id:'carrot',     name:'당근',     emoji:'🥕', growMin:5,  cost:30},
+    {id:'pepper',     name:'고추',     emoji:'🌶️', growMin:6,  cost:35},
+    {id:'strawberry', name:'딸기',     emoji:'🍓', growMin:6,  cost:40},
+    {id:'tomato',     name:'토마토',   emoji:'🍅', growMin:7,  cost:50},
+    {id:'onion',      name:'양파',     emoji:'🧅', growMin:7,  cost:45},
+    {id:'corn',       name:'옥수수',   emoji:'🌽', growMin:8,  cost:60},
+    {id:'broccoli',   name:'브로콜리', emoji:'🥦', growMin:8,  cost:55},
+    {id:'garlic',     name:'마늘',     emoji:'🧄', growMin:9,  cost:65},
+    {id:'eggplant',   name:'가지',     emoji:'🍆', growMin:10, cost:75},
+    {id:'pumpkin',    name:'호박',     emoji:'🎃', growMin:12, cost:90},
+    {id:'apple',      name:'사과',     emoji:'🍎', growMin:15, cost:120},
   ];
 
-  // 단계: 0=씨앗 💧, 1=새싹 🌱, 2=잎사귀 🌿, 3=수확가능 (작물별 이모지)
   const STAGE_EMOJI = ['💧', '🌱', '🌿'];
 
   function getStage(plot){
     if(!plot || !plot.plantedAt) return -1;
     const crop = CROPS.find(c => c.id === plot.crop);
     if(!crop) return -1;
-    const elapsedMin = (Date.now() - plot.plantedAt) / 60000;
-    const pct = elapsedMin / crop.growMin;
+    const pct = ((Date.now() - plot.plantedAt) / 60000) / crop.growMin;
     if(pct >= 1) return 3;
     if(pct >= 0.66) return 2;
     if(pct >= 0.33) return 1;
@@ -37,10 +35,7 @@
   function getDisplay(plot){
     if(!plot || !plot.plantedAt) return '🟫';
     const stage = getStage(plot);
-    if(stage === 3){
-      const crop = CROPS.find(c => c.id === plot.crop);
-      return crop ? crop.emoji : '🌾';
-    }
+    if(stage === 3){ const crop = CROPS.find(c => c.id === plot.crop); return crop?.emoji || '🌾'; }
     return STAGE_EMOJI[stage] || '🌱';
   }
 
@@ -65,24 +60,21 @@
   function renderCrops(){
     const playground = document.getElementById('bunnyPlayground');
     if(!playground || !window.UDATA) return;
-
     ensureField();
 
     playground.querySelectorAll('.eq-field-crop, .eq-field-soil, .eq-field-label, .eq-field-spark, .eq-field-progress').forEach(el => el.remove());
 
-    // 토양 띠 (농경지처럼)
     const soil = document.createElement('div');
     soil.className = 'eq-field-soil';
     soil.style.cssText = 'position:absolute;bottom:0;left:0;right:0;height:42px;background:linear-gradient(180deg,transparent,rgba(139,111,71,.3) 40%,rgba(139,111,71,.45));pointer-events:none;z-index:1';
     playground.appendChild(soil);
 
-    // 안내 라벨
     const plots = window.UDATA.bunnyField.plots;
     const readyCount = plots.filter(p => getStage(p) === 3).length;
     const label = document.createElement('div');
     label.className = 'eq-field-label';
     label.style.cssText = 'position:absolute;bottom:42px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,.92);border-radius:12px;padding:3px 12px;font-size:9px;color:#5D4037;font-weight:700;z-index:8;pointer-events:none;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.12)';
-    label.textContent = readyCount > 0 ? `🌾 텃밭 — ✨ ${readyCount}개 수확 가능!` : '🌾 텃밭 — 빈 밭 탭해서 씨앗 심기';
+    label.textContent = readyCount > 0 ? `🌾 텃밭 — ✨ ${readyCount}개 수확 가능!` : '🌾 텃밭 — 빈 밭 탭해서 씨앗 사기 (베리 사용)';
     playground.appendChild(label);
 
     const positions = ['10%', '24%', '38%', '52%', '66%', '80%'];
@@ -100,23 +92,12 @@
       el.style.cssText = `position:absolute;left:${pos};bottom:8px;transform:translateX(-50%);font-size:${isReady?32:isEmpty?22:26}px;cursor:pointer;z-index:7;line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,.3));transition:transform .15s;opacity:${isEmpty?.6:1}${isReady ? ';animation:eqFieldBounce 1.6s ease-in-out infinite' : ''}`;
       el.textContent = display;
       el.dataset.plotIdx = i;
-      if(plot && !isReady){
-        const crop = CROPS.find(c => c.id === plot.crop);
-        const elapsedMin = (Date.now() - plot.plantedAt) / 60000;
-        const pct = Math.min(100, Math.round((elapsedMin / crop.growMin) * 100));
-        el.title = `${crop?.name||'작물'} 자라는 중 (${pct}%)`;
-      } else {
-        el.title = isEmpty ? '빈 밭 - 탭해서 씨앗 심기' : `${CROPS.find(c=>c.id===plot.crop)?.name||'작물'} 수확하기!`;
-      }
-      el.onclick = (e) => {
-        e.stopPropagation();
-        handleCropClick(i);
-      };
+      el.title = isEmpty ? '빈 밭 - 탭해서 씨앗 사기' : isReady ? `${CROPS.find(c=>c.id===plot.crop)?.name||'작물'} 수확하기!` : '자라는 중';
+      el.onclick = (e) => { e.stopPropagation(); handleCropClick(i); };
       el.onmouseover = () => { el.style.transform = 'translateX(-50%) scale(1.25)'; };
       el.onmouseout = () => { el.style.transform = 'translateX(-50%)'; };
       playground.appendChild(el);
 
-      // 자라는 중 → 진행도 막대
       if(plot && !isReady){
         const crop = CROPS.find(c => c.id === plot.crop);
         const elapsedMin = (Date.now() - plot.plantedAt) / 60000;
@@ -128,7 +109,6 @@
         playground.appendChild(bar);
       }
 
-      // 수확 가능 → ✨
       if(isReady){
         const spark = document.createElement('div');
         spark.className = 'eq-field-spark';
@@ -142,20 +122,13 @@
       const s = document.createElement('style');
       s.id = 'eqFieldCropsCss';
       s.textContent = `
-        @keyframes eqFieldBounce {
-          0%, 100% { transform: translateX(-50%) translateY(0); }
-          50% { transform: translateX(-50%) translateY(-5px); }
-        }
-        @keyframes eqFieldSpark {
-          0%, 100% { opacity: 0.3; transform: scale(0.9); }
-          50% { opacity: 1; transform: scale(1.2); }
-        }
+        @keyframes eqFieldBounce { 0%,100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(-5px); } }
+        @keyframes eqFieldSpark { 0%,100% { opacity: 0.3; transform: scale(0.9); } 50% { opacity: 1; transform: scale(1.2); } }
       `;
       document.head.appendChild(s);
     }
   }
 
-  /* ===== 클릭 핸들러 ===== */
   function handleCropClick(idx){
     ensureField();
     const plot = window.UDATA.bunnyField.plots[idx];
@@ -174,8 +147,9 @@
     }
   }
 
-  /* ===== 씨앗 선택 모달 ===== */
+  /* ===== 씨앗 선택 모달 (베리 비용 표시) ===== */
   function openSeedSelector(plotIdx){
+    const curP = window.UDATA?.point || 0;
     const old = document.getElementById('ovSeedSel'); if(old) old.remove();
     const modal = document.createElement('div');
     modal.id = 'ovSeedSel';
@@ -183,19 +157,28 @@
     modal.onclick = (e) => { if(e.target === modal) modal.remove(); };
 
     modal.innerHTML = `
-      <div style="background:#fff;border-radius:20px;max-width:380px;width:100%;padding:22px 20px;max-height:85vh;overflow-y:auto">
+      <div style="background:#fff;border-radius:20px;max-width:400px;width:100%;padding:22px 20px;max-height:85vh;overflow-y:auto">
         <div style="font-size:42px;margin-bottom:6px;text-align:center">🌱</div>
-        <div style="font-size:18px;font-weight:900;color:#5D4037;text-align:center">씨앗 심기</div>
-        <div style="font-size:11px;color:#888;margin:6px 0 18px;text-align:center">어떤 작물을 심을까요?</div>
+        <div style="font-size:18px;font-weight:900;color:#5D4037;text-align:center">씨앗 사기 & 심기</div>
+        <div style="font-size:11px;color:#888;margin:6px 0 10px;text-align:center">베리로 씨앗 구매 → 자동 심기</div>
+        <div style="background:#fff8e1;border-radius:10px;padding:8px 12px;margin-bottom:14px;text-align:center;font-size:12px;color:#8D6E1B;font-weight:700;border:1.5px solid #FFE082">
+          💰 내 베리: <b>${curP.toLocaleString()}P</b>
+        </div>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px">
-          ${CROPS.map(c => `
-            <button onclick="window.plantSeed(${plotIdx}, '${c.id}')" style="background:#fff;border:1.5px solid #ddd;border-radius:14px;padding:12px 4px;cursor:pointer;font-family:inherit;transition:all .15s">
-              <div style="font-size:32px;line-height:1">${c.emoji}</div>
-              <div style="font-size:11px;color:#5D4037;margin-top:6px;font-weight:700">${c.name}</div>
-              <div style="font-size:9px;color:#888;margin-top:2px">⏰${c.growMin}분</div>
-              <div style="font-size:9px;color:#2ECC71;font-weight:700">+${c.reward}P</div>
-            </button>
-          `).join('')}
+          ${CROPS.map(c => {
+            const canBuy = curP >= c.cost;
+            return `
+              <button onclick="window.plantSeed(${plotIdx}, '${c.id}')" ${canBuy?'':'disabled'} style="background:${canBuy?'#fff':'#f5f5f5'};border:1.5px solid ${canBuy?'#ddd':'#e0e0e0'};border-radius:14px;padding:12px 4px;cursor:${canBuy?'pointer':'not-allowed'};font-family:inherit;transition:all .15s;opacity:${canBuy?1:.5}">
+                <div style="font-size:32px;line-height:1">${c.emoji}</div>
+                <div style="font-size:11px;color:#5D4037;margin-top:6px;font-weight:700">${c.name}</div>
+                <div style="font-size:9px;color:#888;margin-top:2px">⏰${c.growMin}분</div>
+                <div style="font-size:10px;color:${canBuy?'#F39C12':'#aaa'};font-weight:900;margin-top:2px">💰 ${c.cost}P</div>
+              </button>
+            `;
+          }).join('')}
+        </div>
+        <div style="background:#f0fbf4;border-radius:10px;padding:9px 12px;font-size:11px;color:#1B5E20;line-height:1.7;margin-bottom:12px">
+          💡 수확하면 농장 창고로 자동 보관<br/>💡 베리는 안 줘요 (베리는 환경 미션 인증으로만!)
         </div>
         <button onclick="document.getElementById('ovSeedSel').remove()" style="background:#f0f0f0;border:none;border-radius:12px;padding:11px 20px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;width:100%;color:#666">취소</button>
       </div>
@@ -203,9 +186,27 @@
     document.body.appendChild(modal);
   }
 
-  /* ===== 씨앗 심기 ===== */
+  /* ===== 씨앗 심기 (베리 차감) ===== */
   window.plantSeed = async function(plotIdx, cropId){
     ensureField();
+    const crop = CROPS.find(c => c.id === cropId);
+    if(!crop) return;
+
+    const curP = window.UDATA?.point || 0;
+    if(curP < crop.cost){
+      window.toast?.(`💰 베리 부족! ${crop.cost}P 필요 (현재 ${curP}P)`);
+      return;
+    }
+
+    // 베리 차감
+    const newP = curP - crop.cost;
+    try {
+      await window.FB.updateDoc(window.FB.doc(window.FB.db, 'users', window.ME.uid), { point: newP });
+      window.UDATA.point = newP;
+      window.updateUI && window.updateUI();
+    } catch(e){ console.error('[field] 베리 차감 실패', e); window.toast?.('실패: '+e.message); return; }
+
+    // 심기
     window.UDATA.bunnyField.plots[plotIdx] = {
       crop: cropId,
       plantedAt: Date.now(),
@@ -213,24 +214,24 @@
     await saveField();
     renderCrops();
     document.getElementById('ovSeedSel')?.remove();
-    const crop = CROPS.find(c => c.id === cropId);
-    window.toast?.(`🌱 ${crop?.emoji||''} ${crop?.name||''} 심었어요! ${crop?.growMin||0}분 뒤 수확`);
+    window.toast?.(`🌱 ${crop.emoji} ${crop.name} 심었어요! -${crop.cost}P · ${crop.growMin}분 뒤 수확`);
   };
 
-  /* ===== 수확 ===== */
+  /* ===== 수확 (베리 X · 농장 창고에 누적) ===== */
   async function harvest(plotIdx){
     const plot = window.UDATA.bunnyField.plots[plotIdx];
     if(!plot) return;
     const crop = CROPS.find(c => c.id === plot.crop);
     if(!crop) return;
 
-    // 포인트 지급
-    const curP = window.UDATA.point || 0;
-    const newP = curP + crop.reward;
+    // harvestedCrops에 누적 (도감/창고용)
+    if(!window.UDATA.harvestedCrops) window.UDATA.harvestedCrops = {};
+    window.UDATA.harvestedCrops[crop.id] = (window.UDATA.harvestedCrops[crop.id] || 0) + 1;
+
     try {
-      await window.FB.updateDoc(window.FB.doc(window.FB.db, 'users', window.ME.uid), { point: newP });
-      window.UDATA.point = newP;
-      window.updateUI && window.updateUI();
+      await window.FB.updateDoc(window.FB.doc(window.FB.db, 'users', window.ME.uid), {
+        harvestedCrops: window.UDATA.harvestedCrops
+      });
     } catch(e){ console.error('[field] harvest 실패', e); }
 
     // 밭 비우기
@@ -238,14 +239,14 @@
     await saveField();
     renderCrops();
 
-    window.toast?.(`🎉 ${crop.emoji} ${crop.name} 수확! +${crop.reward}P`);
+    const total = window.UDATA.harvestedCrops[crop.id];
+    window.toast?.(`🎉 ${crop.emoji} ${crop.name} 수확! 농장 창고에 ×${total}개`);
   }
 
   /* ===== boot ===== */
   async function boot(){
     if(!window.FB || !window.ME || !window.UDATA){ setTimeout(boot, 800); return; }
 
-    // Firebase에서 텃밭 로드
     try {
       const snap = await window.FB.getDoc(window.FB.doc(window.FB.db, 'users', window.ME.uid));
       if(snap.exists() && snap.data().bunnyField){
@@ -256,7 +257,6 @@
     ensureField();
     renderCrops();
 
-    // playground 다시 그려질 때마다 재렌더
     const observer = new MutationObserver(() => {
       if(document.getElementById('bunnyPlayground') && !document.querySelector('.eq-field-crop')){
         renderCrops();
@@ -264,10 +264,9 @@
     });
     observer.observe(document.body, { childList: true, subtree: true });
 
-    // 20초마다 재렌더 (자라기 반영)
     setInterval(renderCrops, 20000);
 
-    console.log('%c[bunny_field_crops v2] 🌱🥕🍅 들판 농사 활성화 (12종 작물)','color:#fff;background:#27AE60;padding:4px 8px;border-radius:4px;font-weight:bold');
+    console.log('%c[bunny_field_crops v3] 🌱🥕 베리로 씨앗 사기 (수확 시 베리 X)','color:#fff;background:#27AE60;padding:4px 8px;border-radius:4px;font-weight:bold');
   }
 
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => setTimeout(boot, 3500));

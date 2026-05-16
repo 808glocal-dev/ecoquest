@@ -1,5 +1,4 @@
 // company_ranking_patch.js
-// 소속 탭에 "우리 회사 개인 랭킹" + "전체 개인 TOP 10" 추가
 (function(){
   'use strict';
 
@@ -50,13 +49,11 @@
 
       let html = '';
 
-      // 우리 회사 멤버 랭킹 (소속 있을 때만)
       if(sameCompany.length){
         html += `<div style="font-size:15px;font-weight:900;color:var(--txt);margin:18px 0 10px">🏢 우리 소속 개인 랭킹 (${sameCompany.length}명)</div>`;
         html += sameCompany.map(renderRow).join('');
       }
 
-      // 전체 개인 TOP 10
       html += `<div style="font-size:15px;font-weight:900;color:var(--txt);margin:18px 0 10px">🏆 전체 개인 TOP 10</div>`;
       html += topAll.map(renderRow).join('');
 

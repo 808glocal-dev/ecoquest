@@ -30,14 +30,24 @@
       fileIn.addEventListener('change', () => { EQ.passed = false; });
       fileIn._eqHooked = true;
     }
-
-    /* 3. doAnalyze 통째 교체 — Gemini API 호출 */
+/* 3. doAnalyze 통째 교체 — Gemini API 호출 */
     window.doAnalyze = async function(){
       const imgEl = document.getElementById('prevImg');
       if(!imgEl || !imgEl.src.startsWith('data:')) return;
-      const b64 = imgEl.src.split(',')[1];
+      let b64 = imgEl.src.split(',')[1];
       if(!b64 || !EQ.curMission) return;
 
+      // Vercel 4.5MB 제한 회피를 위해 1024px로 압축
+      if(typeof window.compressImage === 'function'){
+        try {
+          const compressed = await window.compressImage(b64, 1024);
+          b64 = compressed.split(',')[1];
+          console.log('[gemini_patch] 이미지 압축 완료, 크기:', Math.round(b64.length/1024), 'KB');
+        } catch(e){
+          console.warn('[gemini_patch] 압축 실패, 원본 사용', e);
+        }
+      }
+   
       const btn = document.getElementById('btnAnalyze');
       btn.disabled = true;
       btn.textContent = '✨ 확인 중...';

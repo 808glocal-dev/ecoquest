@@ -1,7 +1,7 @@
 (function(){
 
   // ════════════════════════════════════════════════════════
-  // 🎨 PALETTES — 토끼 색깔 (그대로 유지, 토끼는 농부 캐릭터로)
+  // 🎨 PALETTES — 토끼 색깔 (그대로 유지)
   // ════════════════════════════════════════════════════════
   const PALETTES = [
     {body:'#FFFFFF', shade:'#F0E0CE', stroke:'#8B6F47', ear:'#FFB6C1', label:'하양'},
@@ -38,17 +38,15 @@
   ];
 
   // ════════════════════════════════════════════════════════
-  // 🌱 농작물 카탈로그 — MVP 12종 (일반 6 + 못난이 6)
+  // 🌱 농작물 카탈로그 — MVP 12종
   // ════════════════════════════════════════════════════════
   const CROPS = [
-    // 일반 (10P 일반 씨앗으로 나올 수 있음)
     {id:'tomato',   name:'토마토',     emoji:'🍅', rarity:'common', story:'붉게 잘 익은 평범한 챔피언'},
     {id:'carrot',   name:'당근',       emoji:'🥕', rarity:'common', story:'주황빛 고운 표준 미인'},
     {id:'lettuce',  name:'상추',       emoji:'🥬', rarity:'common', story:'쌈 싸 먹기 딱 좋은 잎'},
     {id:'corn',     name:'옥수수',     emoji:'🌽', rarity:'common', story:'한 알 한 알 알찬 여름'},
     {id:'eggplant', name:'가지',       emoji:'🍆', rarity:'common', story:'반짝이는 보랏빛'},
     {id:'cucumber', name:'오이',       emoji:'🥒', rarity:'common', story:'시원한 여름의 맛'},
-    // 못난이 (25P 못난이 씨앗으로만 나옴, 도감 핵심)
     {id:'tomato_twin',    name:'쌍둥이 토마토', emoji:'🍅', rarity:'ugly', story:'두 알이 붙어 자란 우정 토마토. 맛은 두 배예요.'},
     {id:'carrot_split',   name:'갈래 당근',     emoji:'🥕', rarity:'ugly', story:'땅속 돌을 피해 자란 용감한 당근'},
     {id:'lettuce_giant',  name:'거인 상추',     emoji:'🥬', rarity:'ugly', story:'너무 커서 상점이 거절한 든든이'},
@@ -58,12 +56,9 @@
   ];
 
   const STAGE_LABELS = ['씨앗', '새싹', '자라는 중', '수확 가능'];
-  const GRID_SIZE = 6; // 텃밭 6칸 (3x2)
+  const GRID_SIZE = 6;
   const SEED_PRICE = {common: 10, ugly: 25};
 
-  // ════════════════════════════════════════════════════════
-  // 🔧 헬퍼
-  // ════════════════════════════════════════════════════════
   function getStage(co2){ for(let i=STAGES.length-1;i>=0;i--){if(co2>=STAGES[i].min)return STAGES[i];} return STAGES[0]; }
   function getNextStage(co2){ const cur=getStage(co2); const idx=STAGES.indexOf(cur); return idx<STAGES.length-1?STAGES[idx+1]:null; }
   function getImpact(co2){ return {trees:(co2/21.4).toFixed(1), carKm:Math.round(co2/0.21), cups:Math.round(co2/0.011), sqm:Math.round(co2*0.6)}; }
@@ -73,15 +68,12 @@
     if(stage === 0) return '💧';
     if(stage === 1) return '🌱';
     if(stage === 2) return '🌿';
-    return getCrop(cropId)?.emoji || '✨'; // 수확 가능 = 작물 모습
+    return getCrop(cropId)?.emoji || '✨';
   }
 
   let _myFarm = null, _myCo2 = 0, _lastStageId = -1, _lastDexCount = 0;
   let _bunnyChars = [], _animLoop = null, _lastSpawnedKey = '', _petTimer = 0;
 
-  // ════════════════════════════════════════════════════════
-  // 📊 CO₂ 가져오기 (기존과 동일)
-  // ════════════════════════════════════════════════════════
   async function refreshMyCo2(){
     if(!window.ME) return 0;
     if(window.UDATA){
@@ -111,9 +103,6 @@
     return 0;
   }
 
-  // ════════════════════════════════════════════════════════
-  // 🐰 토끼 SVG (그대로)
-  // ════════════════════════════════════════════════════════
   function bunnySvg(colorIdx, mood, withMask){
     const p = PALETTES[Math.min(colorIdx, 4)];
     let eye;
@@ -146,9 +135,6 @@
     </svg>`;
   }
 
-  // ════════════════════════════════════════════════════════
-  // 💾 데이터 로드 (기존 bunnies 컬렉션에 농장 필드 추가)
-  // ════════════════════════════════════════════════════════
   async function loadFarm(){
     if(!window.ME || !window.FB) return;
     try {
@@ -156,16 +142,14 @@
       const snap = await window.FB.getDoc(ref);
       let data = snap.exists() ? snap.data() : {};
 
-      // 기본값
       if(!data.bunnies || !Array.isArray(data.bunnies)) data.bunnies = [{name:"꼬미", color:0}];
       if(!data.seeds) data.seeds = {common: 0, ugly: 0};
       if(!Array.isArray(data.garden) || data.garden.length !== GRID_SIZE){
         data.garden = Array(GRID_SIZE).fill(null);
       }
-      if(!data.dex) data.dex = {};       // {cropId: 수확횟수}
-      if(!data.harvest) data.harvest = {}; // {cropId: 보유량}
+      if(!data.dex) data.dex = {};
+      if(!data.harvest) data.harvest = {};
 
-      // 기존 carrots → seeds.common 마이그레이션 (한 번만)
       if(data.carrots && data.carrots > 0){
         data.seeds.common = (data.seeds.common || 0) + data.carrots;
         data.carrots = 0;
@@ -176,7 +160,7 @@
       _lastStageId = getStage(_myCo2).id;
       _lastDexCount = Object.keys(_myFarm.dex).length;
 
-      await window.FB.setDoc(ref, _myFarm); // 마이그레이션 저장
+      await window.FB.setDoc(ref, _myFarm);
       renderFarmMap();
     } catch(e){console.log("[farm] 로드 실패:", e.message);}
   }
@@ -186,7 +170,6 @@
     try {
       await window.FB.setDoc(window.FB.doc(window.FB.db, "bunnies", window.ME.uid), _myFarm);
       renderFarmStats();
-      // 토끼 재배치 (도감 진행도로 가족 늘어났을 때)
       const cnt = (_myFarm.bunnies || []).length;
       const colors = (_myFarm.bunnies || []).map(b=>b.color).join(',');
       const stageId = getStage(_myCo2).id;
@@ -195,13 +178,9 @@
     } catch(e){console.log("[farm] 저장 실패:", e.message);}
   }
 
-  // ════════════════════════════════════════════════════════
-  // 🎯 단계업 / 도감 마일스톤 체크
-  // ════════════════════════════════════════════════════════
   function checkStageUp(){
     const cur = getStage(_myCo2);
     if(_lastStageId >= 0 && cur.id > _lastStageId){
-      const prevId = _lastStageId;
       _lastStageId = cur.id;
       setTimeout(() => showStageUp(cur), 800);
     } else _lastStageId = cur.id;
@@ -210,11 +189,9 @@
   async function checkDexMilestone(){
     if(!_myFarm) return;
     const cnt = Object.keys(_myFarm.dex).length;
-    // 6/12 도달 = 새 토끼 영입, 12/12 도달 = 또 하나
     const milestones = [{at:6, name:'보리'}, {at:12, name:'마루'}];
     for(const m of milestones){
       if(_lastDexCount < m.at && cnt >= m.at){
-        // 이미 그 이름의 토끼 없으면 영입
         if(!_myFarm.bunnies.find(b => b.name === m.name)){
           _myFarm.bunnies.push({name: m.name, color: Math.floor(Math.random()*5)});
           await saveFarm();
@@ -226,14 +203,15 @@
   }
 
   // ════════════════════════════════════════════════════════
-  // 🏗️ 페이지 초기화
+  // 🆕 v2 수정: initFarmOnMap — 로딩 메시지 제거, 빈 컨테이너만 생성
   // ════════════════════════════════════════════════════════
   function initFarmOnMap(){
     const tryAdd = () => {
       const mapPage = document.getElementById("page-map");
       if(!mapPage) return false;
       if(document.getElementById("farmGameMain")) return true;
-      mapPage.innerHTML = '<div id="farmGameMain"><div style="text-align:center;padding:40px;color:#888;font-size:13px">🌱 농장 로딩 중...</div></div>';
+      // ✅ v2: 로딩 메시지 없이 빈 컨테이너만 생성 (다른 패치들이 자기 UI 그릴 공간만 확보)
+      mapPage.innerHTML = '<div id="farmGameMain"></div>';
       window.drawMap = function(){ renderFarmMap(); refreshAndUpdate(); };
       loadFarm();
       return true;
@@ -253,17 +231,20 @@
   }
 
   // ════════════════════════════════════════════════════════
-  // 🖼️ 전체 렌더 (헤더 + 풍경 + 텃밭 + 도감)
+  // 🆕 v2 수정: renderFarmMap — _myFarm 없으면 조용히 return
   // ════════════════════════════════════════════════════════
   function renderFarmMap(){
     const c = document.getElementById("farmGameMain");
     if(!c) return;
-    if(!_myFarm){ c.innerHTML = '<div style="text-align:center;padding:40px;color:#888;font-size:13px">🌱 농장 데이터 로딩 중...</div>'; return; }
+    // ✅ v2: 데이터 없으면 메시지 안 띄우고 조용히 대기 (다른 패치 자유롭게 그릴 수 있게)
+    if(!_myFarm){ 
+      console.log('[farm] 데이터 로드 대기 중...');
+      return; 
+    }
     const stage = getStage(_myCo2);
     const next = getNextStage(_myCo2);
 
     c.innerHTML = `
-      <!-- 헤더: 지구 단계 -->
       <div style="margin:12px;background:linear-gradient(135deg,#0f3d20,#1a6b3a);border-radius:14px;padding:10px 14px;color:#fff">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
           <div>
@@ -275,12 +256,10 @@
         ${next ? `<div style="height:5px;background:rgba(255,255,255,.2);border-radius:3px;overflow:hidden"><div style="width:${Math.min(100, ((_myCo2-stage.min)/(next.min-stage.min))*100)}%;height:100%;background:linear-gradient(90deg,#a8f0c6,#FFD700);transition:width .8s"></div></div>` : ''}
       </div>
 
-      <!-- 풍경 (토끼 농부) -->
       <div id="bunnyPlayground" style="position:relative;margin:0 12px;height:260px;border-radius:18px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.1);user-select:none;transition:background 1.5s">
         <div style="position:absolute;top:8px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,.85);border-radius:12px;padding:3px 10px;font-size:10px;color:#444;font-weight:600;pointer-events:none;z-index:5">"${stage.msg}" · 농부 탭하면 이름</div>
       </div>
 
-      <!-- 농장 통계 영역 (텃밭, 도감, 액션) -->
       <div id="farmStats"></div>
     `;
     applyStageBg(stage);
@@ -308,9 +287,6 @@
     });
   }
 
-  // ════════════════════════════════════════════════════════
-  // 📋 통계 / 텃밭 / 도감 카드
-  // ════════════════════════════════════════════════════════
   function renderFarmStats(){
     const c = document.getElementById("farmStats");
     if(!c || !_myFarm) return;
@@ -322,12 +298,11 @@
     const imp = getImpact(_myCo2);
     const bunnies = _myFarm.bunnies || [];
 
-    // 텃밭 그리드 HTML
     let gridHTML = '';
     for(let i=0; i<GRID_SIZE; i++){
       const plot = garden[i];
       if(!plot){
-        gridHTML += `<div onclick="openPlantModal(${i})" style="aspect-ratio:1;background:#fff;border:2px dashed #c8a878;border-radius:12px;display:flex;flex-direction:column;justify-content:center;align-items:center;cursor:pointer;transition:all .2s" onmouseover="this.style.background='#fff8e1'" onmouseout="this.style.background='#fff'"><div style="font-size:24px;opacity:.3">➕</div><div style="font-size:9px;color:#aaa;font-weight:700;margin-top:2px">심기</div></div>`;
+        gridHTML += `<div onclick="openPlantModal(${i})" style="aspect-ratio:1;background:#fff;border:2px dashed #c8a878;border-radius:12px;display:flex;flex-direction:column;justify-content:center;align-items:center;cursor:pointer;transition:all .2s"><div style="font-size:24px;opacity:.3">➕</div><div style="font-size:9px;color:#aaa;font-weight:700;margin-top:2px">심기</div></div>`;
       } else {
         const isReady = plot.stage >= 3;
         const emoji = stageEmoji(plot.stage, plot.cropId);
@@ -337,7 +312,6 @@
       }
     }
 
-    // 도감 HTML
     let dexHTML = '';
     CROPS.forEach(crop => {
       const collected = dex[crop.id];
@@ -347,7 +321,6 @@
 
     c.innerHTML = `
       <div style="margin:12px">
-        <!-- 임팩트 -->
         ${_myCo2 > 0 ? `<div style="background:linear-gradient(135deg,#fff,#f0fbf4);border-radius:14px;padding:12px 14px;margin-bottom:12px;border:1.5px solid #a8e6c5">
           <div style="font-size:10px;color:#1a6b3a;font-weight:700;letter-spacing:1.5px;margin-bottom:8px">💚 내가 만든 임팩트</div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:11px">
@@ -358,7 +331,6 @@
           </div>
         </div>` : ''}
 
-        <!-- 씨앗 + 도감 진행도 -->
         <div style="background:linear-gradient(135deg,#fff,#fff8e1);border-radius:14px;padding:14px 16px;border:2px solid #FFE082;margin-bottom:12px">
           <div style="font-size:11px;color:#689F38;font-weight:700;letter-spacing:2px;text-align:center">🌱 MY FARM</div>
           <div style="display:flex;justify-content:space-around;margin-top:10px;text-align:center">
@@ -370,7 +342,6 @@
           ${dexCount >= 12 ? '<div style="font-size:11px;color:#FF8F00;margin-top:6px;font-weight:700;text-align:center">🏆 도감 완성! 진정한 농부!</div>' : ''}
         </div>
 
-        <!-- 텃밭 그리드 -->
         <div style="background:#fff;border-radius:14px;padding:14px;margin-bottom:12px;border:1.5px solid #e8d4b0">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
             <div style="font-size:12px;font-weight:900;color:#5D4037">🌻 내 텃밭</div>
@@ -380,13 +351,11 @@
           <div style="font-size:10px;color:#888;margin-top:8px;text-align:center;line-height:1.6">💡 미션·깅 1회 = 모든 작물 +1성장 · 4단계 도달 시 수확</div>
         </div>
 
-        <!-- 액션 버튼 -->
         <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px">
           <button onclick="openSeedShop()" style="display:flex;align-items:center;justify-content:space-between;padding:13px 16px;background:linear-gradient(135deg,#FFE082,#FFC107);color:#5D4037;border:none;border-radius:12px;font-size:14px;cursor:pointer;font-family:inherit;font-weight:700"><span>🌱 씨앗 가게</span><span style="font-weight:600">${myPoints}P 보유</span></button>
           <button onclick="openDexModal()" style="display:flex;align-items:center;justify-content:space-between;padding:13px 16px;background:#fff;color:#5D4037;border:1.5px solid #d8b888;border-radius:12px;font-size:14px;cursor:pointer;font-family:inherit;font-weight:700"><span>📖 도감 전체 보기</span><span style="color:#888;font-weight:600">${dexCount}/12 수집</span></button>
         </div>
 
-        <!-- 토끼 농부 가족 -->
         <div style="margin-top:12px;padding:14px 12px;background:#fff;border-radius:12px;border:1px solid #d8eedd">
           <div style="font-size:11px;font-weight:900;color:#1a2e1a;margin-bottom:8px;text-align:center">🐾 우리 농부 가족 (${bunnies.length}명)</div>
           <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center">
@@ -399,7 +368,6 @@
       </div>
     `;
 
-    // 텃밭 펄스 애니메이션 CSS 한 번만
     if(!document.getElementById('farmAnimStyle')){
       const style = document.createElement('style');
       style.id = 'farmAnimStyle';
@@ -408,9 +376,7 @@
     }
   }
 
-  // ════════════════════════════════════════════════════════
-  // 🛒 씨앗 가게 모달
-  // ════════════════════════════════════════════════════════
+  // (이하 씨앗 가게 / 심기 / 수확 / 도감 모달 / 단계업 / 토끼 애니메이션 / 후크 등은 v1과 동일)
   window.openSeedShop = function(){
     if(!_myFarm) return;
     const myPoints = window.UDATA?.point || 0;
@@ -429,7 +395,7 @@
             <div style="font-size:36px">🌱</div>
             <div style="flex:1">
               <div style="font-size:14px;font-weight:900;color:#1B5E20">일반 씨앗</div>
-              <div style="font-size:11px;color:#666;margin-top:2px">평범한 작물 6종 중 랜덤<br/>토마토·당근·상추·옥수수·가지·오이</div>
+              <div style="font-size:11px;color:#666;margin-top:2px">평범한 작물 6종 중 랜덤</div>
             </div>
           </div>
           <button onclick="buySeed('common')" ${myPoints<10?'disabled':''} style="width:100%;margin-top:10px;padding:10px;background:${myPoints<10?'#e0e0e0':'#1B5E20'};color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:${myPoints<10?'default':'pointer'};font-family:inherit">${myPoints<10?'포인트 부족':'10P → 일반 씨앗 1개'}</button>
@@ -440,13 +406,12 @@
             <div style="font-size:36px">💔</div>
             <div style="flex:1">
               <div style="font-size:14px;font-weight:900;color:#C44569">못난이 씨앗</div>
-              <div style="font-size:11px;color:#666;margin-top:2px">못난이 작물 6종 중 랜덤<br/>쌍둥이·갈래·거인·꼬마·점박이·휜</div>
+              <div style="font-size:11px;color:#666;margin-top:2px">못난이 작물 6종 중 랜덤</div>
             </div>
           </div>
           <button onclick="buySeed('ugly')" ${myPoints<25?'disabled':''} style="width:100%;margin-top:10px;padding:10px;background:${myPoints<25?'#e0e0e0':'linear-gradient(135deg,#FF6B9D,#C44569)'};color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:${myPoints<25?'default':'pointer'};font-family:inherit">${myPoints<25?'포인트 부족':'25P → 못난이 씨앗 1개'}</button>
         </div>
       </div>
-      <div style="font-size:10px;color:#888;text-align:center;margin-top:14px;line-height:1.6">💡 못난이 농산물은 청년·고령 농업인의 폐기 위기 작물에서 영감을 받았어요</div>
     </div>`;
     document.body.appendChild(m);
   };
@@ -468,9 +433,6 @@
     } catch(e){ window.toast("실패: "+e.message); }
   };
 
-  // ════════════════════════════════════════════════════════
-  // 🌱 심기 모달 (빈 칸 탭)
-  // ════════════════════════════════════════════════════════
   window.openPlantModal = function(slot){
     if(!_myFarm) return;
     const seeds = _myFarm.seeds || {common:0, ugly:0};
@@ -481,13 +443,11 @@
       <div style="text-align:center;margin-bottom:18px">
         <div style="font-size:48px">🌻</div>
         <div style="font-size:18px;font-weight:900;margin-top:6px;color:#5D4037">${slot+1}번 칸에 심기</div>
-        <div style="font-size:12px;color:#888;margin-top:6px">어떤 씨앗을 심을까요?</div>
       </div>
       <div style="display:flex;flex-direction:column;gap:10px">
         <button onclick="plantCrop(${slot}, 'common')" ${seeds.common<1?'disabled':''} style="padding:14px;background:${seeds.common<1?'#f5f5f5':'#f0fbf4'};color:${seeds.common<1?'#aaa':'#1B5E20'};border:2px solid ${seeds.common<1?'#e0e0e0':'#a8e6c5'};border-radius:12px;font-size:14px;cursor:${seeds.common<1?'default':'pointer'};font-family:inherit;font-weight:700;display:flex;align-items:center;justify-content:space-between"><span>🌱 일반 씨앗 심기</span><span style="font-weight:600">${seeds.common}개 보유</span></button>
         <button onclick="plantCrop(${slot}, 'ugly')" ${seeds.ugly<1?'disabled':''} style="padding:14px;background:${seeds.ugly<1?'#f5f5f5':'#fff5f8'};color:${seeds.ugly<1?'#aaa':'#C44569'};border:2px solid ${seeds.ugly<1?'#e0e0e0':'#FFB6C1'};border-radius:12px;font-size:14px;cursor:${seeds.ugly<1?'default':'pointer'};font-family:inherit;font-weight:700;display:flex;align-items:center;justify-content:space-between"><span>💔 못난이 씨앗 심기</span><span style="font-weight:600">${seeds.ugly}개 보유</span></button>
       </div>
-      ${seeds.common<1 && seeds.ugly<1 ? '<div style="font-size:11px;color:#888;text-align:center;margin-top:14px">씨앗이 없어요! 가게에서 사거나 미션을 완료하세요</div>' : ''}
     </div>`;
     document.body.appendChild(m);
   };
@@ -500,7 +460,7 @@
     _myFarm.garden[slot] = {cropId: crop.id, stage: 0, plantedAt: Date.now()};
     await saveFarm();
     document.getElementById('ovPlant')?.remove();
-    window.toast(`🌱 ${crop.name} 씨앗을 심었어요! 미션하면 자라요`);
+    window.toast(`🌱 ${crop.name} 씨앗을 심었어요!`);
   };
 
   window.peekCrop = function(slot){
@@ -510,9 +470,6 @@
     window.toast(`🌿 ${crop.name} · ${STAGE_LABELS[plot.stage]} (미션하면 더 자라요)`);
   };
 
-  // ════════════════════════════════════════════════════════
-  // 🌾 수확
-  // ════════════════════════════════════════════════════════
   window.harvestCrop = async function(slot){
     if(!_myFarm) return;
     const plot = _myFarm.garden[slot];
@@ -545,9 +502,6 @@
     document.body.appendChild(m);
   }
 
-  // ════════════════════════════════════════════════════════
-  // 📖 도감 모달
-  // ════════════════════════════════════════════════════════
   window.openDexModal = function(){
     if(!_myFarm) return;
     const dex = _myFarm.dex || {};
@@ -563,17 +517,14 @@
         <div style="font-size:28px;filter:${got?'none':'grayscale(1) opacity(.25)'}">${got?c.emoji:'❓'}</div>
         <div style="font-size:9px;color:${got?'#444':'#bbb'};font-weight:700;margin-top:3px;text-align:center;line-height:1.2">${got?c.name:'???'}</div>
         ${got && got>1?`<div style="position:absolute;top:3px;right:3px;background:#1B5E20;color:#fff;font-size:8px;font-weight:900;padding:1px 5px;border-radius:6px">×${got}</div>`:''}
-        ${isUgly && got?'<div style="position:absolute;top:3px;left:3px;font-size:10px">💔</div>':''}
       </div>`;
     });
     m.innerHTML = `<div class="modal" style="padding:24px 18px;max-height:90vh;overflow-y:auto"><button class="modal-close" onclick="document.getElementById('ovDex').remove()">✕</button>
       <div style="text-align:center;margin-bottom:14px">
-        <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:2px">FARM DEX</div>
         <div style="font-size:20px;font-weight:900;color:#5D4037;margin-top:2px">농작물 도감 ${dexCount}/12</div>
         <div style="height:6px;background:#f5f5f5;border-radius:3px;overflow:hidden;margin-top:8px"><div style="width:${(dexCount/12)*100}%;height:100%;background:linear-gradient(90deg,#a8f0c6,#FF8F00)"></div></div>
       </div>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">${dexHTML}</div>
-      <div style="font-size:10px;color:#888;text-align:center;margin-top:14px;line-height:1.6">💡 수집된 작물을 탭하면 스토리가 나와요<br/>💔 못난이 농산물도 다 모아야 진짜 농부!</div>
     </div>`;
     document.body.appendChild(m);
   };
@@ -589,19 +540,14 @@
     m.innerHTML = `<div class="modal" style="padding:28px 22px;text-align:center;background:${isUgly?'linear-gradient(135deg,#fff5f8,#ffe6f0)':'linear-gradient(135deg,#f0fbf4,#fff8e1)'}"><button class="modal-close" onclick="document.getElementById('ovStory').remove()">✕</button>
       <div style="font-size:64px;margin:10px 0">${crop.emoji}</div>
       <div style="font-size:18px;font-weight:900;color:${isUgly?'#C44569':'#1B5E20'}">${crop.name}</div>
-      ${isUgly ? '<div style="display:inline-block;background:#FFB6C1;color:#fff;font-size:10px;font-weight:900;padding:3px 10px;border-radius:8px;margin-top:6px">못난이 농산물</div>' : '<div style="display:inline-block;background:#a8e6c5;color:#1B5E20;font-size:10px;font-weight:900;padding:3px 10px;border-radius:8px;margin-top:6px">일반 농산물</div>'}
       <div style="font-size:13px;color:#5D4037;margin-top:16px;line-height:1.7;font-style:italic">"${crop.story}"</div>
       <div style="margin-top:16px;padding:10px;background:rgba(255,255,255,.7);border-radius:10px">
-        <div style="font-size:10px;color:#888;font-weight:700;letter-spacing:1px">수확 횟수</div>
-        <div style="font-size:22px;font-weight:900;color:${isUgly?'#C44569':'#1B5E20'}">${count}회</div>
+        <div style="font-size:22px;font-weight:900;color:${isUgly?'#C44569':'#1B5E20'}">${count}회 수확</div>
       </div>
     </div>`;
     document.body.appendChild(m);
   };
 
-  // ════════════════════════════════════════════════════════
-  // 🌅 단계업 모달 (그대로 유지)
-  // ════════════════════════════════════════════════════════
   function showStageUp(stage){
     const imp = getImpact(_myCo2);
     document.getElementById('ovStageUp')?.remove();
@@ -613,24 +559,11 @@
         <div style="font-size:11px;font-weight:700;letter-spacing:3px;opacity:.85">STAGE ${stage.id+1}/5 도달</div>
         <div style="font-size:32px;font-weight:900;margin-top:8px">${stage.name}</div>
         <div style="font-size:15px;margin-top:14px;font-weight:700">"${stage.msg}"</div>
-        <div style="font-size:12px;margin-top:6px;opacity:.9">${stage.sub}</div>
-      </div>
-      <div style="background:rgba(255,255,255,.95);border-radius:18px;padding:18px;margin-top:24px;width:100%;max-width:340px">
-        <div style="font-size:10px;color:#1a6b3a;font-weight:700;letter-spacing:2px;text-align:center;margin-bottom:12px">💚 당신이 만든 진짜 변화</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px">
-          <div style="background:#f0fbf4;border-radius:10px;padding:10px;text-align:center"><div style="font-size:24px">🌳</div><div style="font-weight:900;color:#1B5E20;margin-top:2px">${imp.trees}그루</div></div>
-          <div style="background:#f0fbf4;border-radius:10px;padding:10px;text-align:center"><div style="font-size:24px">🚗</div><div style="font-weight:900;color:#1B5E20;margin-top:2px">${imp.carKm}km</div></div>
-          <div style="background:#f0fbf4;border-radius:10px;padding:10px;text-align:center"><div style="font-size:24px">☕</div><div style="font-weight:900;color:#1B5E20;margin-top:2px">${imp.cups}개</div></div>
-          <div style="background:#f0fbf4;border-radius:10px;padding:10px;text-align:center"><div style="font-size:24px">🐰</div><div style="font-weight:900;color:#1B5E20;margin-top:2px">${imp.sqm}평</div></div>
-        </div>
       </div>
       <button onclick="document.getElementById('ovStageUp').remove()" style="margin-top:20px;background:rgba(0,0,0,.4);border:1.5px solid rgba(255,255,255,.3);color:#fff;border-radius:14px;padding:14px 40px;font-size:14px;font-weight:900;cursor:pointer;font-family:inherit">계속하기</button>`;
     document.body.appendChild(modal);
   }
 
-  // ════════════════════════════════════════════════════════
-  // 🐰 토끼 농부 애니메이션 (그대로)
-  // ════════════════════════════════════════════════════════
   function spawnBunnies(bunniesData){
     const playground = document.getElementById('bunnyPlayground');
     if(!playground) return;
@@ -737,14 +670,10 @@
     }, 350);
   }
   window.petBunny = async function(){
-    // 농부 토끼 쓰다듬기 (단순 인터랙션만, happiness 시스템 없음)
     if(Date.now()-_petTimer < 800) return;
     _petTimer = Date.now();
   };
 
-  // ════════════════════════════════════════════════════════
-  // 🌱 작물 성장 트리거 (미션·깅 시 호출)
-  // ════════════════════════════════════════════════════════
   function growAllCrops(){
     if(!_myFarm?.garden) return false;
     let grown = false;
@@ -757,9 +686,6 @@
     return grown;
   }
 
-  // ════════════════════════════════════════════════════════
-  // 🪝 미션·깅 후크 (보상 + 성장)
-  // ════════════════════════════════════════════════════════
   function hookSaveMission(){
     if(window._farmHookedSaveMission) return;
     const orig = window.saveMission;
@@ -767,11 +693,9 @@
     window.saveMission = async function(uid, m){
       const res = await orig(uid, m);
       if(res && uid === window.ME?.uid && _myFarm){
-        // 씨앗 보상: 95% common, 5% ugly
         const isUgly = Math.random() < 0.05;
         const type = isUgly ? 'ugly' : 'common';
         _myFarm.seeds[type] = (_myFarm.seeds[type] || 0) + 1;
-        // 모든 작물 성장
         const grown = growAllCrops();
         await saveFarm();
         setTimeout(()=>refreshAndUpdate(), 1500);
@@ -791,10 +715,8 @@
     window.joinGathering = async function(gid){
       await orig(gid);
       if(_myFarm){
-        // 깅 보상: common 4 + ugly 1 보장
         _myFarm.seeds.common = (_myFarm.seeds.common || 0) + 4;
         _myFarm.seeds.ugly = (_myFarm.seeds.ugly || 0) + 1;
-        // 모든 작물 성장 +1
         growAllCrops();
         await saveFarm();
         setTimeout(()=>refreshAndUpdate(), 1500);
@@ -804,9 +726,6 @@
     window._farmHookedJoinGathering = true;
   }
 
-  // ════════════════════════════════════════════════════════
-  // 🏷️ 탭 아이콘 (지구 → 농장)
-  // ════════════════════════════════════════════════════════
   function changeTabIcon(){
     const tryIt = () => {
       const tabs = document.querySelectorAll('.tb');
@@ -830,15 +749,13 @@
     }
   }
 
-  // ════════════════════════════════════════════════════════
-  // 🚀 부트
-  // ════════════════════════════════════════════════════════
   function boot(){
     if(!window.FB){setTimeout(boot, 500); return;}
     initFarmOnMap();
     hookSaveMission();
     hookJoinGathering();
     changeTabIcon();
+    console.log('%c[farm_patch v2] ✅ 로딩 메시지 영구 제거','color:#fff;background:#2ECC71;padding:4px 8px;border-radius:4px;font-weight:bold');
   }
   if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", ()=>setTimeout(boot, 1500));
   else setTimeout(boot, 1500);

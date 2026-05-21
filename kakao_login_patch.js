@@ -84,6 +84,7 @@
     await loadKakaoSDK();
     window.Kakao.Auth.authorize({
       redirectUri: getRedirectUri(),
+        throughTalk: false,
     });
   }
 

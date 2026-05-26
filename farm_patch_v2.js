@@ -766,5 +766,7 @@ function boot(){
       if(!_myFarm){ loadFarm(); return; }
       const c = document.getElementById('farmGameMain');
       if(c && c.innerHTML.trim().length < 50) renderFarmMap();
-    }, 500);
+  }, 500);
   });
+
+})();

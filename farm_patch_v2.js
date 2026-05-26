@@ -205,12 +205,11 @@
   // ════════════════════════════════════════════════════════
   // 🆕 v2 수정: initFarmOnMap — 로딩 메시지 제거, 빈 컨테이너만 생성
   // ════════════════════════════════════════════════════════
-  function initFarmOnMap(){
+   function initFarmOnMap(){
     const tryAdd = () => {
       const mapPage = document.getElementById("page-map");
       if(!mapPage) return false;
       if(document.getElementById("farmGameMain")) return true;
-      // ✅ v2: 로딩 메시지 없이 빈 컨테이너만 생성 (다른 패치들이 자기 UI 그릴 공간만 확보)
       mapPage.innerHTML = '<div id="farmGameMain"></div>';
       window.drawMap = function(){ renderFarmMap(); refreshAndUpdate(); };
       loadFarm();

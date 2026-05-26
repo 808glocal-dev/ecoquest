@@ -758,15 +758,33 @@ function boot(){
   if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", ()=>setTimeout(boot, 1500));
   else setTimeout(boot, 1500);
 
-  // ★ 지도 탭 누를 때마다 농장 비어있으면 무조건 다시 그림 (모바일 보장)
+// ★ 모바일 포함: page-map이 농장이 아니면 무조건 농장으로 강제 교체
+  function ensureFarm(){
+    if(!window.ME) return;
+    const mapPage = document.getElementById('page-map');
+    if(!mapPage) return;
+    let c = document.getElementById('farmGameMain');
+    if(!c){
+      mapPage.innerHTML = '<div id="farmGameMain"></div>';   // 원본 나무 → 농장 컨테이너로 교체
+      window.drawMap = function(){ renderFarmMap(); refreshAndUpdate(); };
+      c = document.getElementById('farmGameMain');
+    }
+    if(!_myFarm){ loadFarm(); return; }
+    if(c.innerHTML.trim().length < 50) renderFarmMap();
+  }
+
+  // 지도 탭 누를 때
   document.addEventListener('click', function(e){
     const tab = e.target.closest && e.target.closest('.tb[data-page="map"]');
-    if(!tab || !window.ME) return;
-    setTimeout(()=>{
-      if(!_myFarm){ loadFarm(); return; }
-      const c = document.getElementById('farmGameMain');
-      if(c && c.innerHTML.trim().length < 50) renderFarmMap();
-  }, 500);
+    if(tab) setTimeout(ensureFarm, 400);
   });
+
+  // 로드 후 약 10초간 반복 시도 (모바일에서 로그인이 늦게 떠도 결국 농장으로)
+  let _ensureTries = 0;
+  const _ensureTimer = setInterval(()=>{
+    _ensureTries++;
+    ensureFarm();
+    if(_ensureTries > 20) clearInterval(_ensureTimer);
+  }, 500);
 
 })();

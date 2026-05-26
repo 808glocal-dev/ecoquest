@@ -748,15 +748,23 @@
     }
   }
 
-  function boot(){
-    if(!window.FB){setTimeout(boot, 500); return;}
+function boot(){
+    if(!window.FB || !window.ME){ setTimeout(boot, 500); return; }  // ★ ME까지 기다림
     initFarmOnMap();
     hookSaveMission();
     hookJoinGathering();
     changeTabIcon();
-    console.log('%c[farm_patch v2] ✅ 로딩 메시지 영구 제거','color:#fff;background:#2ECC71;padding:4px 8px;border-radius:4px;font-weight:bold');
   }
   if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", ()=>setTimeout(boot, 1500));
   else setTimeout(boot, 1500);
 
-})();
+  // ★ 지도 탭 누를 때마다 농장 비어있으면 무조건 다시 그림 (모바일 보장)
+  document.addEventListener('click', function(e){
+    const tab = e.target.closest && e.target.closest('.tb[data-page="map"]');
+    if(!tab || !window.ME) return;
+    setTimeout(()=>{
+      if(!_myFarm){ loadFarm(); return; }
+      const c = document.getElementById('farmGameMain');
+      if(c && c.innerHTML.trim().length < 50) renderFarmMap();
+    }, 500);
+  });

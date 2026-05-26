@@ -74,7 +74,9 @@
   }
 
   async function saveFarm(extra){
-    if(!window.ME?.uid) return;
+  async function loadFarm(){
+   if(!window.FB || !window.ME){ setTimeout(loadFarm, 800); return; }
+
     const update = { farm: window.UDATA.farm };
     if(extra) Object.assign(update, extra);
     try { await window.FB.updateDoc(window.FB.doc(window.FB.db,'users',window.ME.uid), update); } catch(e){}

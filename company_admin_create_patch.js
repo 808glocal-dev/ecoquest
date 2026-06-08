@@ -198,7 +198,7 @@
     if (!isCoAdmin()) {
       box.querySelectorAll('button[onclick*="openCreateCompany"]').forEach(b => b.remove());
     }
-    if (isCoAdmin() && !window.UDATA?.companyId && !box.querySelector('#adminCoManageBtn')) {
+  if (isCoAdmin() && !box.querySelector('#adminCoManageBtn')) {
       const btn = document.createElement('button');
       btn.id = 'adminCoManageBtn';
       btn.className = 'btn btn-b';

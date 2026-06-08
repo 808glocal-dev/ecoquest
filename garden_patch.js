@@ -49,6 +49,8 @@
   function loadGarden(){
     G = (window.UDATA && window.UDATA.gardenV2) ? window.UDATA.gardenV2 : DEFAULT();
     if(!Array.isArray(G.animals)) G.animals = [];
+    if(!G.pos || typeof G.pos !== 'object') G.pos = {};   // {key:[x%,y%]} 사용자가 옮긴 위치
+    if(!Array.isArray(G.stored)) G.stored = [];           // 보관함에 넣은 key 목록
   }
   async function saveGarden(){
     if(!window.ME || !window.UDATA) return;
@@ -131,6 +133,17 @@
       .g-foot{display:flex;align-items:center;justify-content:space-between;margin:12px 4px 0;font-size:11px;color:#a99}
       .g-foot b{color:#6f9258}
       .g-redeem{background:#6f9258;color:#fff;border:none;border-radius:10px;padding:8px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit}
+      #gardenScene .g-obj{cursor:grab;touch-action:none}
+      #gardenScene .g-obj.dragging{transition:none!important;z-index:999!important;cursor:grabbing}
+      #gardenScene .g-obj.dragging svg{filter:drop-shadow(0 12px 9px rgba(40,55,35,.32))}
+      #gStoreBtn{background:#fffdf6;border:1.5px solid #e7ddc6;border-radius:10px;padding:8px 12px;font-size:12px;font-weight:700;color:#6f9258;cursor:pointer;font-family:inherit}
+      #gStoreBtn.drop{background:#dff0d4;border-color:#6f9258;transform:scale(1.06)}
+      #gStore{display:none;flex-wrap:wrap;gap:8px;margin:10px 4px 0;padding:12px;background:#fffdf6;border:1.5px dashed #d9cdae;border-radius:14px}
+      #gStore.on{display:flex}
+      #gStore .gs-item{background:#fff;border:1px solid #e7ddc6;border-radius:10px;padding:6px 4px;cursor:pointer;display:flex;flex-direction:column;align-items:center;width:64px}
+      #gStore .gs-item .gsl{font-size:9px;color:#6f9258;font-weight:700;margin-top:2px}
+      #gStore .gs-empty{font-size:11px;color:#a99;line-height:1.6}
+      .g-hint{font-size:10px;color:#a99;margin:7px 4px 0;text-align:center;line-height:1.5}
     `;
     document.head.appendChild(s);
     // 폰트 (있으면 중복 무시됨)
@@ -161,35 +174,115 @@
         <div class="g-chips" id="gChips"></div>
         <div class="g-foot">
           <span>총 인증 <b id="gTotal">0</b>회 · 돌아온 동물 <b id="gAnimals">0</b>종</span>
-          <span id="gRedeemWrap"></span>
+          <span style="display:flex;gap:6px;align-items:center">
+            <button id="gStoreBtn" onclick="document.getElementById('gStore').classList.toggle('on')">🧺 보관함</button>
+            <span id="gRedeemWrap"></span>
+          </span>
         </div>
+        <div class="g-hint">🌿 물건을 끌어서 옮기고, 🧺 보관함 위로 끌면 치워져요 · 보관함에서 탭하면 다시 나와요</div>
+        <div id="gStore"></div>
       </div>`;
     renderObjects();
     renderChips();
   }
 
-  function place(art,x,y,z,pop){
-    const d=document.createElement('div'); d.className='g-obj'+(pop?' g-pop':'');
-    d.style.cssText=`left:${x}%;top:${y}%;z-index:${z||Math.round(y)}`;
-    d.innerHTML=art; document.getElementById('gObjects').appendChild(d);
+  /* ---------- 정원 물건 목록(기본 위치) ---------- */
+  function defaultObjs(){
+    const list=[];
+    for(let i=0;i<Math.min(G.tree,TREE_SLOTS.length);i++) list.push({key:'t'+i,art:ART.tree,x:TREE_SLOTS[i][0],y:TREE_SLOTS[i][1],z:30+i});
+    for(let i=0;i<VEG_SLOTS.length;i++){ const lvl=G.veggie-i; if(lvl<=0) continue; list.push({key:'v'+i,art:lvl>=3?ART.veg2:lvl===2?ART.veg1:ART.veg0,x:VEG_SLOTS[i][0],y:VEG_SLOTS[i][1]}); }
+    for(let i=0;i<Math.min(G.flower,FLOWER_SLOTS.length);i++) list.push({key:'f'+i,art:ART.flower,x:FLOWER_SLOTS[i][0],y:FLOWER_SLOTS[i][1]});
+    if(G.tumbler>0) list.push({key:'well',art:ART.well,x:WELL[0],y:WELL[1]});
+    if(G.bus>0) list.push({key:'busstop',art:ART.busstop,x:BUSSTOP[0],y:BUSSTOP[1]});
+    if(G.straw>0){ list.push({key:'pond',art:ART.pond,x:POND[0],y:POND[1],z:40}); for(let i=0;i<Math.min(G.straw,3);i++) list.push({key:'turtle'+i,art:ART.turtle,x:POND[0]-10+i*10,y:POND[1]-1,z:50+i}); }
+    if(G.bike>0) list.push({key:'bike',art:ART.bike,x:BIKE[0],y:BIKE[1],z:55});
+    if(G.animals.includes('squirrel')) list.push({key:'squirrel',art:ART.squirrel,x:28,y:44,z:70});
+    return list;
   }
+  function keyLabel(k){
+    if(k.indexOf('turtle')===0) return '바다거북';
+    if(k[0]==='t') return '나무';
+    if(k[0]==='v') return '텃밭';
+    if(k[0]==='f') return '꽃';
+    if(k==='well') return '우물';
+    if(k==='busstop') return '버스정류장';
+    if(k==='pond') return '연못';
+    if(k==='bike') return '자전거';
+    if(k==='squirrel') return '다람쥐';
+    return '물건';
+  }
+
+  /* ---------- 드래그 이동 ---------- */
+  function makeDraggable(el, key){
+    el.addEventListener('pointerdown', function(e){
+      const sc=scene(); if(!sc) return;
+      e.preventDefault();
+      const r=sc.getBoundingClientRect();
+      let moved=false;
+      el.classList.add('dragging');
+      try{ el.setPointerCapture(e.pointerId); }catch(_){}
+      function move(ev){
+        const x=Math.max(2, Math.min(98, ((ev.clientX-r.left)/r.width)*100));
+        const y=Math.max(20, Math.min(99, ((ev.clientY-r.top)/r.height)*100));
+        el.style.left=x+'%'; el.style.top=y+'%'; moved=true;
+        const sb=document.getElementById('gStoreBtn');
+        if(sb){ const b=sb.getBoundingClientRect(); sb.classList.toggle('drop', ev.clientX>=b.left&&ev.clientX<=b.right&&ev.clientY>=b.top&&ev.clientY<=b.bottom); }
+      }
+      function up(ev){
+        el.classList.remove('dragging');
+        el.removeEventListener('pointermove',move);
+        el.removeEventListener('pointerup',up);
+        el.removeEventListener('pointercancel',up);
+        const sb=document.getElementById('gStoreBtn'); let onStore=false;
+        if(sb){ const b=sb.getBoundingClientRect(); onStore=ev.clientX>=b.left&&ev.clientX<=b.right&&ev.clientY>=b.top&&ev.clientY<=b.bottom; sb.classList.remove('drop'); }
+        if(onStore){ storeItem(key); }
+        else if(moved){ G.pos=G.pos||{}; G.pos[key]=[parseFloat(el.style.left), parseFloat(el.style.top)]; saveGarden(); }
+      }
+      el.addEventListener('pointermove',move);
+      el.addEventListener('pointerup',up);
+      el.addEventListener('pointercancel',up);
+    });
+  }
+  function storeItem(key){
+    G.stored=G.stored||[];
+    if(!G.stored.includes(key)) G.stored.push(key);
+    saveGarden(); renderObjects();
+    window.toast && toast('🧺 보관함에 넣었어요');
+  }
+  window.gardenUnstore=function(key){
+    G.stored=(G.stored||[]).filter(k=>k!==key);
+    saveGarden(); renderObjects();
+    window.toast && toast('🌿 정원에 다시 꺼냈어요');
+  };
+
   function renderObjects(){
     const o=document.getElementById('gObjects'); if(!o || !G) return;
     o.innerHTML='';
-    for(let i=0;i<Math.min(G.tree,TREE_SLOTS.length);i++) place(ART.tree,TREE_SLOTS[i][0],TREE_SLOTS[i][1],30+i);
-    for(let i=0;i<VEG_SLOTS.length;i++){ const lvl=G.veggie-i; if(lvl<=0) continue; place(lvl>=3?ART.veg2:lvl===2?ART.veg1:ART.veg0, VEG_SLOTS[i][0],VEG_SLOTS[i][1]); }
-    for(let i=0;i<Math.min(G.flower,FLOWER_SLOTS.length);i++) place(ART.flower,FLOWER_SLOTS[i][0],FLOWER_SLOTS[i][1]);
-    if(G.tumbler>0) place(ART.well,WELL[0],WELL[1]);
-    if(G.bus>0) place(ART.busstop,BUSSTOP[0],BUSSTOP[1]);
-    if(G.straw>0){ place(ART.pond,POND[0],POND[1],40); for(let i=0;i<Math.min(G.straw,3);i++) place(ART.turtle,POND[0]-10+i*10,POND[1]-1,50+i); }
-    if(G.bike>0) place(ART.bike,BIKE[0],BIKE[1],55);
-    if(G.animals.includes('squirrel')) place(ART.squirrel,28,44,70);
-    const p=document.getElementById('gPath'); if(p) p.style.opacity=(G.bike>0||G.bus>0)?'1':'0';
+    const stored=G.stored||[], pos=G.pos||{};
+    defaultObjs().forEach(ob=>{
+      if(stored.includes(ob.key)) return;
+      const p=pos[ob.key]||[ob.x,ob.y];
+      const d=document.createElement('div');
+      d.className='g-obj'; d.dataset.key=ob.key;
+      d.style.cssText=`left:${p[0]}%;top:${p[1]}%;z-index:${ob.z||Math.round(p[1])}`;
+      d.innerHTML=ob.art;
+      o.appendChild(d);
+      makeDraggable(d, ob.key);
+    });
+    const pa=document.getElementById('gPath'); if(pa) pa.style.opacity=(G.bike>0||G.bus>0)?'1':'0';
     const tot=document.getElementById('gTotal'); if(tot) tot.textContent=G.veggie+G.tree+G.bike+G.bus+G.tumbler+G.straw+G.flower;
     const an=document.getElementById('gAnimals'); if(an) an.textContent=G.animals.length;
-    // 수확물 교환(쿠폰) 통로 유지
     const rw=document.getElementById('gRedeemWrap');
     if(rw){ rw.innerHTML = (typeof window.openExchangeRequest==='function') ? `<button class="g-redeem" onclick="window.openExchangeRequest()">🎟️ 수확물 교환</button>` : ''; }
+    renderStore();
+  }
+
+  function renderStore(){
+    const box=document.getElementById('gStore'); if(!box) return;
+    const all=defaultObjs();
+    const items=(G.stored||[]).map(k=>all.find(o=>o.key===k)).filter(Boolean);
+    if(!items.length){ box.innerHTML='<div class="gs-empty">보관한 게 없어요.<br/>정원의 물건을 🧺 보관함으로 끌어다 놓으면 여기 담겨요.</div>'; return; }
+    box.innerHTML=items.map(o=>`<div class="gs-item" onclick="gardenUnstore('${o.key}')"><div style="display:flex;align-items:flex-end;justify-content:center;height:34px"><div style="transform:scale(.55);transform-origin:bottom">${o.art}</div></div><div class="gsl">${keyLabel(o.key)}</div></div>`).join('');
   }
 
   function renderChips(){
@@ -310,7 +403,7 @@
     // 챌린지 참여/취소 시 칩 갱신
     const _rtq=window.renderTodayQuests;
     window.renderTodayQuests=function(uid){ if(_rtq) _rtq(uid); renderChips(); };
-    console.log('%c[garden v1.2] 🌱 챌린지로 자라는 정원','color:#fff;background:#6f9258;padding:4px 8px;border-radius:4px;font-weight:bold');
+    console.log('%c[garden v1.3] 🌱 정원(이동·보관)','color:#fff;background:#6f9258;padding:4px 8px;border-radius:4px;font-weight:bold');
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>setTimeout(boot,1800));
   else setTimeout(boot,1800);

@@ -46,11 +46,28 @@
   const DEFAULT = () => ({ veggie:0, tree:0, bike:0, bus:0, tumbler:0, straw:0, flower:0, animals:[] });
   let G = DEFAULT();   // ★ null 아님 — drawMap이 먼저 불려도 안전
 
+  function gTotal(g){ return (g.veggie||0)+(g.tree||0)+(g.bike||0)+(g.bus||0)+(g.tumbler||0)+(g.straw||0)+(g.flower||0); }
+  // 실제 인증 이력(doneMissions)으로 정원 숫자 재구성
+  function rebuildFromHistory(){
+    const counts = DEFAULT();
+    const done = (window.UDATA && window.UDATA.doneMissions) || [];
+    done.forEach(id=>{ const m = findMission(id) || {id:id}; const k = classify(m); counts[k] = (counts[k]||0)+1; });
+    return counts;
+  }
   function loadGarden(){
     G = (window.UDATA && window.UDATA.gardenV2) ? window.UDATA.gardenV2 : DEFAULT();
     if(!Array.isArray(G.animals)) G.animals = [];
     if(!G.pos || typeof G.pos !== 'object') G.pos = {};   // {key:[x%,y%]} 사용자가 옮긴 위치
     if(!Array.isArray(G.stored)) G.stored = [];           // 보관함에 넣은 key 목록
+    // ★ 정원이 비었는데 인증 이력이 있으면 → 이력으로 자동 복구
+    if(gTotal(G) === 0){
+      const r = rebuildFromHistory();
+      if(gTotal(r) > 0){
+        r.pos = G.pos; r.stored = G.stored; r.animals = [];
+        G = r; checkAnimals(); saveGarden();
+        console.log('[garden] 정원을 인증 이력으로 복구했어요:', gTotal(G), '개');
+      }
+    }
   }
   async function saveGarden(){
     if(!window.ME || !window.UDATA) return;
@@ -386,7 +403,7 @@
   window.drawMap=function(){ mount(); renderObjects(); renderChips(); };
 
   function boot(){
-    if(!window.FB || !window.ME){ setTimeout(boot,500); return; }
+    if(!window.FB || !window.ME || !window.UDATA){ setTimeout(boot,500); return; }
     loadGarden();
     if(document.getElementById('gardenScene')){ renderObjects(); renderChips(); }
     else mount();
@@ -403,7 +420,7 @@
     // 챌린지 참여/취소 시 칩 갱신
     const _rtq=window.renderTodayQuests;
     window.renderTodayQuests=function(uid){ if(_rtq) _rtq(uid); renderChips(); };
-    console.log('%c[garden v1.3] 🌱 정원(이동·보관)','color:#fff;background:#6f9258;padding:4px 8px;border-radius:4px;font-weight:bold');
+    console.log('%c[garden v1.4] 🌱 정원(이동·보관·자동복구)','color:#fff;background:#6f9258;padding:4px 8px;border-radius:4px;font-weight:bold');
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>setTimeout(boot,1800));
   else setTimeout(boot,1800);

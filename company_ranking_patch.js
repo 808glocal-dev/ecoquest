@@ -69,7 +69,7 @@
         const rk = i < 3 ? medals[i] : `<span style="font-size:13px;font-weight:900;color:var(--sub)">${i+1}위</span>`;
         return `<div style="display:flex;align-items:center;gap:10px;padding:10px;background:${isMine?'#f0fbf4':'#fff'};border-radius:12px;margin-bottom:6px;border:1.5px solid ${isMine?'var(--g1)':'var(--bdr)'}">
           <div style="font-size:20px;width:36px;text-align:center">${rk}</div>
-          <div style="font-size:24px">${c.co.emoji||'🏢'}</div>
+        ${window.coLogo?window.coLogo(c.co,28):`<div style="font-size:24px">${c.co.emoji||'🏢'}</div>`}
           <div style="flex:1;min-width:0">
             <div style="font-size:13px;font-weight:700;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.co.name}${isMine?' 🌟':''}</div>
             <div style="font-size:11px;color:var(--sub)">${c.memberCount}명 · ${c.totalMission}건 인증</div>

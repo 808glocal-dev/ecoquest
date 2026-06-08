@@ -44,7 +44,7 @@
 
   /* ---------- 상태 ---------- */
   const DEFAULT = () => ({ veggie:0, tree:0, bike:0, bus:0, tumbler:0, straw:0, flower:0, animals:[] });
-  let G = null;
+  let G = DEFAULT();   // ★ null 아님 — drawMap이 먼저 불려도 안전
 
   function loadGarden(){
     G = (window.UDATA && window.UDATA.gardenV2) ? window.UDATA.gardenV2 : DEFAULT();
@@ -174,7 +174,7 @@
     d.innerHTML=art; document.getElementById('gObjects').appendChild(d);
   }
   function renderObjects(){
-    const o=document.getElementById('gObjects'); if(!o) return;
+    const o=document.getElementById('gObjects'); if(!o || !G) return;
     o.innerHTML='';
     for(let i=0;i<Math.min(G.tree,TREE_SLOTS.length);i++) place(ART.tree,TREE_SLOTS[i][0],TREE_SLOTS[i][1],30+i);
     for(let i=0;i<VEG_SLOTS.length;i++){ const lvl=G.veggie-i; if(lvl<=0) continue; place(lvl>=3?ART.veg2:lvl===2?ART.veg1:ART.veg0, VEG_SLOTS[i][0],VEG_SLOTS[i][1]); }
@@ -295,14 +295,15 @@
   function boot(){
     if(!window.FB || !window.ME){ setTimeout(boot,500); return; }
     loadGarden();
-    mount();
+    if(document.getElementById('gardenScene')){ renderObjects(); renderChips(); }
+    else mount();
     hookSave();
     const mp=document.getElementById('page-map');
     if(mp){ new MutationObserver(()=>{ if(!scene()) mount(); else renderChips(); }).observe(mp,{childList:true,subtree:true}); }
     // 챌린지 참여/취소 시 칩 갱신
     const _rtq=window.renderTodayQuests;
     window.renderTodayQuests=function(uid){ if(_rtq) _rtq(uid); renderChips(); };
-    console.log('%c[garden v1] 🌱 챌린지로 자라는 정원','color:#fff;background:#6f9258;padding:4px 8px;border-radius:4px;font-weight:bold');
+    console.log('%c[garden v1.1] 🌱 챌린지로 자라는 정원','color:#fff;background:#6f9258;padding:4px 8px;border-radius:4px;font-weight:bold');
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>setTimeout(boot,1800));
   else setTimeout(boot,1800);

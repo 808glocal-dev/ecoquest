@@ -1,8 +1,6 @@
 /* =====================================================
-   EcoQuest – 게임(농장) 속 "내 챌린지" 바 (① 기능, v4)
-   - 농장 탭(#page-map)에 표시 · activeChallenges 그대로
-   - 칩 탭 → openAI(m, uid, challengeId) → 인증 시 진행도↑ + 지구 성장
-   - ★ isolate 패치가 닫지 않도록 _eqUserCert 플래그 세팅 (인증 모달 유지)
+   EcoQuest – 게임(농장) 속 "내 챌린지" 바 (① 기능, v5)
+   - v4 + 인증 모달 여는 동안 _eqUserCert 플래그가 안 꺼지게 가드(_eqCertOpening)
    ★ 모든 패치보다 "뒤"에 로드 (맨 끝)
    ===================================================== */
 (function () {
@@ -22,10 +20,10 @@
     );
   }
 
-  // isolate 패치가 인증 모달을 닫지 않도록, 모달이 닫힐 때 플래그 해제
+  // 모달이 사용자에 의해 "진짜로" 닫힐 때만 플래그 해제 (여는 중엔 무시)
   const _origCloseOv = window.closeOv;
   window.closeOv = function (id) {
-    if (id === 'ovAI') window._eqUserCert = false;
+    if (id === 'ovAI' && !window._eqCertOpening) window._eqUserCert = false;
     if (_origCloseOv) _origCloseOv(id);
   };
 
@@ -38,8 +36,11 @@
     }
     const m = findMission(ac.missionId);
     if (!m) { if (window.toast) toast('미션 정보를 못 찾았어요'); return; }
-    window._eqUserCert = true;   // ★ 사용자가 직접 연 인증 → isolate가 안 닫게
+    window._eqUserCert = true;       // ★ 사용자가 직접 연 인증
+    window._eqCertOpening = true;    // ★ 여는 동안 플래그 보호 (openAI 내부 closeOv 무시)
     if (typeof window.openAI === 'function') window.openAI(m, window.ME && window.ME.uid, chalId);
+    setTimeout(() => { window._eqCertOpening = false; }, 800);
+    console.log('[in_game] 인증 모달 open · _eqUserCert=true');
   };
 
   function chipsHtml() {
@@ -120,7 +121,7 @@
     };
   }
 
-  console.log('[in_game_mission] v4 loaded');
+  console.log('[in_game_mission] v5 loaded');
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => setTimeout(watch, 1200));
   else setTimeout(watch, 1200);
 

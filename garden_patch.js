@@ -193,6 +193,7 @@
           <span>총 인증 <b id="gTotal">0</b>회 · 돌아온 동물 <b id="gAnimals">0</b>종</span>
           <span style="display:flex;gap:6px;align-items:center">
             <button id="gStoreBtn" onclick="document.getElementById('gStore').classList.toggle('on')">🧺 보관함</button>
+            <button id="gVisitBtn" onclick="gardenVisitList()" style="background:#fffdf6;border:1.5px solid #e7ddc6;border-radius:10px;padding:8px 12px;font-size:12px;font-weight:700;color:#6f9258;cursor:pointer;font-family:inherit">🚪 이웃 정원</button>
             <span id="gRedeemWrap"></span>
           </span>
         </div>
@@ -204,16 +205,17 @@
   }
 
   /* ---------- 정원 물건 목록(기본 위치) ---------- */
-  function defaultObjs(){
+  function defaultObjs(g){
+    g = g || G;
     const list=[];
-    for(let i=0;i<Math.min(G.tree,TREE_SLOTS.length);i++) list.push({key:'t'+i,art:ART.tree,x:TREE_SLOTS[i][0],y:TREE_SLOTS[i][1],z:30+i});
-    for(let i=0;i<VEG_SLOTS.length;i++){ const lvl=G.veggie-i; if(lvl<=0) continue; list.push({key:'v'+i,art:lvl>=3?ART.veg2:lvl===2?ART.veg1:ART.veg0,x:VEG_SLOTS[i][0],y:VEG_SLOTS[i][1]}); }
-    for(let i=0;i<Math.min(G.flower,FLOWER_SLOTS.length);i++) list.push({key:'f'+i,art:ART.flower,x:FLOWER_SLOTS[i][0],y:FLOWER_SLOTS[i][1]});
-    if(G.tumbler>0) list.push({key:'well',art:ART.well,x:WELL[0],y:WELL[1]});
-    if(G.bus>0) list.push({key:'busstop',art:ART.busstop,x:BUSSTOP[0],y:BUSSTOP[1]});
-    if(G.straw>0){ list.push({key:'pond',art:ART.pond,x:POND[0],y:POND[1],z:40}); for(let i=0;i<Math.min(G.straw,3);i++) list.push({key:'turtle'+i,art:ART.turtle,x:POND[0]-10+i*10,y:POND[1]-1,z:50+i}); }
-    if(G.bike>0) list.push({key:'bike',art:ART.bike,x:BIKE[0],y:BIKE[1],z:55});
-    if(G.animals.includes('squirrel')) list.push({key:'squirrel',art:ART.squirrel,x:28,y:44,z:70});
+    for(let i=0;i<Math.min(g.tree,TREE_SLOTS.length);i++) list.push({key:'t'+i,art:ART.tree,x:TREE_SLOTS[i][0],y:TREE_SLOTS[i][1],z:30+i});
+    for(let i=0;i<VEG_SLOTS.length;i++){ const lvl=g.veggie-i; if(lvl<=0) continue; list.push({key:'v'+i,art:lvl>=3?ART.veg2:lvl===2?ART.veg1:ART.veg0,x:VEG_SLOTS[i][0],y:VEG_SLOTS[i][1]}); }
+    for(let i=0;i<Math.min(g.flower,FLOWER_SLOTS.length);i++) list.push({key:'f'+i,art:ART.flower,x:FLOWER_SLOTS[i][0],y:FLOWER_SLOTS[i][1]});
+    if(g.tumbler>0) list.push({key:'well',art:ART.well,x:WELL[0],y:WELL[1]});
+    if(g.bus>0) list.push({key:'busstop',art:ART.busstop,x:BUSSTOP[0],y:BUSSTOP[1]});
+    if(g.straw>0){ list.push({key:'pond',art:ART.pond,x:POND[0],y:POND[1],z:40}); for(let i=0;i<Math.min(g.straw,3);i++) list.push({key:'turtle'+i,art:ART.turtle,x:POND[0]-10+i*10,y:POND[1]-1,z:50+i}); }
+    if(g.bike>0) list.push({key:'bike',art:ART.bike,x:BIKE[0],y:BIKE[1],z:55});
+    if((g.animals||[]).includes('squirrel')) list.push({key:'squirrel',art:ART.squirrel,x:28,y:44,z:70});
     return list;
   }
   function keyLabel(k){
@@ -325,6 +327,83 @@
     }).join('');
   }
 
+  /* ---------- 이웃 정원 방문 (읽기 전용) ---------- */
+  let _visitUsers=null;
+  window.gardenVisitList = async function(){
+    let ov=document.getElementById('gVisitOv'); if(ov) ov.remove();
+    ov=document.createElement('div'); ov.id='gVisitOv';
+    ov.style.cssText='position:fixed;inset:0;background:rgba(40,50,38,.5);z-index:9000;display:flex;align-items:flex-end;justify-content:center';
+    ov.innerHTML=`<div style="background:#fffdf6;width:100%;max-width:480px;border-radius:20px 20px 0 0;padding:18px 16px 28px;max-height:80vh;overflow-y:auto;font-family:'Gowun Batang',serif">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div style="font-size:16px;font-weight:700;color:#3c4a3a">🚪 이웃 정원 구경하기</div>
+        <button onclick="document.getElementById('gVisitOv').remove()" style="background:#eee;border:none;border-radius:50%;width:30px;height:30px;font-size:15px;cursor:pointer">✕</button>
+      </div>
+      <div id="gVisitList" style="display:flex;flex-direction:column;gap:8px"><div style="color:#a99;font-size:13px;text-align:center;padding:20px">불러오는 중...</div></div>
+    </div>`;
+    ov.addEventListener('click',e=>{ if(e.target===ov) ov.remove(); });
+    document.body.appendChild(ov);
+    try{
+      const snap=await window.FB.getDocs(window.FB.collection(window.FB.db,'users'));
+      const me=window.ME&&window.ME.uid;
+      const users=snap.docs.map(d=>({uid:d.id,...d.data()}))
+        .filter(u=>u.uid!==me)
+        .map(u=>{ let tot=u.gardenV2?gTotal(u.gardenV2):0; if(tot===0&&Array.isArray(u.doneMissions)) tot=u.doneMissions.length;
+                  return {uid:u.uid, nickname:u.nickname||'익명 지구지킴이', tot, g:u.gardenV2||null, done:u.doneMissions||[]}; })
+        .filter(u=>u.tot>0).sort((a,b)=>b.tot-a.tot).slice(0,40);
+      _visitUsers={}; users.forEach(u=>_visitUsers[u.uid]=u);
+      const list=document.getElementById('gVisitList'); if(!list) return;
+      if(!users.length){ list.innerHTML='<div style="color:#a99;font-size:13px;text-align:center;padding:20px">아직 구경할 이웃 정원이 없어요 🌱</div>'; return; }
+      list.innerHTML=users.map(u=>`<button onclick="gardenVisit('${u.uid}')" style="display:flex;align-items:center;justify-content:space-between;background:#fff;border:1.5px solid #e7ddc6;border-radius:12px;padding:12px 14px;cursor:pointer;font-family:inherit;text-align:left">
+        <span style="font-size:14px;font-weight:700;color:#3c4a3a">🌿 ${u.nickname}</span>
+        <span style="font-size:12px;color:#6f9258;font-weight:700">정원 ${u.tot} ›</span></button>`).join('');
+    }catch(e){ const l=document.getElementById('gVisitList'); if(l) l.innerHTML='<div style="color:#c66;font-size:13px;text-align:center;padding:20px">불러오기 실패</div>'; }
+  };
+
+  window.gardenVisit = function(uid){
+    const u=_visitUsers && _visitUsers[uid]; if(!u) return;
+    const ov=document.getElementById('gVisitOv'); if(ov) ov.remove();
+    let g=u.g;
+    if(!g || gTotal(g)===0){
+      g=DEFAULT(); (u.done||[]).forEach(id=>{const m=findMission(id)||{id:id}; const k=classify(m); g[k]=(g[k]||0)+1;});
+      g.animals=[]; if((g.straw||0)>=1) g.animals.push('turtle'); if(((g.bike||0)+(g.bus||0))>=3) g.animals.push('squirrel');
+    }
+    renderVisitScene(u.nickname, g);
+  };
+  window.gardenExit = function(){ renderGarden(); };
+
+  function renderVisitScene(nickname, g){
+    const h=host(); if(!h) return; injectCss();
+    h.innerHTML=`
+      <div style="padding:0 12px 16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin:4px 2px 8px">
+          <div class="g-chTitle" style="margin:0">🌿 ${nickname}님의 정원</div>
+          <button onclick="gardenExit()" style="background:#6f9258;color:#fff;border:none;border-radius:10px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">← 내 정원</button>
+        </div>
+        <div id="gardenScene">
+          <div class="g-sun"></div>
+          <div class="g-cloud" style="top:28px;left:34px;width:52px;height:17px"></div>
+          <div class="g-cloud" style="top:48px;left:92px;width:32px;height:11px;opacity:.7"></div>
+          <div class="g-hill"></div><div class="g-hill b"></div>
+          <div class="g-path" id="gPath"></div>
+          <div id="gObjects"></div>
+          <div id="gFx"></div>
+        </div>
+        <div class="g-foot">
+          <span>총 인증 <b>${gTotal(g)}</b>회 · 돌아온 동물 <b>${(g.animals||[]).length}</b>종</span>
+          <span style="font-size:11px;color:#a99">구경 모드 · 읽기 전용</span>
+        </div>
+      </div>`;
+    const o=document.getElementById('gObjects');
+    defaultObjs(g).forEach(ob=>{
+      if((g.stored||[]).includes(ob.key)) return;
+      const p=(g.pos&&g.pos[ob.key])||[ob.x,ob.y];
+      const d=document.createElement('div'); d.className='g-obj';
+      d.style.cssText=`left:${p[0]}%;top:${p[1]}%;z-index:${ob.z||Math.round(p[1])};cursor:default`;
+      d.innerHTML=ob.art; o.appendChild(d);
+    });
+    const pa=document.getElementById('gPath'); if(pa) pa.style.opacity=((g.bike||0)>0||(g.bus||0)>0)?'1':'0';
+  }
+
   /* ---------- 연출 ---------- */
   function pctToPx(xp,yp){ const r=scene().getBoundingClientRect(); return {x:r.width*xp/100, y:r.height*yp/100}; }
   function floatText(text,xp,yp){
@@ -420,7 +499,7 @@
     // 챌린지 참여/취소 시 칩 갱신
     const _rtq=window.renderTodayQuests;
     window.renderTodayQuests=function(uid){ if(_rtq) _rtq(uid); renderChips(); };
-    console.log('%c[garden v1.4] 🌱 정원(이동·보관·자동복구)','color:#fff;background:#6f9258;padding:4px 8px;border-radius:4px;font-weight:bold');
+    console.log('%c[garden v1.5] 🌱 정원(이동·보관·복구·이웃방문)','color:#fff;background:#6f9258;padding:4px 8px;border-radius:4px;font-weight:bold');
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>setTimeout(boot,1800));
   else setTimeout(boot,1800);

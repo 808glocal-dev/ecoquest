@@ -41,7 +41,7 @@
       const companyRanking = companies.map(co => {
         const members = allUsers.filter(u => u.companyId === co.id);
         return {co, totalCo2:members.reduce((s,u)=>s+(u.co2||0),0), totalMission:members.reduce((s,u)=>s+(u.missionCount||0),0), memberCount:members.length};
-      }).filter(c => c.memberCount > 0).sort((a,b) => b.totalCo2 - a.totalCo2);
+      }).sort((a,b) => b.totalCo2 - a.totalCo2);
 
       const myRankAll = myUid ? allUsers.findIndex(u => u.id === myUid) + 1 : 0;
       const myCompanyRank = myCompanyId ? companyRanking.findIndex(c => c.co.id === myCompanyId) + 1 : 0;

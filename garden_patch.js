@@ -299,11 +299,18 @@
     else mount();
     hookSave();
     const mp=document.getElementById('page-map');
-    if(mp){ new MutationObserver(()=>{ if(!scene()) mount(); else renderChips(); }).observe(mp,{childList:true,subtree:true}); }
+    if(mp){
+      // ★ scene이 통째로 사라졌을 때만 다시 mount. mount 중에는 옵저버를 끊어
+      //   자기 자신이 다시 발동되는 무한 루프를 막는다 (renderChips 호출 제거).
+      const _obs=new MutationObserver(()=>{
+        if(!scene()){ _obs.disconnect(); mount(); _obs.observe(mp,{childList:true,subtree:true}); }
+      });
+      _obs.observe(mp,{childList:true,subtree:true});
+    }
     // 챌린지 참여/취소 시 칩 갱신
     const _rtq=window.renderTodayQuests;
     window.renderTodayQuests=function(uid){ if(_rtq) _rtq(uid); renderChips(); };
-    console.log('%c[garden v1.1] 🌱 챌린지로 자라는 정원','color:#fff;background:#6f9258;padding:4px 8px;border-radius:4px;font-weight:bold');
+    console.log('%c[garden v1.2] 🌱 챌린지로 자라는 정원','color:#fff;background:#6f9258;padding:4px 8px;border-radius:4px;font-weight:bold');
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>setTimeout(boot,1800));
   else setTimeout(boot,1800);

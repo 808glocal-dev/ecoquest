@@ -348,14 +348,14 @@
       const users=snap.docs.map(d=>({uid:d.id,...d.data()}))
         .filter(u=>u.uid!==me)
         .map(u=>{ let tot=u.gardenV2?gTotal(u.gardenV2):0; if(tot===0&&Array.isArray(u.doneMissions)) tot=u.doneMissions.length;
-                  return {uid:u.uid, nickname:u.nickname||'익명 지구지킴이', tot, g:u.gardenV2||null, done:u.doneMissions||[]}; })
-        .filter(u=>u.tot>0).sort((a,b)=>b.tot-a.tot).slice(0,40);
+                  return {uid:u.uid, nickname:u.nickname||'익명 지구지킴이', tot, co2:(u.co2||0), g:u.gardenV2||null, done:u.doneMissions||[]}; })
+        .filter(u=>u.tot>0).sort((a,b)=>b.co2-a.co2).slice(0,40);
       _visitUsers={}; users.forEach(u=>_visitUsers[u.uid]=u);
       const list=document.getElementById('gVisitList'); if(!list) return;
       if(!users.length){ list.innerHTML='<div style="color:#a99;font-size:13px;text-align:center;padding:20px">아직 구경할 이웃 정원이 없어요 🌱</div>'; return; }
-      list.innerHTML=users.map(u=>`<button onclick="gardenVisit('${u.uid}')" style="display:flex;align-items:center;justify-content:space-between;background:#fff;border:1.5px solid #e7ddc6;border-radius:12px;padding:12px 14px;cursor:pointer;font-family:inherit;text-align:left">
+      list.innerHTML=users.map(u=>`<button onclick="gardenVisit('${u.uid}')" style="display:flex;align-items:center;justify-content:space-between;background:#fff;border:1.5px solid #e7ddc6;border-radius:12px;padding:13px 14px;cursor:pointer;font-family:inherit;text-align:left">
         <span style="font-size:14px;font-weight:700;color:#3c4a3a">🌿 ${u.nickname}</span>
-        <span style="font-size:12px;color:#6f9258;font-weight:700">정원 ${u.tot} ›</span></button>`).join('');
+        <span style="font-size:13px;color:#6f9258;font-weight:700">🌿 ${u.co2.toFixed(1)}kg ›</span></button>`).join('');
     }catch(e){ const l=document.getElementById('gVisitList'); if(l) l.innerHTML='<div style="color:#c66;font-size:13px;text-align:center;padding:20px">불러오기 실패</div>'; }
   };
 
@@ -499,7 +499,7 @@
     // 챌린지 참여/취소 시 칩 갱신
     const _rtq=window.renderTodayQuests;
     window.renderTodayQuests=function(uid){ if(_rtq) _rtq(uid); renderChips(); };
-    console.log('%c[garden v1.5] 🌱 정원(이동·보관·복구·이웃방문)','color:#fff;background:#6f9258;padding:4px 8px;border-radius:4px;font-weight:bold');
+    console.log('%c[garden v1.7] 🌱 정원','color:#fff;background:#6f9258;padding:4px 8px;border-radius:4px;font-weight:bold');
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>setTimeout(boot,1800));
   else setTimeout(boot,1800);

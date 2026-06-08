@@ -1,10 +1,9 @@
 /* =====================================================
-   EcoQuest – 게임 속 "내 챌린지" 바 (① 기능, v2)
-   - 내 지구(토끼 월드) 안에 "내가 참여 중인 챌린지"를 띄움
-   - 홈의 오늘의 미션(activeChallenges)과 동일 데이터
-   - 칩 탭 → 기존 openAI(m, uid, challengeId) 호출 (진행도·완주 로직 그대로)
-   - 인증 성공 → CO₂↑ → 내 지구 성장
-   ★ 토끼/farm 패치 + 챌린지(빈도) 패치보다 "뒤"에 로드 (맨 끝)
+   EcoQuest – 게임(농장) 속 "내 챌린지" 바 (① 기능, v3)
+   - 농장 탭(#page-map)에 직접 꽂아 farm 패치 DOM과 무관하게 표시
+   - activeChallenges(내가 참여 중인 챌린지)를 그대로 띄움
+   - 칩 탭 → openAI(m, uid, challengeId) → 인증 시 진행도↑ + 지구 성장
+   ★ 모든 패치보다 "뒤"에 로드 (맨 끝)
    ===================================================== */
 (function () {
   'use strict';
@@ -16,10 +15,10 @@
     return ac.freqPerWeek ?? (ac.freq === 'daily' ? 7 : (parseInt((ac.freq || 'w1').replace('w', '')) || 1));
   }
   function activeList() {
-    const validIds = (typeof CHALLENGES !== 'undefined') ? CHALLENGES.map(c => c.missionId) : [];
+    const validIds = (typeof CHALLENGES !== 'undefined') ? CHALLENGES.map(c => c.missionId) : null;
     const today = new Date().toISOString().split('T')[0];
     return (window.UDATA?.activeChallenges || []).filter(ac =>
-      (!ac.endDate || ac.endDate >= today) && validIds.includes(ac.missionId)
+      (!ac.endDate || ac.endDate >= today) && (!validIds || validIds.includes(ac.missionId))
     );
   }
 
@@ -38,8 +37,9 @@
   function chipsHtml() {
     const active = activeList();
     if (!active.length) {
+      const guest = !window.ME;
       return `<div style="width:100%;text-align:center;color:rgba(255,255,255,.85);font-size:12px;padding:6px 2px 2px">
-        참여 중인 챌린지가 없어요
+        ${guest ? '로그인하고 챌린지에 참여해봐요' : '참여 중인 챌린지가 없어요'}
         <button onclick="goPage('chal')" style="display:block;margin:8px auto 0;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);border-radius:10px;padding:7px 14px;color:#fff;font-weight:700;font-size:12px;cursor:pointer;font-family:inherit">챌린지 참여하기 🏆</button>
       </div>`;
     }
@@ -71,25 +71,26 @@
   }
 
   function inject() {
-    const main = document.getElementById('bunnyGameMain');
-    if (!main) return;
+    const mapPage = document.getElementById('page-map');
+    if (!mapPage) return;
     if (document.getElementById('inGameMissionBar')) return;
     const bar = document.createElement('div');
     bar.id = 'inGameMissionBar';
     bar.innerHTML = `
-      <div style="margin:0 12px 12px;background:linear-gradient(135deg,#0f3d20,#1a6b3a);border-radius:16px;
+      <div style="margin:12px 12px 12px;background:linear-gradient(135deg,#0f3d20,#1a6b3a);border-radius:16px;
                   padding:12px 12px 10px;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.08)">
         <div style="font-size:13px;font-weight:900">🎮 내 지구에서 챌린지 인증</div>
         <div style="font-size:11px;color:rgba(255,255,255,.7);margin:2px 0 10px">인증하면 눈앞에서 지구가 자라요 🌱</div>
         <div id="inGameMissionChips" style="display:flex;gap:8px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px"></div>
       </div>`;
+    // 토끼 월드 바로 아래가 이상적, 못 찾으면 농장 탭 맨 위
     const pg = document.getElementById('bunnyPlayground');
     if (pg && pg.parentElement) pg.insertAdjacentElement('afterend', bar);
-    else main.insertBefore(bar, main.firstChild);
+    else mapPage.insertBefore(bar, mapPage.firstChild);
     renderBar();
+    console.log('[in_game_mission] 바 삽입됨 · 챌린지', activeList().length, '개');
   }
 
-  // 인증/참여/취소 시 홈 미션이 갱신되는 타이밍에 게임 바도 같이 갱신
   const _origRTQ = window.renderTodayQuests;
   window.renderTodayQuests = function (uid) {
     if (_origRTQ) _origRTQ(uid);
@@ -98,7 +99,7 @@
 
   function watch() {
     const mapPage = document.getElementById('page-map');
-    if (!mapPage) { setTimeout(watch, 800); return; }
+    if (!mapPage) { setTimeout(watch, 600); return; }
     inject();
     new MutationObserver(() => inject()).observe(mapPage, { childList: true, subtree: true });
   }
@@ -107,12 +108,13 @@
   if (typeof _origGoPage === 'function') {
     window.goPage = function (name) {
       const r = _origGoPage.apply(this, arguments);
-      if (name === 'map') { setTimeout(() => { inject(); renderBar(); }, 300); setTimeout(() => { inject(); renderBar(); }, 1200); }
+      if (name === 'map') { setTimeout(() => { inject(); renderBar(); }, 200); setTimeout(() => { inject(); renderBar(); }, 1000); }
       return r;
     };
   }
 
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => setTimeout(watch, 1500));
-  else setTimeout(watch, 1500);
+  console.log('[in_game_mission] v3 loaded');
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => setTimeout(watch, 1200));
+  else setTimeout(watch, 1200);
 
 })();

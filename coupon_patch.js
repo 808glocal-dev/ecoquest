@@ -37,10 +37,12 @@ async function exchangeCoupon(couponId) {
   const snap = await window.FB.getDoc(window.FB.doc(window.FB.db, 'coupons', couponId));
   if (!snap.exists()) { toast('쿠폰 정보를 찾을 수 없어요'); return; }
   const coupon = { id: snap.id, ...snap.data() };
-  if ((window.UDATA?.point || 0) < coupon.pointCost) { toast(`포인트 부족! ${coupon.pointCost.toLocaleString()}P 필요`); return; }
   if ((coupon.totalQty || 0) - (coupon.usedQty || 0) <= 0) { toast('쿠폰이 모두 소진됐어요 😢'); return; }
-  const label = coupon.discount > 0 ? `${coupon.discount.toLocaleString()}원 교환권` : '교환권';
-  if (!confirm(`${coupon.brandName} ${label}을 ${coupon.pointCost.toLocaleString()}P로 교환할까요?`)) return;
+  const myPoint = window.UDATA?.point || 0;
+  const awardLabel = coupon.awardName ? `${coupon.awardName} 교환권` : '교환권';
+  // 포인트 전액 차감 방식 (drainAll 플래그가 있으면)
+  const costToUse = coupon.drainAll ? myPoint : coupon.pointCost;
+  if (!confirm(`${coupon.brandName} ${awardLabel}을 교환할까요?\n내 포인트 ${myPoint.toLocaleString()}P가 전부 차감돼요.`)) return;
   try {
     const code = `${coupon.codePrefix || 'ECO'}-${Math.random().toString(36).substring(2,7).toUpperCase()}`;
     await window.FB.addDoc(window.FB.collection(window.FB.db, 'couponCodes'), {
@@ -48,9 +50,10 @@ async function exchangeCoupon(couponId) {
       brandEmail: coupon.brandEmail || '', discount: coupon.discount,
       minPurchase: coupon.minPurchase || 0, code,
       issuedTo: uid, issuedAt: window.FB.serverTimestamp(), isUsed: false,
+      pointsSpent: costToUse,
     });
     await window.FB.updateDoc(window.FB.doc(window.FB.db, 'coupons', couponId), { usedQty: window.FB.increment(1) });
-    const newPoint = (window.UDATA?.point || 0) - coupon.pointCost;
+    const newPoint = myPoint - costToUse;
     await window.FB.updateDoc(window.FB.doc(window.FB.db, 'users', uid), { point: newPoint });
     window.UDATA.point = newPoint;
     if (window.updateUI) window.updateUI();
@@ -125,20 +128,25 @@ async function renderCouponStore() {
   } else {
     el.innerHTML = coupons.map(c => {
       const remaining = (c.totalQty||0)-(c.usedQty||0);
-      const canAfford = myPoint >= c.pointCost;
+      const isFree = c.pointCost === 0;
+      const canAfford = isFree || myPoint >= c.pointCost;
       const soldOut = remaining <= 0;
-      const label = c.discount > 0 ? `${c.discount.toLocaleString()}원 교환권` : '교환권';
-      const subLabel = c.minPurchase ? `${c.minPurchase.toLocaleString()}원 이상 · 1인 1매` : '1인 1매';
+      const awardLabel = c.awardName ? `${c.awardName} 교환권` : '교환권';
+      const subLabel = c.minPurchase ? `1인 1매 · ${c.minPurchase.toLocaleString()}원 이상` : '1인 1매';
+      const pointLabel = isFree ? '무료' : `${c.pointCost.toLocaleString()}P`;
       return `
         <div style="background:#fff;border-radius:14px;padding:14px;margin:0 12px 10px;border:1.5px solid ${soldOut?'#eee':'var(--bdr)'};opacity:${soldOut?0.6:1}">
           <div style="display:flex;gap:12px;align-items:flex-start">
             <div style="width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,#1a6b3a,#2ECC71);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0">${c.brandEmoji||'🎁'}</div>
             <div style="flex:1;min-width:0">
-              <div style="font-size:11px;font-weight:700;background:#e8f5e9;color:var(--g2);padding:2px 7px;border-radius:8px;display:inline-block;margin-bottom:4px">${c.brandName}</div>
-              <div style="font-size:15px;font-weight:900;color:var(--txt)">${label}</div>
-              <div style="font-size:11px;color:var(--sub);margin-top:2px">${subLabel}</div>
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px">
-                <div><span style="font-size:14px;font-weight:900;color:var(--g2)">${c.pointCost.toLocaleString()}P</span><span style="font-size:10px;color:var(--sub);margin-left:4px">잔여 ${remaining}매</span></div>
+              <div style="font-size:15px;font-weight:900;color:var(--txt);margin-bottom:2px">${c.brandName}</div>
+              <div style="font-size:11px;color:var(--sub);margin-bottom:6px">${awardLabel}</div>
+              <div style="font-size:11px;color:var(--sub);margin-bottom:8px">${subLabel}</div>
+              <div style="display:flex;align-items:center;justify-content:space-between">
+                <div>
+                  <span style="font-size:14px;font-weight:900;color:${isFree?'var(--g2)':'var(--g2)'}">${pointLabel}</span>
+                  <span style="font-size:10px;color:var(--sub);margin-left:4px">잔여 ${remaining}매</span>
+                </div>
                 <button onclick="exchangeCoupon('${c.id}')"
                   style="background:${soldOut?'#f0f0f0':canAfford?'linear-gradient(135deg,var(--g1),var(--g2))':'#f0f0f0'};color:${canAfford&&!soldOut?'#fff':'var(--sub)'};border:none;border-radius:10px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit"
                   ${soldOut?'disabled':''}>
@@ -229,6 +237,8 @@ function injectAdminCouponTab() {
             <input id="cpTotalQty" type="number" placeholder="총 발행 수량" style="border:1.5px solid #ddd;border-radius:10px;padding:8px 12px;font-size:13px;font-family:inherit"/>
             <input id="cpCodePrefix" placeholder="코드 접두어 (예: MYSC-MVP)" style="border:1.5px solid #ddd;border-radius:10px;padding:8px 12px;font-size:13px;font-family:inherit"/>
             <button onclick="addAdminCoupon()" style="background:var(--g1);color:#fff;border:none;border-radius:10px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">등록하기</button>
+            <input id="cpAwardName" placeholder="상 이름 (예: MVP 1등) — 선택" style="border:1.5px solid #ddd;border-radius:10px;padding:8px 12px;font-size:13px;font-family:inherit"/>
+            <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;padding:4px 0"><input type="checkbox" id="cpDrainAll" style="width:16px;height:16px;cursor:pointer"/> 포인트 전액 차감 (수상자용)</label>
           </div>
         </div>
 
@@ -494,15 +504,19 @@ window.addAdminCoupon = async function() {
   const pointCost = parseInt(document.getElementById('cpPointCost')?.value) || 0;
   const totalQty = parseInt(document.getElementById('cpTotalQty')?.value) || 0;
   const codePrefix = document.getElementById('cpCodePrefix')?.value.trim().toUpperCase() || 'ECO';
-  if (!brand || !pointCost || !totalQty) { toast('브랜드명, 포인트, 수량은 필수예요!'); return; }
+  const awardName = document.getElementById('cpAwardName')?.value.trim() || '';
+  const drainAll = document.getElementById('cpDrainAll')?.checked || false;
+  if (!brand || !totalQty) { toast('브랜드명, 수량은 필수예요!'); return; }
   try {
     await window.FB.addDoc(window.FB.collection(window.FB.db,'coupons'), {
       brandName:brand, brandEmoji:emoji, brandEmail:email,
       discount, minPurchase, pointCost, totalQty, usedQty:0,
-      codePrefix, active:true, createdAt:window.FB.serverTimestamp(),
+      codePrefix, awardName, drainAll,
+      active:true, createdAt:window.FB.serverTimestamp(),
     });
     toast('✅ 쿠폰 등록 완료!');
-    ['cpBrand','cpEmoji','cpEmail','cpDiscount','cpMinPurchase','cpPointCost','cpTotalQty','cpCodePrefix'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    ['cpBrand','cpEmoji','cpEmail','cpDiscount','cpMinPurchase','cpPointCost','cpTotalQty','cpCodePrefix','cpAwardName'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    const cb=document.getElementById('cpDrainAll'); if(cb) cb.checked=false;
     loadAdminCoupons(); renderCouponStore();
   } catch(e) { toast('등록 실패: '+e.message); }
 };

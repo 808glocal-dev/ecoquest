@@ -1,7 +1,7 @@
 /* =====================================================
-   EcoQuest 쿠폰 패치 v3
-   - 유저 사용하기 버튼
-   - 어드민: 발급내역 탭 + CSV 다운로드
+   EcoQuest 쿠폰 패치 v4
+   - "할인" → "교환권" 표시 변경
+   - 어드민 쿠폰 수정 기능 추가
    ===================================================== */
 
 window.addEventListener('load', () => {
@@ -39,7 +39,8 @@ async function exchangeCoupon(couponId) {
   const coupon = { id: snap.id, ...snap.data() };
   if ((window.UDATA?.point || 0) < coupon.pointCost) { toast(`포인트 부족! ${coupon.pointCost.toLocaleString()}P 필요`); return; }
   if ((coupon.totalQty || 0) - (coupon.usedQty || 0) <= 0) { toast('쿠폰이 모두 소진됐어요 😢'); return; }
-  if (!confirm(`${coupon.brandName} ${coupon.discount.toLocaleString()}원 쿠폰을 ${coupon.pointCost.toLocaleString()}P로 교환할까요?`)) return;
+  const label = coupon.discount > 0 ? `${coupon.discount.toLocaleString()}원 교환권` : '교환권';
+  if (!confirm(`${coupon.brandName} ${label}을 ${coupon.pointCost.toLocaleString()}P로 교환할까요?`)) return;
   try {
     const code = `${coupon.codePrefix || 'ECO'}-${Math.random().toString(36).substring(2,7).toUpperCase()}`;
     await window.FB.addDoc(window.FB.collection(window.FB.db, 'couponCodes'), {
@@ -53,7 +54,7 @@ async function exchangeCoupon(couponId) {
     await window.FB.updateDoc(window.FB.doc(window.FB.db, 'users', uid), { point: newPoint });
     window.UDATA.point = newPoint;
     if (window.updateUI) window.updateUI();
-    toast('🎉 쿠폰 발급 완료!');
+    toast('🎉 교환권 발급 완료!');
     renderCouponStore();
     showMyCoupons(uid);
   } catch (e) { toast('교환 실패: ' + e.message); }
@@ -64,18 +65,19 @@ window.useCouponNow = async function (docId) {
   const snap = await window.FB.getDoc(window.FB.doc(window.FB.db, 'couponCodes', docId));
   if (!snap.exists()) { toast('쿠폰 정보를 찾을 수 없어요'); return; }
   const c = snap.data();
-  if (c.isUsed) { toast('이미 사용된 쿠폰이에요'); return; }
+  if (c.isUsed) { toast('이미 사용된 교환권이에요'); return; }
   document.getElementById('couponUseOv')?.remove();
   const ov = document.createElement('div');
   ov.id = 'couponUseOv';
   ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  const label = c.discount > 0 ? `${c.discount.toLocaleString()}원 교환권` : '교환권';
   ov.innerHTML = `
     <div style="background:#fff;border-radius:20px;padding:24px;width:100%;max-width:340px;text-align:center">
       <div style="font-size:52px;margin-bottom:8px">${c.brandEmoji || '🎁'}</div>
       <div style="font-size:16px;font-weight:900;color:var(--txt);margin-bottom:4px">${c.brandName}</div>
-      <div style="font-size:13px;color:var(--sub);margin-bottom:16px">${c.discount.toLocaleString()}원 할인</div>
+      <div style="font-size:13px;color:var(--sub);margin-bottom:16px">${label}</div>
       <div style="background:#f0fbf4;border-radius:12px;padding:16px;margin-bottom:14px;border:1.5px solid var(--g1)">
-        <div style="font-size:11px;color:var(--sub);margin-bottom:4px">쿠폰 코드</div>
+        <div style="font-size:11px;color:var(--sub);margin-bottom:4px">교환 코드</div>
         <div style="font-size:22px;font-weight:900;letter-spacing:3px;color:var(--txt)">${c.code}</div>
         ${c.minPurchase ? `<div style="font-size:11px;color:var(--sub);margin-top:6px">${c.minPurchase.toLocaleString()}원 이상 구매 시</div>` : ''}
       </div>
@@ -101,7 +103,7 @@ window.confirmUseCoupon = async function (docId) {
     await window.FB.updateDoc(window.FB.doc(window.FB.db, 'couponCodes', docId), {
       isUsed: true, usedAt: window.FB.serverTimestamp(), usedBy: window.ME?.uid || '',
     });
-    toast('✅ 쿠폰 사용 완료!');
+    toast('✅ 교환권 사용 완료!');
     if (window.ME?.uid) showMyCoupons(window.ME.uid);
   } catch (e) { toast('처리 실패: ' + e.message); }
 };
@@ -117,22 +119,24 @@ async function renderCouponStore() {
     el.innerHTML = `
       <div style="margin:12px;background:linear-gradient(135deg,#f0fbf4,#e8f5e9);border-radius:16px;padding:20px;text-align:center;border:1.5px dashed var(--g1)">
         <div style="font-size:40px;margin-bottom:8px">🌱</div>
-        <div style="font-size:14px;font-weight:700;color:var(--txt);margin-bottom:6px">제휴 쿠폰 준비 중이에요!</div>
-        <div style="font-size:12px;color:var(--sub);line-height:1.7">친환경 브랜드와 제휴를 맺고 있어요.<br/>곧 다양한 쿠폰이 등장할 거예요 🎁</div>
+        <div style="font-size:14px;font-weight:700;color:var(--txt);margin-bottom:6px">제휴 교환권 준비 중이에요!</div>
+        <div style="font-size:12px;color:var(--sub);line-height:1.7">친환경 브랜드와 제휴를 맺고 있어요.<br/>곧 다양한 교환권이 등장할 거예요 🎁</div>
       </div>`;
   } else {
     el.innerHTML = coupons.map(c => {
       const remaining = (c.totalQty||0)-(c.usedQty||0);
       const canAfford = myPoint >= c.pointCost;
       const soldOut = remaining <= 0;
+      const label = c.discount > 0 ? `${c.discount.toLocaleString()}원 교환권` : '교환권';
+      const subLabel = c.minPurchase ? `${c.minPurchase.toLocaleString()}원 이상 · 1인 1매` : '1인 1매';
       return `
         <div style="background:#fff;border-radius:14px;padding:14px;margin:0 12px 10px;border:1.5px solid ${soldOut?'#eee':'var(--bdr)'};opacity:${soldOut?0.6:1}">
           <div style="display:flex;gap:12px;align-items:flex-start">
             <div style="width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,#1a6b3a,#2ECC71);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0">${c.brandEmoji||'🎁'}</div>
             <div style="flex:1;min-width:0">
               <div style="font-size:11px;font-weight:700;background:#e8f5e9;color:var(--g2);padding:2px 7px;border-radius:8px;display:inline-block;margin-bottom:4px">${c.brandName}</div>
-              <div style="font-size:15px;font-weight:900;color:var(--txt)">${c.discount.toLocaleString()}원 할인</div>
-              <div style="font-size:11px;color:var(--sub);margin-top:2px">${c.minPurchase?`${c.minPurchase.toLocaleString()}원 이상 · `:''}1인 1매</div>
+              <div style="font-size:15px;font-weight:900;color:var(--txt)">${label}</div>
+              <div style="font-size:11px;color:var(--sub);margin-top:2px">${subLabel}</div>
               <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px">
                 <div><span style="font-size:14px;font-weight:900;color:var(--g2)">${c.pointCost.toLocaleString()}P</span><span style="font-size:10px;color:var(--sub);margin-left:4px">잔여 ${remaining}매</span></div>
                 <button onclick="exchangeCoupon('${c.id}')"
@@ -160,8 +164,10 @@ async function showMyCoupons(uid) {
   const codes = await getMyIssuedCoupons(uid);
   if (!codes.length) { sec.innerHTML = ''; return; }
   sec.innerHTML = `
-    <div style="font-size:15px;font-weight:900;color:var(--txt);margin:12px 12px 8px">🎟️ 내 쿠폰함</div>
-    ${codes.map(c => `
+    <div style="font-size:15px;font-weight:900;color:var(--txt);margin:12px 12px 8px">🎟️ 내 교환권함</div>
+    ${codes.map(c => {
+      const label = c.discount > 0 ? `${c.discount.toLocaleString()}원 교환권` : '교환권';
+      return `
       <div style="background:${c.isUsed?'#f8f8f8':'#f0fbf4'};border-radius:12px;padding:12px 14px;margin:0 12px 8px;border:1.5px solid ${c.isUsed?'#eee':'var(--g1)'}">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
           <div style="font-size:13px;font-weight:700;color:var(--txt)">${c.brandEmoji||'🎁'} ${c.brandName}</div>
@@ -169,7 +175,7 @@ async function showMyCoupons(uid) {
             ${c.isUsed?'✅ 사용완료':'미사용'}
           </span>
         </div>
-        <div style="font-size:12px;color:var(--sub);margin-bottom:8px">${c.discount.toLocaleString()}원 할인${c.minPurchase?` · ${c.minPurchase.toLocaleString()}원 이상`:''}</div>
+        <div style="font-size:12px;color:var(--sub);margin-bottom:8px">${label}${c.minPurchase?` · ${c.minPurchase.toLocaleString()}원 이상`:''}</div>
         <div style="background:${c.isUsed?'#eee':'#fff'};border-radius:8px;padding:10px 12px;font-size:16px;font-weight:900;letter-spacing:2px;color:${c.isUsed?'#bbb':'var(--txt)'};text-align:center;border:1px dashed ${c.isUsed?'#ddd':'var(--g1)'};margin-bottom:${c.isUsed?'0':'8px'}">
           ${c.code}
         </div>
@@ -181,7 +187,8 @@ async function showMyCoupons(uid) {
           <div style="font-size:11px;color:#bbb;text-align:center;margin-top:4px">
             ${c.usedAt?new Date(c.usedAt.seconds*1000).toLocaleDateString('ko-KR')+' 사용됨':'사용됨'}
           </div>`}
-      </div>`).join('')}`;
+      </div>`;
+    }).join('')}`;
 }
 window.showMyCoupons = showMyCoupons;
 
@@ -202,7 +209,6 @@ function injectAdminCouponTab() {
     panel.id = 'admin-coupons';
     panel.style.display = 'none';
     panel.innerHTML = `
-      <!-- 서브탭 -->
       <div style="display:flex;gap:6px;margin-bottom:12px">
         <button id="cpTab-list" onclick="setCpTab('list')"
           style="flex:1;padding:8px;border-radius:10px;border:1.5px solid var(--g1);background:var(--g1);color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">📋 쿠폰 관리</button>
@@ -210,7 +216,6 @@ function injectAdminCouponTab() {
           style="flex:1;padding:8px;border-radius:10px;border:1.5px solid #ddd;background:#fff;color:#666;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">📊 발급 내역</button>
       </div>
 
-      <!-- 쿠폰 관리 탭 -->
       <div id="cpPanel-list">
         <div style="background:#fff;border-radius:14px;padding:14px;margin-bottom:12px;border:1px solid #eee">
           <div style="font-size:13px;font-weight:700;margin-bottom:10px">➕ 쿠폰 등록</div>
@@ -218,14 +223,35 @@ function injectAdminCouponTab() {
             <input id="cpBrand" placeholder="브랜드명" style="border:1.5px solid #ddd;border-radius:10px;padding:8px 12px;font-size:13px;font-family:inherit"/>
             <input id="cpEmoji" placeholder="이모지 (예: ♻️)" style="border:1.5px solid #ddd;border-radius:10px;padding:8px 12px;font-size:13px;font-family:inherit"/>
             <input id="cpEmail" placeholder="브랜드 이메일 (선택)" style="border:1.5px solid #ddd;border-radius:10px;padding:8px 12px;font-size:13px;font-family:inherit"/>
-            <input id="cpDiscount" type="number" placeholder="할인금액 (원)" style="border:1.5px solid #ddd;border-radius:10px;padding:8px 12px;font-size:13px;font-family:inherit"/>
+            <input id="cpDiscount" type="number" placeholder="교환 금액 (원, 0이면 단순 교환권)" style="border:1.5px solid #ddd;border-radius:10px;padding:8px 12px;font-size:13px;font-family:inherit"/>
             <input id="cpMinPurchase" type="number" placeholder="최소 구매금액 (0이면 제한없음)" style="border:1.5px solid #ddd;border-radius:10px;padding:8px 12px;font-size:13px;font-family:inherit"/>
             <input id="cpPointCost" type="number" placeholder="필요 포인트" style="border:1.5px solid #ddd;border-radius:10px;padding:8px 12px;font-size:13px;font-family:inherit"/>
             <input id="cpTotalQty" type="number" placeholder="총 발행 수량" style="border:1.5px solid #ddd;border-radius:10px;padding:8px 12px;font-size:13px;font-family:inherit"/>
-            <input id="cpCodePrefix" placeholder="코드 접두어 (예: ALMANG)" style="border:1.5px solid #ddd;border-radius:10px;padding:8px 12px;font-size:13px;font-family:inherit"/>
+            <input id="cpCodePrefix" placeholder="코드 접두어 (예: MYSC-MVP)" style="border:1.5px solid #ddd;border-radius:10px;padding:8px 12px;font-size:13px;font-family:inherit"/>
             <button onclick="addAdminCoupon()" style="background:var(--g1);color:#fff;border:none;border-radius:10px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">등록하기</button>
           </div>
         </div>
+
+        <!-- 수정 폼 (숨김) -->
+        <div id="cpEditForm" style="display:none;background:#fff8e1;border-radius:14px;padding:14px;margin-bottom:12px;border:1.5px solid #f39c12">
+          <div style="font-size:13px;font-weight:700;margin-bottom:10px;color:#8B5E04">✏️ 쿠폰 수정</div>
+          <input type="hidden" id="cpEditId"/>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <input id="cpEditBrand" placeholder="브랜드명" style="border:1.5px solid #ddd;border-radius:10px;padding:8px 12px;font-size:13px;font-family:inherit"/>
+            <input id="cpEditEmoji" placeholder="이모지" style="border:1.5px solid #ddd;border-radius:10px;padding:8px 12px;font-size:13px;font-family:inherit"/>
+            <input id="cpEditEmail" placeholder="브랜드 이메일" style="border:1.5px solid #ddd;border-radius:10px;padding:8px 12px;font-size:13px;font-family:inherit"/>
+            <input id="cpEditDiscount" type="number" placeholder="교환 금액 (원)" style="border:1.5px solid #ddd;border-radius:10px;padding:8px 12px;font-size:13px;font-family:inherit"/>
+            <input id="cpEditMinPurchase" type="number" placeholder="최소 구매금액" style="border:1.5px solid #ddd;border-radius:10px;padding:8px 12px;font-size:13px;font-family:inherit"/>
+            <input id="cpEditPointCost" type="number" placeholder="필요 포인트" style="border:1.5px solid #ddd;border-radius:10px;padding:8px 12px;font-size:13px;font-family:inherit"/>
+            <input id="cpEditTotalQty" type="number" placeholder="총 발행 수량" style="border:1.5px solid #ddd;border-radius:10px;padding:8px 12px;font-size:13px;font-family:inherit"/>
+            <input id="cpEditCodePrefix" placeholder="코드 접두어" style="border:1.5px solid #ddd;border-radius:10px;padding:8px 12px;font-size:13px;font-family:inherit"/>
+            <div style="display:flex;gap:8px">
+              <button onclick="document.getElementById('cpEditForm').style.display='none'" style="flex:1;background:#f0f0f0;color:#666;border:none;border-radius:10px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">취소</button>
+              <button onclick="saveEditCoupon()" style="flex:2;background:#f39c12;color:#fff;border:none;border-radius:10px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">💾 저장</button>
+            </div>
+          </div>
+        </div>
+
         <div style="background:#fff;border-radius:14px;padding:14px;margin-bottom:12px;border:1px solid #eee">
           <div style="font-size:13px;font-weight:700;margin-bottom:10px">🔍 코드 검색 · 사용처리</div>
           <div style="display:flex;gap:8px;margin-bottom:10px">
@@ -234,6 +260,7 @@ function injectAdminCouponTab() {
           </div>
           <div id="cpSearchResult"></div>
         </div>
+
         <div style="background:#fff;border-radius:14px;padding:14px;border:1px solid #eee">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
             <div style="font-size:13px;font-weight:700">등록된 쿠폰</div>
@@ -243,7 +270,6 @@ function injectAdminCouponTab() {
         </div>
       </div>
 
-      <!-- 발급 내역 탭 -->
       <div id="cpPanel-history" style="display:none">
         <div style="background:#fff;border-radius:14px;padding:14px;border:1px solid #eee">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
@@ -253,7 +279,6 @@ function injectAdminCouponTab() {
               <button onclick="exportCouponCSV()" style="background:#1a1a2e;color:#fff;border:none;border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">⬇️ CSV</button>
             </div>
           </div>
-          <!-- 필터 -->
           <div style="display:flex;gap:6px;margin-bottom:10px">
             <button id="cpFilter-all" onclick="filterCouponHistory('all')"
               style="flex:1;padding:6px;border-radius:8px;border:1.5px solid var(--g1);background:var(--g1);color:#fff;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">전체</button>
@@ -304,19 +329,16 @@ window.loadCouponHistory = async function() {
   if (!w || !window.FB) return;
   w.innerHTML = '<div style="text-align:center;color:#aaa;padding:20px;font-size:12px">로딩 중...</div>';
   try {
-    // 쿠폰 코드 + 유저 닉네임 함께 조회
     const [codeSnap, userSnap] = await Promise.all([
       window.FB.getDocs(window.FB.collection(window.FB.db, 'couponCodes')),
       window.FB.getDocs(window.FB.collection(window.FB.db, 'users')),
     ]);
     const userMap = {};
     userSnap.docs.forEach(d => { userMap[d.id] = d.data().nickname || '익명'; });
-
     _allCouponHistory = codeSnap.docs.map(d => ({
       id: d.id, ...d.data(),
       userNickname: userMap[d.data().issuedTo] || '익명',
     })).sort((a,b) => (b.issuedAt?.seconds||0) - (a.issuedAt?.seconds||0));
-
     renderCouponHistory(_allCouponHistory);
   } catch(e) { w.innerHTML = '<div style="color:red;font-size:12px;padding:12px">로딩 실패</div>'; }
 };
@@ -327,12 +349,14 @@ function renderCouponHistory(list) {
   if (!list.length) { w.innerHTML = '<div style="text-align:center;color:#aaa;padding:20px;font-size:12px">내역이 없어요</div>'; return; }
   w.innerHTML = `
     <div style="font-size:11px;color:#aaa;margin-bottom:8px">총 ${list.length}건</div>
-    ${list.map(c => `
+    ${list.map(c => {
+      const label = c.discount > 0 ? `${c.discount.toLocaleString()}원 교환권` : '교환권';
+      return `
       <div style="padding:10px;background:${c.isUsed?'#f8f8f8':'#f0fbf4'};border-radius:10px;margin-bottom:6px;border:1px solid ${c.isUsed?'#eee':'var(--bdr)'}">
         <div style="display:flex;justify-content:space-between;align-items:flex-start">
           <div>
             <div style="font-size:12px;font-weight:700;color:var(--txt)">${c.brandEmoji||'🎁'} ${c.brandName}</div>
-            <div style="font-size:11px;color:var(--sub);margin-top:2px">👤 ${c.userNickname} · ${c.discount.toLocaleString()}원</div>
+            <div style="font-size:11px;color:var(--sub);margin-top:2px">👤 ${c.userNickname} · ${label}</div>
             <div style="font-size:11px;color:var(--sub)">🔑 ${c.code}</div>
             <div style="font-size:10px;color:#aaa;margin-top:2px">
               발급: ${c.issuedAt ? new Date(c.issuedAt.seconds*1000).toLocaleDateString('ko-KR') : '-'}
@@ -343,10 +367,10 @@ function renderCouponHistory(list) {
             ${c.isUsed?'✅ 사용':'미사용'}
           </span>
         </div>
-      </div>`).join('')}`;
+      </div>`;
+    }).join('')}`;
 }
 
-// ── 필터 ──
 window.filterCouponHistory = function(type) {
   ['all','unused','used'].forEach(t => {
     const btn = document.getElementById('cpFilter-'+t);
@@ -362,14 +386,13 @@ window.filterCouponHistory = function(type) {
   renderCouponHistory(filtered);
 };
 
-// ── CSV 다운로드 ──
 window.exportCouponCSV = function() {
   if (!_allCouponHistory.length) { toast('먼저 내역을 불러와주세요!'); return; }
-  const rows = [['브랜드', '할인금액', '코드', '발급자', '발급일', '사용여부', '사용일']];
+  const rows = [['브랜드', '교환금액', '코드', '발급자', '발급일', '사용여부', '사용일']];
   _allCouponHistory.forEach(c => {
     rows.push([
       c.brandName || '',
-      c.discount ? c.discount + '원' : '',
+      c.discount ? c.discount + '원' : '교환권',
       c.code || '',
       c.userNickname || '',
       c.issuedAt ? new Date(c.issuedAt.seconds*1000).toLocaleDateString('ko-KR') : '-',
@@ -381,7 +404,7 @@ window.exportCouponCSV = function() {
   const blob = new Blob(['\uFEFF'+csv], { type: 'text/csv;charset=utf-8' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'EcoQuest_쿠폰내역_' + new Date().toLocaleDateString('ko-KR').replace(/\./g,'').replace(/ /g,'') + '.csv';
+  a.download = 'EcoQuest_교환권내역_' + new Date().toLocaleDateString('ko-KR').replace(/\./g,'').replace(/ /g,'') + '.csv';
   a.click();
   toast('✅ CSV 다운로드 완료!');
 };
@@ -396,18 +419,23 @@ async function loadAdminCoupons() {
     if (!coupons.length) { w.innerHTML = '<div style="text-align:center;color:#aaa;padding:12px;font-size:12px">등록된 쿠폰이 없어요</div>'; return; }
     w.innerHTML = coupons.map(c => {
       const remaining = (c.totalQty||0)-(c.usedQty||0);
+      const label = c.discount > 0 ? `${c.discount.toLocaleString()}원 교환권` : '교환권';
       return `
         <div style="padding:10px;background:#f8fdf9;border-radius:10px;margin-bottom:8px;border:1px solid var(--bdr)">
           <div style="display:flex;justify-content:space-between;align-items:flex-start">
             <div>
               <div style="font-size:13px;font-weight:700">${c.brandEmoji||'🎁'} ${c.brandName}</div>
-              <div style="font-size:11px;color:var(--sub)">${c.discount.toLocaleString()}원 · ${c.pointCost.toLocaleString()}P · ${c.codePrefix||'ECO'}</div>
+              <div style="font-size:11px;color:var(--sub)">${label} · ${c.pointCost.toLocaleString()}P · ${c.codePrefix||'ECO'}</div>
               <div style="font-size:11px;color:var(--sub)">${c.brandEmail?`📧 ${c.brandEmail}`:'이메일 없음'}</div>
               <div style="font-size:11px;color:var(--sub)">발행 ${c.totalQty||0} · 사용 ${c.usedQty||0} · <b style="color:${remaining>0?'var(--g2)':'var(--red)'}">잔여 ${remaining}</b></div>
             </div>
-            <div style="display:flex;gap:4px;flex-direction:column">
-              <button onclick="toggleCouponActive('${c.id}',${!c.active})" style="background:${c.active!==false?'#e8f5e9':'#fee'};color:${c.active!==false?'var(--g2)':'var(--red)'};border:none;border-radius:8px;padding:4px 8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">${c.active!==false?'활성':'비활성'}</button>
-              <button onclick="deleteCoupon('${c.id}')" style="background:#fee;color:var(--red);border:none;border-radius:8px;padding:4px 8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">삭제</button>
+            <div style="display:flex;gap:4px;flex-direction:column;align-items:flex-end">
+              <button onclick="openEditCoupon('${c.id}','${(c.brandName||'').replace(/'/g,'&apos;')}','${c.brandEmoji||'🎁'}','${c.brandEmail||''}',${c.discount||0},${c.minPurchase||0},${c.pointCost||0},${c.totalQty||0},'${c.codePrefix||'ECO'}')"
+                style="background:#fff8e1;color:#8B5E04;border:1px solid #f39c12;border-radius:8px;padding:4px 8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">✏️ 수정</button>
+              <button onclick="toggleCouponActive('${c.id}',${!c.active})"
+                style="background:${c.active!==false?'#e8f5e9':'#fee'};color:${c.active!==false?'var(--g2)':'var(--red)'};border:none;border-radius:8px;padding:4px 8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">${c.active!==false?'활성':'비활성'}</button>
+              <button onclick="deleteCoupon('${c.id}')"
+                style="background:#fee;color:var(--red);border:none;border-radius:8px;padding:4px 8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">삭제</button>
             </div>
           </div>
         </div>`;
@@ -415,6 +443,47 @@ async function loadAdminCoupons() {
   } catch(e) { w.innerHTML = '<div style="color:red;font-size:12px">로딩 실패</div>'; }
 }
 window.loadAdminCoupons = loadAdminCoupons;
+
+// ── 수정 폼 열기 ──
+window.openEditCoupon = function(id, brand, emoji, email, discount, minPurchase, pointCost, totalQty, codePrefix) {
+  document.getElementById('cpEditId').value = id;
+  document.getElementById('cpEditBrand').value = brand;
+  document.getElementById('cpEditEmoji').value = emoji;
+  document.getElementById('cpEditEmail').value = email;
+  document.getElementById('cpEditDiscount').value = discount;
+  document.getElementById('cpEditMinPurchase').value = minPurchase;
+  document.getElementById('cpEditPointCost').value = pointCost;
+  document.getElementById('cpEditTotalQty').value = totalQty;
+  document.getElementById('cpEditCodePrefix').value = codePrefix;
+  const form = document.getElementById('cpEditForm');
+  form.style.display = 'block';
+  form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+};
+
+// ── 수정 저장 ──
+window.saveEditCoupon = async function() {
+  const id = document.getElementById('cpEditId')?.value;
+  if (!id) { toast('수정할 쿠폰을 찾을 수 없어요'); return; }
+  const brand = document.getElementById('cpEditBrand')?.value.trim();
+  const emoji = document.getElementById('cpEditEmoji')?.value.trim() || '🎁';
+  const email = document.getElementById('cpEditEmail')?.value.trim() || '';
+  const discount = parseInt(document.getElementById('cpEditDiscount')?.value) || 0;
+  const minPurchase = parseInt(document.getElementById('cpEditMinPurchase')?.value) || 0;
+  const pointCost = parseInt(document.getElementById('cpEditPointCost')?.value) || 0;
+  const totalQty = parseInt(document.getElementById('cpEditTotalQty')?.value) || 0;
+  const codePrefix = document.getElementById('cpEditCodePrefix')?.value.trim().toUpperCase() || 'ECO';
+  if (!brand || !pointCost || !totalQty) { toast('브랜드명, 포인트, 수량은 필수예요!'); return; }
+  try {
+    await window.FB.updateDoc(window.FB.doc(window.FB.db, 'coupons', id), {
+      brandName: brand, brandEmoji: emoji, brandEmail: email,
+      discount, minPurchase, pointCost, totalQty, codePrefix,
+    });
+    toast('✅ 수정 완료!');
+    document.getElementById('cpEditForm').style.display = 'none';
+    loadAdminCoupons();
+    renderCouponStore();
+  } catch(e) { toast('수정 실패: ' + e.message); }
+};
 
 window.addAdminCoupon = async function() {
   const brand = document.getElementById('cpBrand')?.value.trim();
@@ -425,7 +494,7 @@ window.addAdminCoupon = async function() {
   const pointCost = parseInt(document.getElementById('cpPointCost')?.value) || 0;
   const totalQty = parseInt(document.getElementById('cpTotalQty')?.value) || 0;
   const codePrefix = document.getElementById('cpCodePrefix')?.value.trim().toUpperCase() || 'ECO';
-  if (!brand||!discount||!pointCost||!totalQty) { toast('브랜드명, 할인금액, 포인트, 수량은 필수예요!'); return; }
+  if (!brand || !pointCost || !totalQty) { toast('브랜드명, 포인트, 수량은 필수예요!'); return; }
   try {
     await window.FB.addDoc(window.FB.collection(window.FB.db,'coupons'), {
       brandName:brand, brandEmoji:emoji, brandEmail:email,
@@ -447,10 +516,11 @@ window.searchCouponCode = async function() {
     const snap = await window.FB.getDocs(window.FB.collection(window.FB.db,'couponCodes'));
     const found = snap.docs.map(d=>({id:d.id,...d.data()})).find(c=>c.code===code);
     if (!found) { res.innerHTML='<div style="background:#fee;border-radius:10px;padding:10px;font-size:12px;color:var(--red)">❌ 존재하지 않는 코드예요</div>'; return; }
+    const label = found.discount > 0 ? `${found.discount.toLocaleString()}원 교환권` : '교환권';
     res.innerHTML = `
       <div style="background:${found.isUsed?'#f8f8f8':'#f0fbf4'};border-radius:10px;padding:12px;border:1.5px solid ${found.isUsed?'#eee':'var(--g1)'}">
         <div style="font-size:13px;font-weight:700;margin-bottom:4px">${found.brandEmoji||'🎁'} ${found.brandName}</div>
-        <div style="font-size:12px;color:var(--sub);margin-bottom:4px">${found.discount.toLocaleString()}원 · <b>${found.code}</b></div>
+        <div style="font-size:12px;color:var(--sub);margin-bottom:4px">${label} · <b>${found.code}</b></div>
         <div style="font-size:12px;font-weight:700;color:${found.isUsed?'var(--red)':'var(--g2)'};margin-bottom:8px">${found.isUsed?'✅ 이미 사용됨':'🟢 미사용'}</div>
         ${!found.isUsed?`<button onclick="markCouponUsed('${found.id}')" style="background:var(--g1);color:#fff;border:none;border-radius:10px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;width:100%">✅ 사용 완료 처리</button>`:''}
       </div>`;
@@ -458,7 +528,7 @@ window.searchCouponCode = async function() {
 };
 
 window.markCouponUsed = async function(docId) {
-  if (!confirm('이 쿠폰을 사용완료 처리할까요?')) return;
+  if (!confirm('이 교환권을 사용완료 처리할까요?')) return;
   try {
     await window.FB.updateDoc(window.FB.doc(window.FB.db,'couponCodes',docId),{isUsed:true,usedAt:window.FB.serverTimestamp()});
     toast('✅ 사용처리 완료!');

@@ -128,12 +128,12 @@ async function renderCouponStore() {
   } else {
     el.innerHTML = coupons.map(c => {
       const remaining = (c.totalQty||0)-(c.usedQty||0);
-      const isFree = c.pointCost === 0;
-      const canAfford = isFree || myPoint >= c.pointCost;
+      const isDrainAll = c.drainAll === true;
+      const canAfford = isDrainAll || myPoint >= c.pointCost;
       const soldOut = remaining <= 0;
       const awardLabel = c.awardName ? `${c.awardName} 교환권` : '교환권';
       const subLabel = c.minPurchase ? `1인 1매 · ${c.minPurchase.toLocaleString()}원 이상` : '1인 1매';
-      const pointLabel = isFree ? '무료' : `${c.pointCost.toLocaleString()}P`;
+      const pointLabel = isDrainAll ? '보유 포인트 전액' : `${c.pointCost.toLocaleString()}P`;
       return `
         <div style="background:#fff;border-radius:14px;padding:14px;margin:0 12px 10px;border:1.5px solid ${soldOut?'#eee':'var(--bdr)'};opacity:${soldOut?0.6:1}">
           <div style="display:flex;gap:12px;align-items:flex-start">
@@ -144,7 +144,7 @@ async function renderCouponStore() {
               <div style="font-size:11px;color:var(--sub);margin-bottom:8px">${subLabel}</div>
               <div style="display:flex;align-items:center;justify-content:space-between">
                 <div>
-                  <span style="font-size:14px;font-weight:900;color:${isFree?'var(--g2)':'var(--g2)'}">${pointLabel}</span>
+                  <span style="font-size:14px;font-weight:900;color:var(--g2)">${pointLabel}</span>
                   <span style="font-size:10px;color:var(--sub);margin-left:4px">잔여 ${remaining}매</span>
                 </div>
                 <button onclick="exchangeCoupon('${c.id}')"

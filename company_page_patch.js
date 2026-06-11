@@ -115,7 +115,7 @@
       }
       const co = snap.data();
       const isOwner = co.ownerUid === window.ME.uid;
-      const mc = co.memberCount || 1;
+     const mc = (co.members || []).length || 1;
       box.innerHTML = `
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
           <div style="font-size:36px">${co.emoji||'🏢'}</div>

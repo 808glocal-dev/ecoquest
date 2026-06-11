@@ -72,9 +72,12 @@
 
       toast(`🎉 "${co.name}" 소속으로 자동 등록됐어요!`);
 
-      // 소속 탭으로 이동
+      // 소속 탭으로 이동 + 페이지 새로고침
       setTimeout(() => {
         if (window.goPage) window.goPage('company');
+        setTimeout(() => {
+          if (window.loadCompanyPage) window.loadCompanyPage();
+        }, 500);
       }, 1000);
 
     } catch (e) {

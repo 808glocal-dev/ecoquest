@@ -40,9 +40,17 @@ async function exchangeCoupon(couponId) {
   if ((coupon.totalQty || 0) - (coupon.usedQty || 0) <= 0) { toast('쿠폰이 모두 소진됐어요 😢'); return; }
   const myPoint = window.UDATA?.point || 0;
   const awardLabel = coupon.awardName ? `${coupon.awardName} 교환권` : '교환권';
-  // 포인트 전액 차감 방식 (drainAll 플래그가 있으면)
-  const costToUse = coupon.drainAll ? myPoint : coupon.pointCost;
-  if (!confirm(`${coupon.brandName} ${awardLabel}을 교환할까요?\n내 포인트 ${myPoint.toLocaleString()}P가 전부 차감돼요.`)) return;
+
+  // drainAll 쿠폰은 비밀코드 입력 필요
+  if (coupon.drainAll) {
+    showDrainCodeModal(coupon, uid, myPoint, awardLabel);
+    return;
+  }
+
+  // 일반 쿠폰
+  const costToUse = coupon.pointCost;
+  if (myPoint < costToUse) { toast(`포인트 부족! ${costToUse.toLocaleString()}P 필요`); return; }
+  if (!confirm(`${coupon.brandName} ${awardLabel}을 ${costToUse.toLocaleString()}P로 교환할까요?`)) return;
   try {
     const code = `${coupon.codePrefix || 'ECO'}-${Math.random().toString(36).substring(2,7).toUpperCase()}`;
     await window.FB.addDoc(window.FB.collection(window.FB.db, 'couponCodes'), {
@@ -53,7 +61,7 @@ async function exchangeCoupon(couponId) {
       pointsSpent: costToUse,
     });
     await window.FB.updateDoc(window.FB.doc(window.FB.db, 'coupons', couponId), { usedQty: window.FB.increment(1) });
-    const newPoint = myPoint - costToUse;
+    const newPoint = Math.max(0, myPoint - costToUse);
     await window.FB.updateDoc(window.FB.doc(window.FB.db, 'users', uid), { point: newPoint });
     window.UDATA.point = newPoint;
     if (window.updateUI) window.updateUI();
@@ -62,6 +70,78 @@ async function exchangeCoupon(couponId) {
     showMyCoupons(uid);
   } catch (e) { toast('교환 실패: ' + e.message); }
 }
+
+
+// ── drainAll 비밀코드 입력 모달 ──
+function showDrainCodeModal(coupon, uid, myPoint, awardLabel) {
+  document.getElementById('drainCodeOv')?.remove();
+  const ov = document.createElement('div');
+  ov.id = 'drainCodeOv';
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  ov.innerHTML = `
+    <div style="background:#fff;border-radius:20px;padding:24px;width:100%;max-width:340px;text-align:center">
+      <div style="font-size:52px;margin-bottom:8px">${coupon.brandEmoji || '🎁'}</div>
+      <div style="font-size:16px;font-weight:900;color:var(--txt);margin-bottom:4px">${coupon.brandName}</div>
+      <div style="font-size:13px;color:var(--sub);margin-bottom:20px">${awardLabel}</div>
+      <div style="background:#fff8e1;border-radius:12px;padding:12px;margin-bottom:16px;border:1px solid #f39c12;text-align:left">
+        <div style="font-size:12px;color:#8B5E04;font-weight:700;margin-bottom:2px">⚠️ 교환 안내</div>
+        <div style="font-size:11px;color:#8B5E04;line-height:1.7">수상자에게 전달된 비밀코드를 입력하세요.<br/>교환 시 보유 포인트 <b>${myPoint.toLocaleString()}P</b>가 전액 차감돼요.</div>
+      </div>
+      <input id="drainCodeInput" placeholder="비밀코드 입력" maxlength="30"
+        style="width:100%;border:1.5px solid #ddd;border-radius:12px;padding:12px;font-size:15px;font-family:inherit;text-align:center;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;box-sizing:border-box"
+        onkeydown="if(event.key==='Enter') confirmDrainCode('${coupon.id}')"/>
+      <div id="drainCodeError" style="font-size:12px;color:var(--red);margin-bottom:10px;display:none">❌ 코드가 맞지 않아요</div>
+      <div style="display:flex;gap:8px">
+        <button onclick="document.getElementById('drainCodeOv').remove()"
+          style="flex:1;padding:12px;border:none;border-radius:12px;background:#f0f0f0;color:var(--sub);font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">취소</button>
+        <button onclick="confirmDrainCode('${coupon.id}')"
+          style="flex:2;padding:12px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--g1),var(--g2));color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">
+          확인
+        </button>
+      </div>
+    </div>`;
+  document.body.appendChild(ov);
+  setTimeout(() => document.getElementById('drainCodeInput')?.focus(), 100);
+}
+
+window.confirmDrainCode = async function(couponId) {
+  const inputCode = document.getElementById('drainCodeInput')?.value.trim().toUpperCase();
+  if (!inputCode) { toast('코드를 입력해주세요!'); return; }
+
+  const snap = await window.FB.getDoc(window.FB.doc(window.FB.db, 'coupons', couponId));
+  if (!snap.exists()) { toast('쿠폰 정보를 찾을 수 없어요'); return; }
+  const coupon = { id: snap.id, ...snap.data() };
+
+  // secretCode 필드와 대조
+  if (!coupon.secretCode || coupon.secretCode.toUpperCase() !== inputCode) {
+    const errEl = document.getElementById('drainCodeError');
+    if (errEl) errEl.style.display = 'block';
+    return;
+  }
+
+  document.getElementById('drainCodeOv')?.remove();
+  const uid = window.ME?.uid;
+  const myPoint = window.UDATA?.point || 0;
+  const awardLabel = coupon.awardName ? `${coupon.awardName} 교환권` : '교환권';
+
+  try {
+    const code = `${coupon.codePrefix || 'ECO'}-${Math.random().toString(36).substring(2,7).toUpperCase()}`;
+    await window.FB.addDoc(window.FB.collection(window.FB.db, 'couponCodes'), {
+      couponId, brandName: coupon.brandName, brandEmoji: coupon.brandEmoji || '🎁',
+      brandEmail: coupon.brandEmail || '', discount: coupon.discount || 0,
+      minPurchase: coupon.minPurchase || 0, code,
+      issuedTo: uid, issuedAt: window.FB.serverTimestamp(), isUsed: false,
+      pointsSpent: myPoint,
+    });
+    await window.FB.updateDoc(window.FB.doc(window.FB.db, 'coupons', couponId), { usedQty: window.FB.increment(1) });
+    await window.FB.updateDoc(window.FB.doc(window.FB.db, 'users', uid), { point: 0 });
+    window.UDATA.point = 0;
+    if (window.updateUI) window.updateUI();
+    toast(`🎉 ${awardLabel} 발급 완료! 포인트 ${myPoint.toLocaleString()}P 차감됐어요`);
+    renderCouponStore();
+    showMyCoupons(uid);
+  } catch(e) { toast('교환 실패: ' + e.message); }
+};
 
 // ── 사용하기 버튼 ──
 window.useCouponNow = async function (docId) {
@@ -238,7 +318,11 @@ function injectAdminCouponTab() {
             <input id="cpCodePrefix" placeholder="코드 접두어 (예: MYSC-MVP)" style="border:1.5px solid #ddd;border-radius:10px;padding:8px 12px;font-size:13px;font-family:inherit"/>
             <button onclick="addAdminCoupon()" style="background:var(--g1);color:#fff;border:none;border-radius:10px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">등록하기</button>
             <input id="cpAwardName" placeholder="상 이름 (예: MVP 1등) — 선택" style="border:1.5px solid #ddd;border-radius:10px;padding:8px 12px;font-size:13px;font-family:inherit"/>
-            <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;padding:4px 0"><input type="checkbox" id="cpDrainAll" style="width:16px;height:16px;cursor:pointer"/> 포인트 전액 차감 (수상자용)</label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;padding:4px 0"><input type="checkbox" id="cpDrainAll" style="width:16px;height:16px;cursor:pointer" onchange="document.getElementById('cpSecretWrap').style.display=this.checked?'block':'none'"/> 포인트 전액 차감 (수상자용)</label>
+            <div id="cpSecretWrap" style="display:none">
+              <input id="cpSecretCode" placeholder="수상자 비밀코드 (예: WINNER2026)" style="width:100%;border:1.5px solid #f39c12;border-radius:10px;padding:8px 12px;font-size:13px;font-family:inherit;text-transform:uppercase"/>
+              <div style="font-size:11px;color:#8B5E04;margin-top:4px">⚠️ 이 코드를 수상자에게 직접 전달하세요</div>
+            </div>
           </div>
         </div>
 
@@ -506,17 +590,20 @@ window.addAdminCoupon = async function() {
   const codePrefix = document.getElementById('cpCodePrefix')?.value.trim().toUpperCase() || 'ECO';
   const awardName = document.getElementById('cpAwardName')?.value.trim() || '';
   const drainAll = document.getElementById('cpDrainAll')?.checked || false;
+  const secretCode = (document.getElementById('cpSecretCode')?.value.trim().toUpperCase()) || '';
+  if (drainAll && !secretCode) { toast('수상자용 비밀코드를 입력해주세요!'); return; }
   if (!brand || !totalQty) { toast('브랜드명, 수량은 필수예요!'); return; }
   try {
     await window.FB.addDoc(window.FB.collection(window.FB.db,'coupons'), {
       brandName:brand, brandEmoji:emoji, brandEmail:email,
       discount, minPurchase, pointCost, totalQty, usedQty:0,
-      codePrefix, awardName, drainAll,
+      codePrefix, awardName, drainAll, secretCode,
       active:true, createdAt:window.FB.serverTimestamp(),
     });
     toast('✅ 쿠폰 등록 완료!');
-    ['cpBrand','cpEmoji','cpEmail','cpDiscount','cpMinPurchase','cpPointCost','cpTotalQty','cpCodePrefix','cpAwardName'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    ['cpBrand','cpEmoji','cpEmail','cpDiscount','cpMinPurchase','cpPointCost','cpTotalQty','cpCodePrefix','cpAwardName','cpSecretCode'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
     const cb=document.getElementById('cpDrainAll'); if(cb) cb.checked=false;
+    const sw=document.getElementById('cpSecretWrap'); if(sw) sw.style.display='none';
     loadAdminCoupons(); renderCouponStore();
   } catch(e) { toast('등록 실패: '+e.message); }
 };

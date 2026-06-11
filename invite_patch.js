@@ -29,8 +29,16 @@
 
   // ── 소속 자동 등록 함수 ──
   async function autoJoinCompany(code) {
-    if (!code || !window.ME || !window.FB) return;
-    if (window.UDATA?.companyId) return; // 이미 소속 있으면 스킵
+    if (!code || !window.ME || !window.FB) {
+      console.log('[invite] 조건 미충족 code:', !!code, 'ME:', !!window.ME, 'FB:', !!window.FB);
+      return;
+    }
+    if (window.UDATA?.companyId) {
+      console.log('[invite] 이미 소속 있음:', window.UDATA.companyId);
+      clearPendingInvite();
+      return;
+    }
+    console.log('[invite] 자동 등록 시도:', code);
 
     try {
       const allSnap = await window.FB.getDocs(window.FB.collection(window.FB.db, 'companies'));
@@ -70,8 +78,7 @@
       }, 1000);
 
     } catch (e) {
-      console.log('[invite] 자동 등록 실패:', e.message);
-      clearPendingInvite();
+      console.error('[invite] 자동 등록 실패:', e.message, e);
     }
   }
 
@@ -114,16 +121,14 @@
   let _pollCount = 0;
   const _pollTimer = setInterval(() => {
     _pollCount++;
-    if (_pollCount > 30) { clearInterval(_pollTimer); return; } // 15초 후 포기
+    if (_pollCount > 60) { clearInterval(_pollTimer); console.log('[invite] 폴링 타임아웃'); return; }
     const code = getPendingInvite();
     if (!code) { clearInterval(_pollTimer); return; }
-    if (window.ME && window.UDATA && window.FB) {
+    // ME랑 FB만 있으면 시도 (UDATA 없어도)
+    if (window.ME && window.FB) {
       clearInterval(_pollTimer);
-      if (!window.UDATA.companyId) {
-        autoJoinCompany(code);
-      } else {
-        clearPendingInvite(); // 이미 소속 있으면 그냥 클리어
-      }
+      console.log('[invite] 폴링 성공, 등록 시도');
+      setTimeout(() => autoJoinCompany(code), 300);
     }
   }, 500);
 

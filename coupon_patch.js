@@ -85,7 +85,8 @@ function showDrainCodeModal(coupon, uid, myPoint, awardLabel) {
       <div style="font-size:13px;color:var(--sub);margin-bottom:20px">${awardLabel}</div>
       <div style="background:#fff8e1;border-radius:12px;padding:12px;margin-bottom:16px;border:1px solid #f39c12;text-align:left">
         <div style="font-size:12px;color:#8B5E04;font-weight:700;margin-bottom:2px">⚠️ 교환 안내</div>
-        <div style="font-size:11px;color:#8B5E04;line-height:1.7">수상자에게 전달된 비밀코드를 입력하세요.<br/>교환 시 보유 포인트 <b>${myPoint.toLocaleString()}P</b>가 전액 차감돼요.</div>
+        <div style="font-size:11px;color:#8B5E04;line-height:1.7">수상자에게 전달된 비밀코드를 입력하세요.</div>
+        <div style="font-size:13px;font-weight:900;color:#C0392B;margin-top:6px">내 포인트 ${myPoint.toLocaleString()}P 전액 차감</div>
       </div>
       <input id="drainCodeInput" placeholder="비밀코드 입력" maxlength="30"
         style="width:100%;border:1.5px solid #ddd;border-radius:12px;padding:12px;font-size:15px;font-family:inherit;text-align:center;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;box-sizing:border-box"
@@ -339,6 +340,16 @@ function injectAdminCouponTab() {
             <input id="cpEditPointCost" type="number" placeholder="필요 포인트" style="border:1.5px solid #ddd;border-radius:10px;padding:8px 12px;font-size:13px;font-family:inherit"/>
             <input id="cpEditTotalQty" type="number" placeholder="총 발행 수량" style="border:1.5px solid #ddd;border-radius:10px;padding:8px 12px;font-size:13px;font-family:inherit"/>
             <input id="cpEditCodePrefix" placeholder="코드 접두어" style="border:1.5px solid #ddd;border-radius:10px;padding:8px 12px;font-size:13px;font-family:inherit"/>
+            <input id="cpEditAwardName" placeholder="상 이름 (예: MVP 1등)" style="border:1.5px solid #ddd;border-radius:10px;padding:8px 12px;font-size:13px;font-family:inherit"/>
+            <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;padding:4px 0">
+              <input type="checkbox" id="cpEditDrainAll" style="width:16px;height:16px;cursor:pointer"
+                onchange="document.getElementById('cpEditSecretWrap').style.display=this.checked?'block':'none'"/>
+              포인트 전액 차감 (수상자용)
+            </label>
+            <div id="cpEditSecretWrap" style="display:none">
+              <input id="cpEditSecretCode" placeholder="수상자 비밀코드" style="width:100%;border:1.5px solid #f39c12;border-radius:10px;padding:8px 12px;font-size:13px;font-family:inherit;text-transform:uppercase;box-sizing:border-box"/>
+              <div style="font-size:11px;color:#8B5E04;margin-top:4px">⚠️ 이 코드를 수상자에게 직접 전달하세요</div>
+            </div>
             <div style="display:flex;gap:8px">
               <button onclick="document.getElementById('cpEditForm').style.display='none'" style="flex:1;background:#f0f0f0;color:#666;border:none;border-radius:10px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">취소</button>
               <button onclick="saveEditCoupon()" style="flex:2;background:#f39c12;color:#fff;border:none;border-radius:10px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">💾 저장</button>
@@ -524,7 +535,7 @@ async function loadAdminCoupons() {
               <div style="font-size:11px;color:var(--sub)">발행 ${c.totalQty||0} · 사용 ${c.usedQty||0} · <b style="color:${remaining>0?'var(--g2)':'var(--red)'}">잔여 ${remaining}</b></div>
             </div>
             <div style="display:flex;gap:4px;flex-direction:column;align-items:flex-end">
-              <button onclick="openEditCoupon('${c.id}','${(c.brandName||'').replace(/'/g,'&apos;')}','${c.brandEmoji||'🎁'}','${c.brandEmail||''}',${c.discount||0},${c.minPurchase||0},${c.pointCost||0},${c.totalQty||0},'${c.codePrefix||'ECO'}')"
+              <button onclick="openEditCoupon('${c.id}')"
                 style="background:#fff8e1;color:#8B5E04;border:1px solid #f39c12;border-radius:8px;padding:4px 8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">✏️ 수정</button>
               <button onclick="toggleCouponActive('${c.id}',${!c.active})"
                 style="background:${c.active!==false?'#e8f5e9':'#fee'};color:${c.active!==false?'var(--g2)':'var(--red)'};border:none;border-radius:8px;padding:4px 8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">${c.active!==false?'활성':'비활성'}</button>
@@ -539,16 +550,26 @@ async function loadAdminCoupons() {
 window.loadAdminCoupons = loadAdminCoupons;
 
 // ── 수정 폼 열기 ──
-window.openEditCoupon = function(id, brand, emoji, email, discount, minPurchase, pointCost, totalQty, codePrefix) {
+window.openEditCoupon = async function(id) {
+  const snap = await window.FB.getDoc(window.FB.doc(window.FB.db, 'coupons', id));
+  if (!snap.exists()) { toast('쿠폰 정보를 찾을 수 없어요'); return; }
+  const c = snap.data();
   document.getElementById('cpEditId').value = id;
-  document.getElementById('cpEditBrand').value = brand;
-  document.getElementById('cpEditEmoji').value = emoji;
-  document.getElementById('cpEditEmail').value = email;
-  document.getElementById('cpEditDiscount').value = discount;
-  document.getElementById('cpEditMinPurchase').value = minPurchase;
-  document.getElementById('cpEditPointCost').value = pointCost;
-  document.getElementById('cpEditTotalQty').value = totalQty;
-  document.getElementById('cpEditCodePrefix').value = codePrefix;
+  document.getElementById('cpEditBrand').value = c.brandName || '';
+  document.getElementById('cpEditEmoji').value = c.brandEmoji || '🎁';
+  document.getElementById('cpEditEmail').value = c.brandEmail || '';
+  document.getElementById('cpEditDiscount').value = c.discount || 0;
+  document.getElementById('cpEditMinPurchase').value = c.minPurchase || 0;
+  document.getElementById('cpEditPointCost').value = c.pointCost || 0;
+  document.getElementById('cpEditTotalQty').value = c.totalQty || 0;
+  document.getElementById('cpEditCodePrefix').value = c.codePrefix || '';
+  document.getElementById('cpEditAwardName').value = c.awardName || '';
+  const drainEl = document.getElementById('cpEditDrainAll');
+  if (drainEl) {
+    drainEl.checked = c.drainAll === true;
+    document.getElementById('cpEditSecretWrap').style.display = c.drainAll ? 'block' : 'none';
+  }
+  document.getElementById('cpEditSecretCode').value = c.secretCode || '';
   const form = document.getElementById('cpEditForm');
   form.style.display = 'block';
   form.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -566,11 +587,16 @@ window.saveEditCoupon = async function() {
   const pointCost = parseInt(document.getElementById('cpEditPointCost')?.value) || 0;
   const totalQty = parseInt(document.getElementById('cpEditTotalQty')?.value) || 0;
   const codePrefix = document.getElementById('cpEditCodePrefix')?.value.trim().toUpperCase() || 'ECO';
-  if (!brand || !pointCost || !totalQty) { toast('브랜드명, 포인트, 수량은 필수예요!'); return; }
+  const awardName = document.getElementById('cpEditAwardName')?.value.trim() || '';
+  const drainAll = document.getElementById('cpEditDrainAll')?.checked || false;
+  const secretCode = document.getElementById('cpEditSecretCode')?.value.trim().toUpperCase() || '';
+  if (drainAll && !secretCode) { toast('수상자용 비밀코드를 입력해주세요!'); return; }
+  if (!brand || !totalQty) { toast('브랜드명, 수량은 필수예요!'); return; }
   try {
     await window.FB.updateDoc(window.FB.doc(window.FB.db, 'coupons', id), {
       brandName: brand, brandEmoji: emoji, brandEmail: email,
       discount, minPurchase, pointCost, totalQty, codePrefix,
+      awardName, drainAll, secretCode,
     });
     toast('✅ 수정 완료!');
     document.getElementById('cpEditForm').style.display = 'none';

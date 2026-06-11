@@ -100,6 +100,33 @@
     }
   };
 
+  // ── updateUI 훅 — UDATA 세팅 완료 후 체크 ──
+  const _origUpdateUI = window.updateUI;
+  window.updateUI = function () {
+    if (_origUpdateUI) _origUpdateUI();
+    const code = getPendingInvite();
+    if (code && window.ME && window.UDATA && !window.UDATA.companyId) {
+      setTimeout(() => autoJoinCompany(code), 500);
+    }
+  };
+
+  // ── 폴링 방식 — 로그인 완료될 때까지 주기적으로 체크 ──
+  let _pollCount = 0;
+  const _pollTimer = setInterval(() => {
+    _pollCount++;
+    if (_pollCount > 30) { clearInterval(_pollTimer); return; } // 15초 후 포기
+    const code = getPendingInvite();
+    if (!code) { clearInterval(_pollTimer); return; }
+    if (window.ME && window.UDATA && window.FB) {
+      clearInterval(_pollTimer);
+      if (!window.UDATA.companyId) {
+        autoJoinCompany(code);
+      } else {
+        clearPendingInvite(); // 이미 소속 있으면 그냥 클리어
+      }
+    }
+  }, 500);
+
   // ── 삭제 버튼: 808만 보이게 패치 ──
   // company_page_patch.js의 loadCompanyPage 래핑
   const _origLoadCompanyPage = window.loadCompanyPage;

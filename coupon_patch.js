@@ -220,9 +220,9 @@ async function renderCouponStore() {
           <div style="display:flex;gap:12px;align-items:flex-start">
             <div style="width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,#1a6b3a,#2ECC71);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0">${c.brandEmoji||'🎁'}</div>
             <div style="flex:1;min-width:0">
-              <div style="font-size:15px;font-weight:900;color:var(--txt);margin-bottom:2px">${c.brandName}</div>
-              <div style="font-size:11px;color:var(--sub);margin-bottom:6px">${awardLabel}</div>
-              <div style="font-size:11px;color:var(--sub);margin-bottom:8px">${subLabel}</div>
+              ${c.brandName?`<div style="font-size:10px;font-weight:700;background:#f0f0f0;color:#666;padding:2px 8px;border-radius:20px;display:inline-block;margin-bottom:5px">${c.brandName}</div>`:''}
+              <div style="font-size:16px;font-weight:900;color:var(--txt);margin-bottom:2px">${c.awardName||'교환권'}</div>
+              <div style="font-size:11px;color:var(--sub);margin-bottom:6px">교환권 · ${subLabel}</div>
               <div style="display:flex;align-items:center;justify-content:space-between">
                 <div>
                   <span style="font-size:14px;font-weight:900;color:var(--g2)">${pointLabel}</span>
@@ -252,17 +252,24 @@ async function showMyCoupons(uid) {
   if (!sec) { sec = document.createElement('div'); sec.id = 'myCouponSection'; document.getElementById('bookList')?.after(sec); }
   const codes = await getMyIssuedCoupons(uid);
   if (!codes.length) { sec.innerHTML = ''; return; }
+  const isAdmin = window.ME?.email === window.ADMIN;
   sec.innerHTML = `
-    <div style="font-size:15px;font-weight:900;color:var(--txt);margin:12px 12px 8px">🎟️ 내 교환권함</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin:12px 12px 8px">
+      <div style="font-size:15px;font-weight:900;color:var(--txt)">🎟️ 내 교환권함</div>
+      ${isAdmin ? `<span style="font-size:11px;color:var(--sub)">관리자 — 삭제 가능</span>` : ''}
+    </div>
     ${codes.map(c => {
       const label = c.discount > 0 ? `${c.discount.toLocaleString()}원 교환권` : '교환권';
       return `
       <div style="background:${c.isUsed?'#f8f8f8':'#f0fbf4'};border-radius:12px;padding:12px 14px;margin:0 12px 8px;border:1.5px solid ${c.isUsed?'#eee':'var(--g1)'}">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
           <div style="font-size:13px;font-weight:700;color:var(--txt)">${c.brandEmoji||'🎁'} ${c.brandName}</div>
-          <span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:8px;background:${c.isUsed?'#eee':'#e8f5e9'};color:${c.isUsed?'#aaa':'var(--g2)'}">
-            ${c.isUsed?'✅ 사용완료':'미사용'}
-          </span>
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:8px;background:${c.isUsed?'#eee':'#e8f5e9'};color:${c.isUsed?'#aaa':'var(--g2)'}">
+              ${c.isUsed?'✅ 사용완료':'미사용'}
+            </span>
+            ${isAdmin ? `<button onclick="deleteMyCoupon('${c.id}')" style="background:#fee;color:var(--red);border:none;border-radius:8px;padding:2px 8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">🗑️</button>` : ''}
+          </div>
         </div>
         <div style="font-size:12px;color:var(--sub);margin-bottom:8px">${label}${c.minPurchase?` · ${c.minPurchase.toLocaleString()}원 이상`:''}</div>
         <div style="background:${c.isUsed?'#eee':'#fff'};border-radius:8px;padding:10px 12px;font-size:16px;font-weight:900;letter-spacing:2px;color:${c.isUsed?'#bbb':'var(--txt)'};text-align:center;border:1px dashed ${c.isUsed?'#ddd':'var(--g1)'};margin-bottom:${c.isUsed?'0':'8px'}">
@@ -279,6 +286,15 @@ async function showMyCoupons(uid) {
       </div>`;
     }).join('')}`;
 }
+
+window.deleteMyCoupon = async function(docId) {
+  if (!confirm('이 교환권을 삭제할까요?')) return;
+  try {
+    await window.FB.deleteDoc(window.FB.doc(window.FB.db, 'couponCodes', docId));
+    toast('🗑️ 삭제됐어요!');
+    showMyCoupons(window.ME.uid);
+  } catch(e) { toast('삭제 실패: ' + e.message); }
+};
 window.showMyCoupons = showMyCoupons;
 
 // ── 어드민 쿠폰 탭 ──

@@ -122,7 +122,24 @@
   window.renderCompanyVlog = renderCompanyVlog;
 
   /* ════════ 스토리 자동재생 플레이어 ════════ */
+  function ensureVlogCSS(){
+    if(document.getElementById('vlogKbStyle')) return;
+    const s = document.createElement('style');
+    s.id = 'vlogKbStyle';
+    s.textContent = `
+      @keyframes kb0{0%{transform:scale(1.03) translate(0,0)}100%{transform:scale(1.20) translate(-3%,-2%)}}
+      @keyframes kb1{0%{transform:scale(1.20) translate(3%,2%)}100%{transform:scale(1.04) translate(0,0)}}
+      @keyframes kb2{0%{transform:scale(1.05) translate(3%,-1%)}100%{transform:scale(1.18) translate(-3%,1%)}}
+      @keyframes kb3{0%{transform:scale(1.18) translate(-2%,2%)}100%{transform:scale(1.05) translate(2%,-2%)}}
+      @keyframes vFade{0%{opacity:0}100%{opacity:1}}
+      @keyframes vPop{0%{transform:scale(.55);opacity:0}60%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
+      @keyframes vCapUp{0%{transform:translateY(14px);opacity:0}100%{transform:translateY(0);opacity:1}}
+    `;
+    document.head.appendChild(s);
+  }
+
   window.playVlog = function(dt){
+    ensureVlogCSS();
     const list = (window._vlogData||{})[dt];
     if(!list || !list.length) return;
     document.getElementById('ovVlogPlayer')?.remove();
@@ -137,7 +154,7 @@
         <button onclick="window.closeVlog()" style="background:rgba(255,255,255,.2);border:none;color:#fff;width:34px;height:34px;border-radius:50%;font-size:18px;cursor:pointer;font-family:inherit;flex-shrink:0">✕</button>
       </div>
       <div style="flex:1;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden">
-        <img id="vlogImg" style="max-width:100%;max-height:100%;object-fit:contain"/>
+        <img id="vlogImg" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform-origin:center;will-change:transform,opacity"/>
         <div id="vlogEmoji" style="position:absolute;font-size:120px;display:none"></div>
         <div style="position:absolute;left:0;top:0;bottom:0;width:32%;z-index:6" onclick="window.vlogPrev()"></div>
         <div style="position:absolute;right:0;top:0;bottom:0;width:32%;z-index:6" onclick="window.vlogNext()"></div>
@@ -160,15 +177,26 @@
     const img = document.getElementById('vlogImg');
     const emo = document.getElementById('vlogEmoji');
     if(!img) return;
-    if(v.thumb){ img.src = v.thumb; img.style.display='block'; emo.style.display='none'; }
-    else { img.style.display='none'; emo.style.display='block'; emo.textContent = v.missionEmoji || '🌱'; }
+    if(v.thumb){
+      img.src = v.thumb; img.style.display='block'; emo.style.display='none';
+      const kb = 'kb' + (i % 4);
+      img.style.animation = 'none'; void img.offsetWidth;        // 리셋
+      img.style.animation = `vFade .45s ease, ${kb} 3.4s ease-in-out forwards`;
+    } else {
+      img.style.display='none'; emo.style.display='block'; emo.textContent = v.missionEmoji || '🌱';
+      emo.style.animation = 'none'; void emo.offsetWidth;
+      emo.style.animation = 'vPop .55s ease';
+    }
     document.getElementById('vlogName').textContent = name;
     document.getElementById('vlogTime').textContent = window.timeAgo ? window.timeAgo(v.createdAt?.seconds) : '';
     const av = document.getElementById('vlogAvatar');
     av.innerHTML = member.photo ? `<img src="${member.photo}" style="width:100%;height:100%;object-fit:cover"/>` : (name[0] || '👤');
-    document.getElementById('vlogCaption').innerHTML =
+    const cap = document.getElementById('vlogCaption');
+    cap.innerHTML =
       `<div style="display:inline-block;background:rgba(255,255,255,.18);border-radius:12px;padding:6px 12px;color:#fff;font-size:13px;font-weight:700">${v.missionEmoji||'🌱'} ${v.missionName||''}</div>`
       + (v.comment ? `<div style="color:#fff;font-size:14px;margin-top:10px;line-height:1.5">💬 ${v.comment}</div>` : '');
+    cap.style.animation = 'none'; void cap.offsetWidth;
+    cap.style.animation = 'vCapUp .5s ease';
     list.forEach((_,j)=>{ const b=document.getElementById('vbar-'+j); if(b && j!==i) b.style.cssText='width:'+(j<i?'100':'0')+'%;height:100%;background:#fff'; });
     clearTimeout(window._vlogTimer);
     const bar = document.getElementById('vbar-'+i);

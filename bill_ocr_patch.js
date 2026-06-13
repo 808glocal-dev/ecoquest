@@ -15,8 +15,9 @@
   window._billOcrLoaded = true;
 
   // ───── 배출계수 (최신 공고값으로 교체하세요) ─────
-  const EF_ELEC = 0.4173;   // 전력  kgCO₂eq/kWh  (2025 승인 소비단 / 최신값으로 갱신 권장)
+  const EF_ELEC = 0.4173;   // 전력  kgCO₂eq/kWh  (2023년도 확정 / 2025.12.17 기후에너지환경부 공표)
   const EF_GAS  = 2.176;    // 도시가스 kgCO₂/m³
+  const EF_HEAT = 0.2;      // 지역난방 열 kgCO₂/Mcal  (추정값 — 한국지역난방공사 해당연도 스팀 배출계수로 교체 권장)
   // ───────────────────────────────────────────────
 
   let _billState = null; // { company, period, elecKwh, gasM3, imgB64 }
@@ -25,7 +26,7 @@
   function injectEntry(){
     const page = document.getElementById('page-company');
     if(!page) return;
-    if(!window.UDATA?.companyId) return;        // 소속 있는 사람만
+    // 베타 단계: 소속 여부 상관없이 모두 노출
     if(document.getElementById('billOcrEntry')) return;
     const card = document.createElement('div');
     card.id = 'billOcrEntry';
@@ -66,16 +67,16 @@
       <div style="max-width:440px;margin:0 auto">
         <div onclick="document.getElementById('billFileIn').click()" style="background:rgba(255,255,255,.06);border:2px dashed rgba(168,240,198,.5);border-radius:18px;padding:48px 20px;text-align:center;cursor:pointer">
           <div style="font-size:54px;margin-bottom:14px">📄</div>
-          <div style="font-size:16px;font-weight:900;color:#a8f0c6">전기·가스 고지서 사진 올리기</div>
-          <div style="font-size:12px;color:rgba(255,255,255,.6);margin-top:8px;line-height:1.7">한국전력 전기요금 청구서, 도시가스 고지서 등<br/>사용량(kWh·m³)이 보이게 찍어주세요</div>
+          <div style="font-size:16px;font-weight:900;color:#a8f0c6">고지서·관리비 사진 올리기</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.6);margin-top:8px;line-height:1.7">전기요금 청구서, 도시가스 고지서,<br/>아파트 관리비 고지서 모두 가능해요</div>
         </div>
         <div style="margin-top:20px;background:rgba(255,255,255,.05);border-radius:12px;padding:14px 16px">
           <div style="font-size:11px;color:#a8f0c6;font-weight:700;margin-bottom:8px">📊 어떻게 계산되나요?</div>
           <div style="font-size:11px;color:rgba(255,255,255,.7);line-height:1.9">
-            ① AI가 고지서에서 전력(kWh)·가스(m³) 사용량 추출<br/>
-            ② Scope 2 = 전력 × ${EF_ELEC} · Scope 1 = 가스 × ${EF_GAS}<br/>
-            ③ 합산 → 총 CO₂eq 배출량<br/>
-            <span style="color:rgba(255,255,255,.5)">* 추출값은 직접 수정 가능 (감사 대응)</span>
+            ① AI가 전기(kWh)·가스(m³)·난방·온수(Mcal) 사용량 추출<br/>
+            ② 전기·지역난방=Scope 2 / 도시가스=Scope 1<br/>
+            ③ 배출계수 곱해서 합산 → 총 CO₂eq<br/>
+            <span style="color:rgba(255,255,255,.5)">* 수도는 탄소배출이 거의 없어 제외 · 추출값 수정 가능</span>
           </div>
         </div>
       </div>`;
@@ -127,6 +128,8 @@
       _billState.period  = data.period || '';
       _billState.elecKwh = data.elecKwh;
       _billState.gasM3   = data.gasM3;
+      _billState.heatMcal = data.heatMcal;
+      _billState.hotWaterMcal = data.hotWaterMcal;
       renderBillResult();
     } catch(e){
       console.error('[bill_ocr] 분석 오류', e);
@@ -166,16 +169,26 @@
         <div style="height:10px"></div>
         <div style="font-size:12px;color:rgba(255,255,255,.7);font-weight:700;margin-bottom:6px">🔥 도시가스 사용량</div>
         ${inp('billGas', s.gasM3, 'm³')}
+        <div style="height:10px"></div>
+        <div style="font-size:12px;color:rgba(255,255,255,.7);font-weight:700;margin-bottom:6px">♨️ 난방 (지역난방)</div>
+        ${inp('billHeat', s.heatMcal, 'Mcal')}
+        <div style="height:10px"></div>
+        <div style="font-size:12px;color:rgba(255,255,255,.7);font-weight:700;margin-bottom:6px">🚿 급탕·온수</div>
+        ${inp('billHotWater', s.hotWaterMcal, 'Mcal')}
 
         <div style="margin-top:20px;background:rgba(255,255,255,.05);border-radius:14px;padding:16px">
-          <div style="font-size:11px;color:#a8f0c6;font-weight:700;margin-bottom:12px">배출계수 자동 적용 <span style="color:rgba(255,255,255,.4);font-weight:400">(전력 ${EF_ELEC} · 가스 ${EF_GAS})</span></div>
+          <div style="font-size:11px;color:#a8f0c6;font-weight:700;margin-bottom:12px">배출계수 자동 적용 <span style="color:rgba(255,255,255,.4);font-weight:400">(전력 ${EF_ELEC} · 가스 ${EF_GAS} · 열 ${EF_HEAT})</span></div>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
             <div style="font-size:12px;color:rgba(255,255,255,.7)"><b style="color:#fff">Scope 2</b> 전력 <span id="billElecCalc" style="color:rgba(255,255,255,.5)"></span></div>
             <div id="billElecKg" style="font-size:14px;font-weight:900;color:#a8f0c6">0 kg</div>
           </div>
-          <div style="display:flex;justify-content:space-between;align-items:center">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
             <div style="font-size:12px;color:rgba(255,255,255,.7)"><b style="color:#fff">Scope 1</b> 가스 <span id="billGasCalc" style="color:rgba(255,255,255,.5)"></span></div>
             <div id="billGasKg" style="font-size:14px;font-weight:900;color:#a8f0c6">0 kg</div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div style="font-size:12px;color:rgba(255,255,255,.7)"><b style="color:#fff">Scope 2</b> 지역난방 열 <span id="billHeatCalc" style="color:rgba(255,255,255,.5)"></span></div>
+            <div id="billHeatKg" style="font-size:14px;font-weight:900;color:#a8f0c6">0 kg</div>
           </div>
         </div>
 
@@ -195,29 +208,37 @@
   window._billRecalc = function(){
     const elec = parseFloat(document.getElementById('billElec')?.value) || 0;
     const gas  = parseFloat(document.getElementById('billGas')?.value) || 0;
+    const heat = parseFloat(document.getElementById('billHeat')?.value) || 0;
+    const hotW = parseFloat(document.getElementById('billHotWater')?.value) || 0;
+    const heatTotal = heat + hotW;   // 난방 + 급탕 모두 지역난방 열(Mcal)
     const elecKg = elec * EF_ELEC;
     const gasKg  = gas * EF_GAS;
-    const total  = elecKg + gasKg;
+    const heatKg = heatTotal * EF_HEAT;
+    const total  = elecKg + gasKg + heatKg;
     const set = (id, v) => { const el = document.getElementById(id); if(el) el.textContent = v; };
     set('billElecCalc', elec ? `${elec.toLocaleString()} × ${EF_ELEC}` : '');
     set('billGasCalc',  gas  ? `${gas.toLocaleString()} × ${EF_GAS}` : '');
+    set('billHeatCalc', heatTotal ? `${heatTotal.toLocaleString()} × ${EF_HEAT}` : '');
     set('billElecKg', `${Math.round(elecKg).toLocaleString()} kg`);
     set('billGasKg',  `${Math.round(gasKg).toLocaleString()} kg`);
+    set('billHeatKg', `${Math.round(heatKg).toLocaleString()} kg`);
     set('billTotal',  Math.round(total).toLocaleString());
-    if(_billState){ _billState.elecKwh = elec; _billState.gasM3 = gas; }
+    if(_billState){ _billState.elecKwh = elec; _billState.gasM3 = gas; _billState.heatMcal = heat; _billState.hotWaterMcal = hotW; }
   };
 
   window._billShare = function(){
     const s = _billState; if(!s) return;
     const elec = s.elecKwh || 0, gas = s.gasM3 || 0;
-    const elecKg = Math.round(elec*EF_ELEC), gasKg = Math.round(gas*EF_GAS);
-    const text = `[EcoQuest 기업 탄소경영 — Scope 1·2]
-${s.company||''} ${s.period||''}
-⚡ 전력 ${elec.toLocaleString()} kWh → Scope 2 ${elecKg.toLocaleString()} kg
-🔥 가스 ${gas.toLocaleString()} m³ → Scope 1 ${gasKg.toLocaleString()} kg
-─────────────
-총 ${(elecKg+gasKg).toLocaleString()} kg CO₂eq
-(배출계수: 전력 ${EF_ELEC}, 가스 ${EF_GAS})`;
+    const heat = (s.heatMcal || 0) + (s.hotWaterMcal || 0);
+    const elecKg = Math.round(elec*EF_ELEC), gasKg = Math.round(gas*EF_GAS), heatKg = Math.round(heat*EF_HEAT);
+    const lines = [`[EcoQuest 탄소경영 — Scope 1·2]`, `${s.company||''} ${s.period||''}`];
+    if(elec) lines.push(`⚡ 전력 ${elec.toLocaleString()} kWh → Scope 2 ${elecKg.toLocaleString()} kg`);
+    if(gas)  lines.push(`🔥 가스 ${gas.toLocaleString()} m³ → Scope 1 ${gasKg.toLocaleString()} kg`);
+    if(heat) lines.push(`♨️ 지역난방 ${heat.toLocaleString()} Mcal → Scope 2 ${heatKg.toLocaleString()} kg`);
+    lines.push(`─────────────`);
+    lines.push(`총 ${(elecKg+gasKg+heatKg).toLocaleString()} kg CO₂eq`);
+    lines.push(`(배출계수: 전력 ${EF_ELEC}, 가스 ${EF_GAS}, 열 ${EF_HEAT})`);
+    const text = lines.join('\n');
     if(navigator.clipboard){ navigator.clipboard.writeText(text).then(()=>window.toast && window.toast('📋 결과가 복사됐어요!')); }
   };
 

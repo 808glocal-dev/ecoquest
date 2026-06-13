@@ -161,7 +161,8 @@
       </div>
       <button onclick="window._guestUpgradeGoogle()" style="display:flex;align-items:center;gap:10px;justify-content:center;width:100%;background:#fff;color:#333;border:1.5px solid #ddd;border-radius:14px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:10px"><img src="https://www.google.com/favicon.ico" width="20" height="20"/> Google로 가입</button>
       <button onclick="window._guestUpgradeKakao()" style="display:flex;align-items:center;gap:10px;justify-content:center;width:100%;background:#FEE500;color:#191919;border:none;border-radius:14px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit">💬 카카오로 가입</button>
-      <div style="font-size:11px;color:#aaa;text-align:center;margin-top:14px">가입은 안전하게 처리되고,<br/>기존 기록은 사라지지 않아요 🌍</div>
+      <div style="font-size:11px;color:#aaa;text-align:center;margin-top:14px">이미 계정이 있어도 위 버튼을 누르면<br/>그 계정으로 로그인돼요. 기록은 안 사라져요 🌍</div>
+      <button onclick="window._guestSwitchLogin()" style="display:block;margin:14px auto 0;background:none;border:none;color:#888;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;text-decoration:underline">이미 계정이 있어요 → 로그인 화면으로</button>
     </div>`;
     document.body.appendChild(m);
   }
@@ -190,17 +191,35 @@
       setTimeout(()=>{ window.openOnboardEdit && window.openOnboardEdit(); }, 600); // 닉네임 변경 유도
     }catch(e){
       if(e.code==='auth/credential-already-in-use' || e.code==='auth/email-already-in-use'){
-        // 이미 가입했던 구글 계정 → 기존 계정 로그인 + 게스트 수치 합산
-        const cred = mod.GoogleAuthProvider.credentialFromError(e);
-        if(cred){
-          backupGuestForMerge();
-          try{ await mod.signInWithCredential(_auth, cred); document.getElementById('ovGuestSignup')?.remove(); }
-          catch(e2){ window.toast && window.toast('로그인 실패: '+e2.code); }
-        } else window.toast && window.toast('이미 가입된 계정이에요');
+        // 이미 가입한 구글 계정 → 멈추지 말고 그 계정으로 "로그인" (게스트 수치 합산)
+        backupGuestForMerge();
+        document.getElementById('ovGuestSignup')?.remove();
+        window.toast && window.toast('이미 가입한 계정이에요. 그 계정으로 로그인할게요!');
+        try{
+          await mod.signInWithPopup(_auth, provider);   // 기존 계정 진입
+        }catch(e2){
+          // 팝업이 또 막히면 credential 로 한 번 더 시도
+          const cred = mod.GoogleAuthProvider.credentialFromError(e);
+          if(cred){ try{ await mod.signInWithCredential(_auth, cred); }catch(e3){ window.toast && window.toast('로그인 실패: '+e3.code); } }
+          else if(!['auth/popup-closed-by-user','auth/cancelled-popup-request'].includes(e2.code))
+            window.toast && window.toast('로그인 실패: '+(e2.code||e2.message));
+        }
       } else if(['auth/popup-blocked','auth/popup-closed-by-user','auth/cancelled-popup-request'].includes(e.code)){
         window.toast && window.toast('팝업이 막혔어요. 다시 시도해주세요');
       } else window.toast && window.toast('가입 실패: '+(e.code||e.message));
     }
+  };
+
+  /* ── 이미 계정 있는 사람: 게스트 빠져나가서 로그인 화면으로 ── */
+  window._guestSwitchLogin = async function(){
+    document.getElementById('ovGuestSignup')?.remove();
+    window.GUEST_MODE = false;
+    _guestStarting = false;
+    try{ localStorage.removeItem('eq_guest_merge'); }catch(e){}
+    const mod = await authMod();
+    try{ await mod.signOut(_auth); }catch(e){}
+    const app = document.getElementById('app'); if(app) app.style.display = 'none';
+    const login = document.getElementById('loginScreen'); if(login) login.style.display = 'flex';
   };
 
   /* ── 카카오 이어받기 (redirect) ── */

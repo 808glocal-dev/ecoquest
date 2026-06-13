@@ -4,7 +4,7 @@
 
   const BOOTHS = {
     ddp: { name: 'DDP 기후테크 컨퍼런스', need: 2,
-           msg: '미션 2개 이상 인증하면 안내 데스크에서 못난이 사과를 받아요!' }
+           msg: '미션 2개 이상 인증하면 안내 데스크에서 못난이 참외를 받아요!' }
   };
   const cfg = BOOTHS[booth];
   if(!cfg) return;

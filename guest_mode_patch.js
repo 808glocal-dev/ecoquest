@@ -157,12 +157,11 @@
       <div style="text-align:center;margin-bottom:18px">
         <div style="font-size:44px">🌱</div>
         <div style="font-size:18px;font-weight:900;color:#1B5E20;margin-top:8px">가입하고 기록 저장하기</div>
-        <div style="font-size:12px;color:#888;margin-top:8px;line-height:1.6">지금까지 쌓은 절감량·미션·챌린지가<br/>그대로 새 계정으로 옮겨가요!</div>
+        <div style="font-size:12px;color:#888;margin-top:8px;line-height:1.6">아래 버튼을 누르면 끝!<br/>처음이면 새로 가입, 이미 계정이 있으면<br/>그 계정으로 자동 로그인돼요.</div>
       </div>
-      <button onclick="window._guestUpgradeGoogle()" style="display:flex;align-items:center;gap:10px;justify-content:center;width:100%;background:#fff;color:#333;border:1.5px solid #ddd;border-radius:14px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:10px"><img src="https://www.google.com/favicon.ico" width="20" height="20"/> Google로 가입</button>
-      <button onclick="window._guestUpgradeKakao()" style="display:flex;align-items:center;gap:10px;justify-content:center;width:100%;background:#FEE500;color:#191919;border:none;border-radius:14px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit">💬 카카오로 가입</button>
-      <div style="font-size:11px;color:#aaa;text-align:center;margin-top:14px">이미 계정이 있어도 위 버튼을 누르면<br/>그 계정으로 로그인돼요. 기록은 안 사라져요 🌍</div>
-      <button onclick="window._guestSwitchLogin()" style="display:block;margin:14px auto 0;background:none;border:none;color:#888;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;text-decoration:underline">이미 계정이 있어요 → 로그인 화면으로</button>
+      <button onclick="window._guestUpgradeGoogle()" style="display:flex;align-items:center;gap:10px;justify-content:center;width:100%;background:#fff;color:#333;border:1.5px solid #ddd;border-radius:14px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:10px"><img src="https://www.google.com/favicon.ico" width="20" height="20"/> Google로 계속하기</button>
+      <button onclick="window._guestUpgradeKakao()" style="display:flex;align-items:center;gap:10px;justify-content:center;width:100%;background:#FEE500;color:#191919;border:none;border-radius:14px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit">💬 카카오로 계속하기</button>
+      <div style="font-size:11px;color:#aaa;text-align:center;margin-top:14px">게스트로 쌓은 절감량·미션·챌린지 기록은<br/>그대로 옮겨가요. 사라지지 않아요 🌍</div>
     </div>`;
     document.body.appendChild(m);
   }

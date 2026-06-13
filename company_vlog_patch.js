@@ -116,7 +116,7 @@
           <button onclick="window.renderCompanyVlog()" style="background:#fff;border:1px solid var(--bdr);border-radius:10px;padding:5px 10px;font-size:11px;font-weight:700;color:var(--g2);cursor:pointer;font-family:inherit">🔄</button>
         </div>
         <div style="display:flex;flex-direction:column;gap:12px">${cards}</div>`;
-      page.insertBefore(sec, page.firstChild);
+      page.appendChild(sec);  // 맨 아래 (ranking이 맨 위 자리 독점해도 충돌 없음)
     }catch(e){ console.error('[company_vlog]', e); }
   }
   window.renderCompanyVlog = renderCompanyVlog;
@@ -240,6 +240,16 @@
   setTimeout(()=>{ const p = document.getElementById('page-company'); if(p && p.classList.contains('on')) renderCompanyVlog(); }, 2200);
   setInterval(checkVlogAlarm, 60*1000);
   setTimeout(checkVlogAlarm, 5000);
+
+  // ranking v8 이 1초마다 페이지를 휘저어 브이로그가 사라지면 자리 복구 (없을 때만 재렌더)
+  setInterval(()=>{
+    const p = document.getElementById('page-company');
+    if(!p) return;
+    const active = p.classList.contains('on') || p.offsetParent !== null;
+    if(active && window.ME && window.UDATA?.companyId && !document.getElementById('companyVlogSection')){
+      renderCompanyVlog();
+    }
+  }, 1500);
 
   console.log('[company_vlog_patch] 로드됨');
 })();

@@ -13,6 +13,12 @@
 (function(){
   'use strict';
 
+  // 같은 파일이 두 번 로드돼도 두 번째는 무시 (setInterval 중복 방지)
+  if(window._companyVlogLoaded) return;
+  window._companyVlogLoaded = true;
+
+  let _vlogRendering = false;   // 동시 실행 방지 (비동기 중복 렌더 차단)
+
   // ───── 설정값 (시각만 바꾸면 됨, 24시간제) ─────
   const VLOG_ALARM_HOUR = 13;   // 정각 알림 시각 (1시 = 13)
   const VLOG_OPEN_HOUR  = 16;   // 하루 브이로그 공개 시각 (4시 = 16)
@@ -40,13 +46,15 @@
 
   /* ════════ 브이로그 섹션 렌더 ════════ */
   async function renderCompanyVlog(){
+    if(_vlogRendering) return;          // 이미 그리는 중이면 무시
+    _vlogRendering = true;
     try{
       const myUid = window.ME?.uid;
       const myCompanyId = window.UDATA?.companyId;
       if(!myUid || !myCompanyId) return;
       const page = document.getElementById('page-company');
       if(!page) return;
-      document.getElementById('companyVlogSection')?.remove();
+      document.querySelectorAll('#companyVlogSection').forEach(el=>el.remove());  // 혹시 여러 개면 전부 제거
 
       // 멤버 맵
       const usersSnap = await window.FB.getDocs(window.FB.collection(window.FB.db,'users'));
@@ -127,6 +135,7 @@
         ${dates.length>1?`<div style="text-align:center;font-size:11px;color:var(--sub);margin-top:2px">← 옆으로 넘기면 지난 브이로그 →</div>`:''}`;
       page.appendChild(sec);  // 맨 아래 (ranking이 맨 위 자리 독점해도 충돌 없음)
     }catch(e){ console.error('[company_vlog]', e); }
+    finally{ _vlogRendering = false; }
   }
   window.renderCompanyVlog = renderCompanyVlog;
 

@@ -33,6 +33,11 @@
     return `${parseInt(M)}월 ${parseInt(D)}일`;
   }
 
+  // 인증 이미지 소스 — 원본 필드가 있으면 우선, 없으면 썸네일
+  function imgSrc(v){
+    return v.photo || v.image || v.imageUrl || v.fullImage || v.imageData || v.thumb || '';
+  }
+
   /* ════════ 브이로그 섹션 렌더 ════════ */
   async function renderCompanyVlog(){
     try{
@@ -86,27 +91,30 @@
           const memberCount = new Set(list.map(v=>v.uid)).size;
           const label = formatDateLabel(dt);
           if(locked){
-            return `<div style="position:relative;background:linear-gradient(135deg,#0f3d20,#1a2e1a);border-radius:16px;overflow:hidden;aspect-ratio:16/10;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;text-align:center;padding:16px">
-              <div style="font-size:34px;margin-bottom:8px">🔒</div>
-              <div style="font-size:15px;font-weight:900">${label} 브이로그</div>
+            return `<div style="flex:0 0 86%;scroll-snap-align:center;position:relative;background:linear-gradient(135deg,#0f3d20,#1a2e1a);border-radius:16px;overflow:hidden;aspect-ratio:4/5;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;text-align:center;padding:16px">
+              <div style="font-size:38px;margin-bottom:8px">🔒</div>
+              <div style="font-size:16px;font-weight:900">${label} 브이로그</div>
               <div style="font-size:11px;color:rgba(255,255,255,.7);margin-top:4px">지금까지 ${list.length}컷 · ${memberCount}명 참여 중</div>
               <div style="font-size:11px;color:#a8f0c6;font-weight:700;margin-top:8px">${VLOG_OPEN_HOUR>12?VLOG_OPEN_HOUR-12:VLOG_OPEN_HOUR}시에 공개돼요 🎬</div>
             </div>`;
           }
-          return `<div onclick="window.playVlog('${dt}')" style="position:relative;border-radius:16px;overflow:hidden;aspect-ratio:16/10;cursor:pointer;background:#000;box-shadow:0 4px 16px rgba(0,0,0,.12)">
-            ${cover.thumb
-              ? `<img src="${cover.thumb}" style="width:100%;height:100%;object-fit:cover;opacity:.9"/>`
-              : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:60px;background:linear-gradient(135deg,#1a6b3a,#2ECC71)">${cover.missionEmoji||'🌱'}</div>`}
-            <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.05),rgba(0,0,0,.65))"></div>
-            <div style="position:absolute;top:10px;left:12px;background:rgba(0,0,0,.5);border-radius:20px;padding:3px 11px;font-size:11px;font-weight:700;color:#fff">▶ ${list.length}컷 재생</div>
-            <div style="position:absolute;bottom:12px;left:14px;right:14px;color:#fff">
-              <div style="font-size:17px;font-weight:900">${label} 브이로그</div>
-              <div style="font-size:11px;color:rgba(255,255,255,.88);margin-top:2px">${coName} · ${memberCount}명 · ${list.length}개 인증</div>
+          const cov = imgSrc(cover);
+          return `<div onclick="window.playVlog('${dt}')" style="flex:0 0 86%;scroll-snap-align:center;position:relative;border-radius:16px;overflow:hidden;aspect-ratio:4/5;cursor:pointer;background:#000;box-shadow:0 4px 16px rgba(0,0,0,.15)">
+            ${cov
+              ? `<img src="${cov}" style="width:100%;height:100%;object-fit:cover"/>`
+              : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:72px;background:linear-gradient(135deg,#1a6b3a,#2ECC71)">${cover.missionEmoji||'🌱'}</div>`}
+            <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.05),rgba(0,0,0,.55))"></div>
+            <div style="position:absolute;top:12px;left:12px;background:rgba(0,0,0,.5);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:700;color:#fff">▶ ${list.length}컷 재생</div>
+            ${isToday?'<div style="position:absolute;top:12px;right:12px;background:#FF3B6F;border-radius:20px;padding:4px 11px;font-size:11px;font-weight:900;color:#fff">LIVE</div>':''}
+            <div style="position:absolute;bottom:14px;left:16px;right:16px;color:#fff">
+              <div style="font-size:20px;font-weight:900">${label} 브이로그</div>
+              <div style="font-size:12px;color:rgba(255,255,255,.9);margin-top:3px">${coName} · ${memberCount}명 · ${list.length}개 인증</div>
             </div>
           </div>`;
         }).join('');
       }
 
+      ensureVlogCSS();
       const sec = document.createElement('div');
       sec.id = 'companyVlogSection';
       sec.style.cssText = 'padding:0 12px 8px;margin-top:12px';
@@ -115,7 +123,8 @@
           <div style="font-size:15px;font-weight:900;color:var(--txt)">🎬 우리 팀 하루 브이로그</div>
           <button onclick="window.renderCompanyVlog()" style="background:#fff;border:1px solid var(--bdr);border-radius:10px;padding:5px 10px;font-size:11px;font-weight:700;color:var(--g2);cursor:pointer;font-family:inherit">🔄</button>
         </div>
-        <div style="display:flex;flex-direction:column;gap:12px">${cards}</div>`;
+        <div class="vlog-carousel" style="display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:2px 4px 10px;margin:0 -4px">${cards}</div>
+        ${dates.length>1?`<div style="text-align:center;font-size:11px;color:var(--sub);margin-top:2px">← 옆으로 넘기면 지난 브이로그 →</div>`:''}`;
       page.appendChild(sec);  // 맨 아래 (ranking이 맨 위 자리 독점해도 충돌 없음)
     }catch(e){ console.error('[company_vlog]', e); }
   }
@@ -127,13 +136,15 @@
     const s = document.createElement('style');
     s.id = 'vlogKbStyle';
     s.textContent = `
-      @keyframes kb0{0%{transform:scale(1.03) translate(0,0)}100%{transform:scale(1.20) translate(-3%,-2%)}}
-      @keyframes kb1{0%{transform:scale(1.20) translate(3%,2%)}100%{transform:scale(1.04) translate(0,0)}}
-      @keyframes kb2{0%{transform:scale(1.05) translate(3%,-1%)}100%{transform:scale(1.18) translate(-3%,1%)}}
-      @keyframes kb3{0%{transform:scale(1.18) translate(-2%,2%)}100%{transform:scale(1.05) translate(2%,-2%)}}
+      @keyframes kb0{0%{transform:scale(1.0) translate(0,0)}100%{transform:scale(1.09) translate(-2%,-1%)}}
+      @keyframes kb1{0%{transform:scale(1.09) translate(2%,1%)}100%{transform:scale(1.0) translate(0,0)}}
+      @keyframes kb2{0%{transform:scale(1.02) translate(2%,-1%)}100%{transform:scale(1.09) translate(-2%,0)}}
+      @keyframes kb3{0%{transform:scale(1.09) translate(-1%,1%)}100%{transform:scale(1.02) translate(1%,-1%)}}
       @keyframes vFade{0%{opacity:0}100%{opacity:1}}
       @keyframes vPop{0%{transform:scale(.55);opacity:0}60%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
       @keyframes vCapUp{0%{transform:translateY(14px);opacity:0}100%{transform:translateY(0);opacity:1}}
+      .vlog-carousel{scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch}
+      .vlog-carousel::-webkit-scrollbar{display:none}
     `;
     document.head.appendChild(s);
   }
@@ -177,8 +188,9 @@
     const img = document.getElementById('vlogImg');
     const emo = document.getElementById('vlogEmoji');
     if(!img) return;
-    if(v.thumb){
-      img.src = v.thumb; img.style.display='block'; emo.style.display='none';
+    const src = imgSrc(v);
+    if(src){
+      img.src = src; img.style.display='block'; emo.style.display='none';
       const kb = 'kb' + (i % 4);
       img.style.animation = 'none'; void img.offsetWidth;        // 리셋
       img.style.animation = `vFade .45s ease, ${kb} 3.4s ease-in-out forwards`;

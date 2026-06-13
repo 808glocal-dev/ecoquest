@@ -174,51 +174,24 @@
     })); }catch(e){}
   }
 
-  /* ── 구글 이어받기 ── */
+  /* ── 구글 로그인/가입 (백업 후 평범 로그인 + 머지) ── */
   window._guestUpgradeGoogle = async function(){
-    if(!isGuestUser()){ window.toast && window.toast('이미 가입돼 있어요'); return; }
     const mod = await authMod();
     const provider = new mod.GoogleAuthProvider();
-    try{
-      await mod.linkWithPopup(_auth.currentUser, provider);   // 익명 → 구글 (uid 유지, 데이터 보존)
-      window.GUEST_MODE = false;
-      try{ const fs = await fsMod(); await fs.updateDoc(window.FB.doc(window.FB.db,'users',_auth.currentUser.uid), {isGuest:false}); }catch(e){}
-      if(window.UDATA) window.UDATA.isGuest = false;
-      document.getElementById('ovGuestSignup')?.remove();
-      window.toast && window.toast('🎉 가입 완료! 기록이 저장됐어요');
-      restoreLogoutBtn();
-      setTimeout(()=>{ window.openOnboardEdit && window.openOnboardEdit(); }, 600); // 닉네임 변경 유도
-    }catch(e){
-      if(e.code==='auth/credential-already-in-use' || e.code==='auth/email-already-in-use'){
-        // 이미 가입한 구글 계정 → 멈추지 말고 그 계정으로 "로그인" (게스트 수치 합산)
-        backupGuestForMerge();
-        document.getElementById('ovGuestSignup')?.remove();
-        window.toast && window.toast('이미 가입한 계정이에요. 그 계정으로 로그인할게요!');
-        try{
-          await mod.signInWithPopup(_auth, provider);   // 기존 계정 진입
-        }catch(e2){
-          // 팝업이 또 막히면 credential 로 한 번 더 시도
-          const cred = mod.GoogleAuthProvider.credentialFromError(e);
-          if(cred){ try{ await mod.signInWithCredential(_auth, cred); }catch(e3){ window.toast && window.toast('로그인 실패: '+e3.code); } }
-          else if(!['auth/popup-closed-by-user','auth/cancelled-popup-request'].includes(e2.code))
-            window.toast && window.toast('로그인 실패: '+(e2.code||e2.message));
-        }
-      } else if(['auth/popup-blocked','auth/popup-closed-by-user','auth/cancelled-popup-request'].includes(e.code)){
-        window.toast && window.toast('팝업이 막혔어요. 다시 시도해주세요');
-      } else window.toast && window.toast('가입 실패: '+(e.code||e.message));
-    }
-  };
-
-  /* ── 이미 계정 있는 사람: 게스트 빠져나가서 로그인 화면으로 ── */
-  window._guestSwitchLogin = async function(){
+    backupGuestForMerge();                       // 게스트 기록 백업 (로그인 후 합쳐짐)
+    window.GUEST_MODE = false; _guestStarting = false;
     document.getElementById('ovGuestSignup')?.remove();
-    window.GUEST_MODE = false;
-    _guestStarting = false;
-    try{ localStorage.removeItem('eq_guest_merge'); }catch(e){}
-    const mod = await authMod();
-    try{ await mod.signOut(_auth); }catch(e){}
-    const app = document.getElementById('app'); if(app) app.style.display = 'none';
-    const login = document.getElementById('loginScreen'); if(login) login.style.display = 'flex';
+    window.toast && window.toast('구글 계정으로 로그인할게요...');
+    try{
+      // 익명 세션 위에서 그냥 구글 로그인 → 그 계정으로 진입 (link 안 하므로 "이미 가입" 충돌 없음)
+      await mod.signInWithPopup(_auth, provider);
+    }catch(e){
+      if(['auth/popup-blocked','auth/cancelled-popup-request','auth/popup-closed-by-user'].includes(e.code)){
+        // 모바일 등 팝업 막힌 환경 → redirect 로 (돌아오면 원본이 로그인 처리, 머지는 백업 사용)
+        try{ await mod.signInWithRedirect(_auth, provider); }
+        catch(e2){ window.toast && window.toast('로그인 실패: '+(e2.code||e2.message)); }
+      } else window.toast && window.toast('로그인 실패: '+(e.code||e.message));
+    }
   };
 
   /* ── 카카오 이어받기 (redirect) ── */
@@ -233,13 +206,14 @@
     });
   }
   window._guestUpgradeKakao = async function(){
-    if(!isGuestUser()){ window.toast && window.toast('이미 가입돼 있어요'); return; }
-    try{ localStorage.setItem('eq_kakao_linking','1'); }catch(e){}
-    backupGuestForMerge();
+    backupGuestForMerge();                       // 게스트 기록 백업
+    window.GUEST_MODE = false; _guestStarting = false;
+    document.getElementById('ovGuestSignup')?.remove();
     try{
       if(!window.Kakao) await loadKakaoSDK();
+      // 원본 kakao_login_patch 가 redirect 복귀 후 로그인/가입 처리 → 내 리스너가 기록 머지
       window.Kakao.Auth.authorize({ redirectUri: KAKAO_REDIRECT, throughTalk:false });
-    }catch(e){ window.toast && window.toast('카카오 연결 실패'); localStorage.removeItem('eq_kakao_linking'); }
+    }catch(e){ window.toast && window.toast('카카오 연결 실패'); }
   };
 
   // 카카오 redirect 복귀 후 link 처리 (earlyKakaoGuard 가 잡아둔 code)

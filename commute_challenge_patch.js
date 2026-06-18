@@ -2,9 +2,9 @@
    EcoQuest – commute_challenge_patch.js
    출근·출장 챌린지 (Scope 3 Cat.7 / Cat.6)
    ─────────────────────────────────────────────────────
-   • 기존 MISSIONS / CHALLENGES 배열에 출근·출장 미션을 추가
+   • MISSIONS / CHALLENGES 배열에 출근·출장 미션 추가
+   • 소속(통근) 탭에도 출근·출장 챌린지 진입 카드 노출
    • 참여 → 사진 인증(카메라 L1·L2 강제) → 미션 완료 → verifications 저장
-   • "검증된 통근/출장 1차 데이터"가 쌓이는 챌린지
    ─────────────────────────────────────────────────────
    ★ 로드 위치: commute_patch.js 뒤
    ※ co2 값은 잠정 추정치 — 통근 등록(거리·수단) 연동 시 정밀화 예정
@@ -14,13 +14,12 @@
   if(window._commuteChalLoaded) return;
   window._commuteChalLoaded = true;
 
+  /* ── 1) 미션·챌린지 배열에 추가 ── */
   function inject(){
-    // 메인 스크립트의 전역 MISSIONS / CHALLENGES 배열에 접근
     if(typeof MISSIONS === 'undefined' || typeof CHALLENGES === 'undefined'){
       setTimeout(inject, 500); return;
     }
     try {
-      // ── 미션 추가 ──
       if(!MISSIONS.find(m=>m.id==='m_commute')){
         MISSIONS.push(
           {id:"m_commute",emoji:"🚇",name:"친환경 출근 인증",point:80,co2:1.17,
@@ -29,7 +28,6 @@
            kw:"KTX, 기차, 고속버스, 대중교통, 출장, 역, 승차권, 탑승권, 플랫폼, 열차"}
         );
       }
-      // ── 챌린지 추가 ──
       if(!CHALLENGES.find(c=>c.id===101)){
         CHALLENGES.push(
           {id:101,emoji:"🚇",title:"친환경 출근 챌린지",
@@ -42,7 +40,6 @@
            freqOptions:["w1","w3"]}
         );
       }
-      // 공식 챌린지 그리드 다시 그리기 (추가분 노출)
       window.renderOfficialChallenges && window.renderOfficialChallenges();
       console.log('[commute_challenge] 출근·출장 챌린지 추가 완료');
     } catch(e){
@@ -50,8 +47,47 @@
     }
   }
 
+  /* ── 2) 소속(통근) 탭에 진입 카드 ── */
+  function injectCompanyEntry(){
+    const page = document.getElementById('page-company');
+    if(!page) return;
+    // 챌린지가 배열에 들어간 뒤에만
+    if(typeof CHALLENGES === 'undefined' || !CHALLENGES.find(c=>c.id===101)) return;
+    if(document.getElementById('commuteChalEntry')) return;
+
+    const wrap = document.createElement('div');
+    wrap.id = 'commuteChalEntry';
+    wrap.style.cssText = 'margin:16px 12px 4px';
+    wrap.innerHTML = `
+      <div style="font-size:13px;font-weight:900;color:#1a2e1a;margin-bottom:10px">🚊 통근·출장 챌린지 <span style="font-size:10px;color:#7a9a7a;font-weight:600">· Scope 3 사진 인증</span></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div onclick="window.openChal&&window.openChal(101)" style="background:linear-gradient(135deg,#0d47a1,#1976d2);border-radius:14px;padding:16px 14px;color:#fff;cursor:pointer;text-align:center;box-shadow:0 4px 12px rgba(13,71,161,.2)">
+          <div style="font-size:32px;line-height:1">🚇</div>
+          <div style="font-size:13px;font-weight:900;margin-top:8px">친환경 출근</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.82);margin-top:3px">대중교통·자전거·도보 인증</div>
+        </div>
+        <div onclick="window.openChal&&window.openChal(102)" style="background:linear-gradient(135deg,#1565c0,#42a5f5);border-radius:14px;padding:16px 14px;color:#fff;cursor:pointer;text-align:center;box-shadow:0 4px 12px rgba(21,101,192,.2)">
+          <div style="font-size:32px;line-height:1">🚄</div>
+          <div style="font-size:13px;font-weight:900;margin-top:8px">친환경 출장</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.82);margin-top:3px">KTX·대중교통 인증</div>
+        </div>
+      </div>`;
+
+    // 통근 등록 카드(#commuteEntry) 바로 뒤에 삽입, 없으면 맨 끝
+    const entry = document.getElementById('commuteEntry');
+    if(entry){
+      entry.insertAdjacentElement('afterend', wrap);
+    } else {
+      page.appendChild(wrap);
+    }
+  }
+
   if(document.readyState === 'loading')
     document.addEventListener('DOMContentLoaded', ()=>setTimeout(inject, 1500));
   else
     setTimeout(inject, 1500);
+
+  // 소속 탭은 다른 patch가 다시 그릴 수 있어 주기적으로 재삽입
+  setInterval(injectCompanyEntry, 1500);
+  setTimeout(injectCompanyEntry, 1700);
 })();

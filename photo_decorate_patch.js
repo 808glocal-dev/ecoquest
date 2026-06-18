@@ -1,13 +1,14 @@
 /* =====================================================
    EcoQuest – photo_decorate_patch.js
    인증 사진 꾸미기 에디터 (필터 · 스티커 · 텍스트)
+   + 동영상 인증이면 videoUrl 까지 한 번에 저장
    ─────────────────────────────────────────────────────
    • window.saveVerification 을 가로채서, 저장 직전에 꾸미기 화면을 띄움
-   • 사용자가 꾸민(또는 그대로) 사진을 합성해서 원래 저장 함수로 넘김
-   • 호출부(카메라/제출 UI)는 수정 불필요
+   • 꾸민(또는 그대로) 사진을 합성해서 저장
+   • 동영상(window._pendingVlogVideo) 있으면 videoUrl 포함해 직접 저장
+   • saveVerification 가로채기는 이 패치 한 곳에서만! (camera_force 와 충돌 방지)
    ─────────────────────────────────────────────────────
-   ★ 로드 위치: saveVerification 이 정의된 곳보다 "뒤"라면 어디든 OK
-     (정의를 못 찾으면 알아서 0.8초마다 재시도)
+   ★ 로드 위치: saveVerification 정의보다 "뒤"면 어디든 OK
    ===================================================== */
 (function(){
   'use strict';
@@ -24,12 +25,12 @@
   ];
   const STICKERS = ['🌱','🌍','♻️','💚','🌿','🌳','☀️','🚲','🥕','🍎','🌸','✨','💧','🍃','🐰','📸','👍','🔥'];
 
-  const COMPOSE_MAXW = 1000;   // 꾸민 결과 최대 너비 (compressImage 의 maxW 와 맞춰주면 좋음)
+  const COMPOSE_MAXW = 1000;
   const JPEG_QUALITY = 0.85;
 
-  let S = null; // {b64, resolve, filterCss, items:[{type,content,xPct,yPct,size}], sel}
+  let S = null;
 
-  /* ── saveVerification 가로채기 ── */
+  /* ── saveVerification 가로채기 (이 패치 단독) ── */
   function hookSave(){
     if(window._photoDecorHooked) return;
     const orig = window.saveVerification;
@@ -38,10 +39,34 @@
       let finalB64 = b64;
       try{ finalB64 = await openPhotoEditor(b64); }catch(e){ finalB64 = b64; }
       if(finalB64 === null) return false;   // 취소
+
+      // ── 동영상 인증이면 videoUrl 포함해서 직접 저장 ──
+      const videoUrl = window._pendingVlogVideo || null;
+      window._pendingVlogVideo = null;
+      if(videoUrl){
+        try{
+          const thumb = await window.compressImage(finalB64, 1000);
+          await window.FB.addDoc(window.FB.collection(window.FB.db, "verifications"), {
+            uid,
+            userName: window.UDATA?.nickname || window.ME?.displayName || "익명",
+            userPhoto: window.ME?.photoURL || "",
+            missionId: m.id, missionName: m.name, missionEmoji: m.emoji,
+            isPublic, thumb, videoUrl, type: 'video',
+            comment: comment || "",
+            createdAt: window.FB.serverTimestamp()
+          });
+          return true;
+        }catch(e){
+          console.error('[photo_decorate] 동영상 저장 실패, 사진으로 대체', e);
+          return orig(uid, m, finalB64, isPublic, comment);
+        }
+      }
+
+      // ── 일반 사진 인증 ──
       return orig(uid, m, finalB64, isPublic, comment);
     };
     window._photoDecorHooked = true;
-    console.log('[photo_decorate] saveVerification 후킹 완료');
+    console.log('[photo_decorate] saveVerification 후킹 완료 (꾸미기+동영상)');
   }
 
   function openPhotoEditor(b64){
@@ -57,7 +82,7 @@
     ensureCSS();
     const ov = document.createElement('div');
     ov.id = 'ovPhotoEdit';
-    ov.style.cssText = 'position:fixed;inset:0;background:#111;z-index:11000;display:flex;flex-direction:column';
+    ov.style.cssText = 'position:fixed;inset:0;background:#111;z-index:13500;display:flex;flex-direction:column';
     ov.innerHTML = `
       <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;flex-shrink:0">
         <button onclick="window._peCancel()" style="background:rgba(255,255,255,.15);border:none;color:#fff;border-radius:10px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">취소</button>
@@ -103,7 +128,6 @@
     document.head.appendChild(s);
   }
 
-  /* ── 아이템(스티커/텍스트) ── */
   function renderItems(){
     const ov = document.getElementById('peOverlay');
     if(!ov) return;
@@ -194,11 +218,11 @@
       const res = S?.resolve; const orig = S?.b64;
       document.getElementById('ovPhotoEdit')?.remove();
       const r = res; S = null;
-      if(r) r(orig);   // 합성 실패해도 원본으로 저장
+      if(r) r(orig);
     }
   };
 
-  /* ── 사진 + 필터 + 스티커/텍스트 합성 ── */
+  /* ── 합성 ── */
   function composeImage(){
     return new Promise((resolve, reject)=>{
       const img = new Image();
@@ -214,7 +238,7 @@
 
           const stage = document.getElementById('peStage');
           const sw = stage ? stage.clientWidth : cw;
-          const ratio = cw / (sw || cw);   // 미리보기 px → 캔버스 px
+          const ratio = cw / (sw || cw);
           ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
           S.items.forEach(it=>{
             const x = (it.xPct/100)*cw, y = (it.yPct/100)*ch;
@@ -231,7 +255,7 @@
             }
           });
           const dataUrl = c.toDataURL('image/jpeg', JPEG_QUALITY);
-          resolve(dataUrl.split(',')[1]);   // 순수 base64 (saveVerification 이 기대하는 형식)
+          resolve(dataUrl.split(',')[1]);
         }catch(err){ reject(err); }
       };
       img.onerror = reject;

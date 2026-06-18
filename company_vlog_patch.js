@@ -1,28 +1,24 @@
 /* =====================================================
    EcoQuest – company_vlog_patch.js
-   소속(팀) 하루 브이로그 — BeReal식 크루 챌린지 (1단계: 사진 기반)
+   소속(팀) 하루 브이로그 — BeReal식 크루 챌린지 (사진+동영상)
    ─────────────────────────────────────────────────────
-   • 회사 멤버들의 그날 환경미션 인증샷을 날짜별로 자동으로 묶음
-   • 카드 탭 → 스토리처럼 자동 넘김(컷당 3초) · 닉네임 + 미션 + 시간
-   • 오늘 묶음은 VLOG_OPEN_HOUR(기본 16시=4시) 이후에만 공개, 그 전엔 잠금
-   • 매일 VLOG_ALARM_HOUR(기본 13시=1시)에 "탄소 제로 타임" 인앱 알림
-     (앱을 켜둔 사람 한정. 닫힌 앱 푸시는 2단계 FCM 작업)
+   • 회사 멤버들의 그날 환경미션 인증샷/영상을 날짜별로 자동으로 묶음
+   • 카드 탭 → 스토리처럼 자동 넘김 · 사진=3초/동영상=길이만큼
+   • videoUrl 있으면 <video> 재생, 없으면 사진(Ken Burns)
+   • 오늘 묶음은 VLOG_OPEN_HOUR(기본 16시) 이후 공개, 그 전엔 잠금
    ─────────────────────────────────────────────────────
-   ★ 로드 위치: company_feed_patch.js 바로 "아래"에 넣어주세요.
+   ★ 로드 위치: company_feed_patch.js 바로 "아래"
    ===================================================== */
 (function(){
   'use strict';
 
-  // 같은 파일이 두 번 로드돼도 두 번째는 무시 (setInterval 중복 방지)
   if(window._companyVlogLoaded) return;
   window._companyVlogLoaded = true;
 
-  let _vlogRendering = false;   // 동시 실행 방지 (비동기 중복 렌더 차단)
+  let _vlogRendering = false;
 
-  // ───── 설정값 (시각만 바꾸면 됨, 24시간제) ─────
-  const VLOG_ALARM_HOUR = 13;   // 정각 알림 시각 (1시 = 13)
-  const VLOG_OPEN_HOUR  = 16;   // 하루 브이로그 공개 시각 (4시 = 16)
-  // ───────────────────────────────────────────────
+  const VLOG_ALARM_HOUR = 13;
+  const VLOG_OPEN_HOUR  = 16;
 
   const KST = 9 * 3600 * 1000;
   function kstDateStr(seconds){ return new Date(seconds*1000 + KST).toISOString().split('T')[0]; }
@@ -39,14 +35,16 @@
     return `${parseInt(M)}월 ${parseInt(D)}일`;
   }
 
-  // 인증 이미지 소스 — 원본 필드가 있으면 우선, 없으면 썸네일
   function imgSrc(v){
     return v.photo || v.image || v.imageUrl || v.fullImage || v.imageData || v.thumb || '';
+  }
+  function videoSrc(v){
+    return v.videoUrl || (v.type === 'video' && (v.video || '')) || '';
   }
 
   /* ════════ 브이로그 섹션 렌더 ════════ */
   async function renderCompanyVlog(){
-    if(_vlogRendering) return;          // 이미 그리는 중이면 무시
+    if(_vlogRendering) return;
     _vlogRendering = true;
     try{
       const myUid = window.ME?.uid;
@@ -54,9 +52,8 @@
       if(!myUid || !myCompanyId) return;
       const page = document.getElementById('page-company');
       if(!page) return;
-      document.querySelectorAll('#companyVlogSection').forEach(el=>el.remove());  // 혹시 여러 개면 전부 제거
+      document.querySelectorAll('#companyVlogSection').forEach(el=>el.remove());
 
-      // 멤버 맵
       const usersSnap = await window.FB.getDocs(window.FB.collection(window.FB.db,'users'));
       const memberUids = [], memberMap = {};
       usersSnap.docs.forEach(d=>{
@@ -71,16 +68,14 @@
       const coSnap = await window.FB.getDoc(window.FB.doc(window.FB.db,'companies',myCompanyId));
       const coName = coSnap.exists() ? (coSnap.data().name || '우리 팀') : '우리 팀';
 
-      // 인증(공개) → 시간순(오래된→최신, 스토리 순서)
       const vSnap = await window.FB.getDocs(window.FB.collection(window.FB.db,'verifications'));
       const items = vSnap.docs.map(d=>({id:d.id, ...d.data()}))
         .filter(v => memberUids.includes(v.uid) && v.isPublic && v.createdAt?.seconds)
         .sort((a,b)=> a.createdAt.seconds - b.createdAt.seconds);
 
-      // 날짜별 그룹
       const byDate = {};
       items.forEach(v=>{ const dt = kstDateStr(v.createdAt.seconds); (byDate[dt] = byDate[dt] || []).push(v); });
-      const dates = Object.keys(byDate).sort((a,b)=> b.localeCompare(a)); // 최신 날짜 먼저
+      const dates = Object.keys(byDate).sort((a,b)=> b.localeCompare(a));
       const today = todayKst();
       const hour = nowKstHour();
 
@@ -97,6 +92,7 @@
           const locked = isToday && hour < VLOG_OPEN_HOUR;
           const cover = list[list.length-1];
           const memberCount = new Set(list.map(v=>v.uid)).size;
+          const vidCount = list.filter(v=>videoSrc(v)).length;
           const label = formatDateLabel(dt);
           if(locked){
             return `<div style="flex:0 0 86%;scroll-snap-align:center;position:relative;background:linear-gradient(135deg,#0f3d20,#1a2e1a);border-radius:16px;overflow:hidden;aspect-ratio:4/5;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;text-align:center;padding:16px">
@@ -112,7 +108,7 @@
               ? `<img src="${cov}" style="width:100%;height:100%;object-fit:cover"/>`
               : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:72px;background:linear-gradient(135deg,#1a6b3a,#2ECC71)">${cover.missionEmoji||'🌱'}</div>`}
             <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.05),rgba(0,0,0,.55))"></div>
-            <div style="position:absolute;top:12px;left:12px;background:rgba(0,0,0,.5);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:700;color:#fff">▶ ${list.length}컷 재생</div>
+            <div style="position:absolute;top:12px;left:12px;background:rgba(0,0,0,.5);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:700;color:#fff">▶ ${list.length}컷 재생${vidCount?` · 🎬${vidCount}`:''}</div>
             ${isToday?'<div style="position:absolute;top:12px;right:12px;background:#FF3B6F;border-radius:20px;padding:4px 11px;font-size:11px;font-weight:900;color:#fff">LIVE</div>':''}
             <div style="position:absolute;bottom:14px;left:16px;right:16px;color:#fff">
               <div style="font-size:20px;font-weight:900">${label} 브이로그</div>
@@ -133,7 +129,7 @@
         </div>
         <div class="vlog-carousel" style="display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:2px 4px 10px;margin:0 -4px">${cards}</div>
         ${dates.length>1?`<div style="text-align:center;font-size:11px;color:var(--sub);margin-top:2px">← 옆으로 넘기면 지난 브이로그 →</div>`:''}`;
-      page.appendChild(sec);  // 맨 아래 (ranking이 맨 위 자리 독점해도 충돌 없음)
+      page.appendChild(sec);
     }catch(e){ console.error('[company_vlog]', e); }
     finally{ _vlogRendering = false; }
   }
@@ -171,10 +167,12 @@
       <div style="display:flex;align-items:center;gap:10px;padding:4px 16px 10px;z-index:5">
         <div id="vlogAvatar" style="width:34px;height:34px;border-radius:50%;overflow:hidden;background:linear-gradient(135deg,#2ECC71,#27AE60);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:15px;flex-shrink:0"></div>
         <div style="flex:1;min-width:0"><div id="vlogName" style="font-size:14px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div><div id="vlogTime" style="font-size:11px;color:rgba(255,255,255,.7)"></div></div>
+        <button id="vlogMute" onclick="window.vlogToggleMute()" style="background:rgba(255,255,255,.2);border:none;color:#fff;width:34px;height:34px;border-radius:50%;font-size:15px;cursor:pointer;font-family:inherit;flex-shrink:0;display:none">🔇</button>
         <button onclick="window.closeVlog()" style="background:rgba(255,255,255,.2);border:none;color:#fff;width:34px;height:34px;border-radius:50%;font-size:18px;cursor:pointer;font-family:inherit;flex-shrink:0">✕</button>
       </div>
       <div style="flex:1;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden">
         <img id="vlogImg" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform-origin:center;will-change:transform,opacity"/>
+        <video id="vlogVid" playsinline webkit-playsinline muted style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none;background:#000"></video>
         <div id="vlogEmoji" style="position:absolute;font-size:120px;display:none"></div>
         <div style="position:absolute;left:0;top:0;bottom:0;width:32%;z-index:6" onclick="window.vlogPrev()"></div>
         <div style="position:absolute;right:0;top:0;bottom:0;width:32%;z-index:6" onclick="window.vlogNext()"></div>
@@ -182,10 +180,28 @@
       <div id="vlogCaption" style="padding:14px 18px 34px;z-index:5"></div>`;
     document.body.appendChild(ov);
     window._vlogList = list; window._vlogIdx = 0;
+    window._vlogMuted = true;
     document.getElementById('vlogBars').innerHTML = list.map((_,i)=>
       `<div style="flex:1;height:3px;background:rgba(255,255,255,.3);border-radius:2px;overflow:hidden"><div id="vbar-${i}" style="width:0%;height:100%;background:#fff"></div></div>`).join('');
     showVlogFrame(0);
   };
+
+  function fallbackToPhoto(v, i){
+    const img = document.getElementById('vlogImg');
+    const vid = document.getElementById('vlogVid');
+    if(vid){ try{ vid.pause(); }catch(e){} vid.style.display='none'; }
+    const src = imgSrc(v);
+    if(src && img){
+      img.src = src; img.style.display='block';
+      const kb = 'kb' + (i % 4);
+      img.style.animation = 'none'; void img.offsetWidth;
+      img.style.animation = `vFade .45s ease, ${kb} 3.4s ease-in-out forwards`;
+    }
+    const bar = document.getElementById('vbar-'+i);
+    if(bar){ bar.style.transition='none'; bar.style.width='0%'; void bar.offsetWidth; bar.style.transition='width 3s linear'; bar.style.width='100%'; }
+    clearTimeout(window._vlogTimer);
+    window._vlogTimer = setTimeout(()=> window.vlogNext(), 3000);
+  }
 
   function showVlogFrame(i){
     const list = window._vlogList;
@@ -195,19 +211,55 @@
     const member = (window._vlogMemberMap||{})[v.uid] || {};
     const name = member.nickname || v.userName || '익명';
     const img = document.getElementById('vlogImg');
+    const vid = document.getElementById('vlogVid');
     const emo = document.getElementById('vlogEmoji');
+    const muteBtn = document.getElementById('vlogMute');
     if(!img) return;
-    const src = imgSrc(v);
-    if(src){
-      img.src = src; img.style.display='block'; emo.style.display='none';
-      const kb = 'kb' + (i % 4);
-      img.style.animation = 'none'; void img.offsetWidth;        // 리셋
-      img.style.animation = `vFade .45s ease, ${kb} 3.4s ease-in-out forwards`;
+
+    clearTimeout(window._vlogTimer);
+    const vurl = videoSrc(v);
+
+    if(vurl && vid){
+      /* ── 동영상 프레임 ── */
+      img.style.display='none'; img.style.animation='none';
+      emo.style.display='none';
+      if(muteBtn) muteBtn.style.display='flex';
+      vid.style.display='block';
+      vid.muted = window._vlogMuted !== false;
+      if(muteBtn) muteBtn.textContent = vid.muted ? '🔇' : '🔊';
+      vid.onended = ()=> window.vlogNext();
+      vid.onerror = ()=> fallbackToPhoto(v, i);  // 코덱 미지원(예: iOS의 webm) → 사진 폴백
+      const bar = document.getElementById('vbar-'+i);
+      const setBar = ()=>{
+        const dur = (vid.duration && isFinite(vid.duration) && vid.duration>0) ? vid.duration : 5;
+        if(bar){ bar.style.transition='none'; bar.style.width='0%'; void bar.offsetWidth; bar.style.transition=`width ${dur}s linear`; bar.style.width='100%'; }
+      };
+      vid.onloadedmetadata = setBar;
+      vid.src = vurl;
+      try { vid.currentTime = 0; } catch(e){}
+      vid.play().catch(()=>{ /* 자동재생 막히면 가만히 둠 (탭으로 넘어감) */ });
+      if(vid.readyState >= 1) setBar();
     } else {
-      img.style.display='none'; emo.style.display='block'; emo.textContent = v.missionEmoji || '🌱';
-      emo.style.animation = 'none'; void emo.offsetWidth;
-      emo.style.animation = 'vPop .55s ease';
+      /* ── 사진/이모지 프레임 ── */
+      if(muteBtn) muteBtn.style.display='none';
+      if(vid){ try{ vid.pause(); }catch(e){} vid.style.display='none'; vid.onended=null; vid.onerror=null; }
+      const src = imgSrc(v);
+      if(src){
+        img.src = src; img.style.display='block'; emo.style.display='none';
+        const kb = 'kb' + (i % 4);
+        img.style.animation = 'none'; void img.offsetWidth;
+        img.style.animation = `vFade .45s ease, ${kb} 3.4s ease-in-out forwards`;
+      } else {
+        img.style.display='none'; emo.style.display='block'; emo.textContent = v.missionEmoji || '🌱';
+        emo.style.animation = 'none'; void emo.offsetWidth;
+        emo.style.animation = 'vPop .55s ease';
+      }
+      const bar = document.getElementById('vbar-'+i);
+      if(bar){ bar.style.transition='none'; bar.style.width='0%'; void bar.offsetWidth; bar.style.transition='width 3s linear'; bar.style.width='100%'; }
+      window._vlogTimer = setTimeout(()=> window.vlogNext(), 3000);
     }
+
+    /* ── 공통 정보 ── */
     document.getElementById('vlogName').textContent = name;
     document.getElementById('vlogTime').textContent = window.timeAgo ? window.timeAgo(v.createdAt?.seconds) : '';
     const av = document.getElementById('vlogAvatar');
@@ -219,16 +271,26 @@
     cap.style.animation = 'none'; void cap.offsetWidth;
     cap.style.animation = 'vCapUp .5s ease';
     list.forEach((_,j)=>{ const b=document.getElementById('vbar-'+j); if(b && j!==i) b.style.cssText='width:'+(j<i?'100':'0')+'%;height:100%;background:#fff'; });
-    clearTimeout(window._vlogTimer);
-    const bar = document.getElementById('vbar-'+i);
-    if(bar){ bar.style.transition='none'; bar.style.width='0%'; void bar.offsetWidth; bar.style.transition='width 3s linear'; bar.style.width='100%'; }
-    window._vlogTimer = setTimeout(()=> window.vlogNext(), 3000);
   }
+
+  window.vlogToggleMute = function(){
+    const vid = document.getElementById('vlogVid');
+    const muteBtn = document.getElementById('vlogMute');
+    if(!vid) return;
+    window._vlogMuted = !(window._vlogMuted === false);  // 토글
+    vid.muted = window._vlogMuted;
+    if(muteBtn) muteBtn.textContent = vid.muted ? '🔇' : '🔊';
+  };
   window.vlogNext = function(){ const i = window._vlogIdx + 1; if(window._vlogList && i < window._vlogList.length) showVlogFrame(i); else window.closeVlog(); };
   window.vlogPrev = function(){ const i = window._vlogIdx - 1; if(i >= 0) showVlogFrame(i); };
-  window.closeVlog = function(){ clearTimeout(window._vlogTimer); document.getElementById('ovVlogPlayer')?.remove(); };
+  window.closeVlog = function(){
+    clearTimeout(window._vlogTimer);
+    const vid = document.getElementById('vlogVid');
+    if(vid){ try{ vid.pause(); vid.src=''; }catch(e){} }
+    document.getElementById('ovVlogPlayer')?.remove();
+  };
 
-  /* ════════ 정각 인앱 알림 (앱 켜둔 사람) ════════ */
+  /* ════════ 정각 인앱 알림 ════════ */
   function checkVlogAlarm(){
     if(!window.ME || !window.UDATA?.companyId) return;
     const today = todayKst();
@@ -262,7 +324,6 @@
   setInterval(checkVlogAlarm, 60*1000);
   setTimeout(checkVlogAlarm, 5000);
 
-  // ranking v8 이 1초마다 페이지를 휘저어 브이로그가 사라지면 자리 복구 (없을 때만 재렌더)
   setInterval(()=>{
     const p = document.getElementById('page-company');
     if(!p) return;
@@ -272,5 +333,5 @@
     }
   }, 1500);
 
-  console.log('[company_vlog_patch] 로드됨');
+  console.log('[company_vlog_patch] 로드됨 (동영상 지원)');
 })();

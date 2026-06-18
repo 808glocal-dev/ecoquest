@@ -130,8 +130,8 @@
           _stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode: facing }, audio:false });
           video.srcObject = _stream;
         } catch(e2){
-          window.toast && window.toast('카메라 권한이 필요해요. 설정에서 허용해주세요.');
           cleanup();
+          showCamPermGuide();
         }
       }
     }
@@ -249,6 +249,30 @@
     document.getElementById('camFlip').onclick = ()=>{ facing = facing==='environment'?'user':'environment'; start(); };
 
     start();
+  }
+
+  /* ── 카메라 권한 거부 시 안내 모달 ── */
+  function showCamPermGuide(){
+    document.getElementById('ovCamPerm')?.remove();
+    const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+    const ov = document.createElement('div');
+    ov.id = 'ovCamPerm';
+    ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:13000;display:flex;align-items:center;justify-content:center;padding:24px';
+    ov.innerHTML = `<div style="background:#fff;border-radius:20px;padding:26px 22px;max-width:340px;width:100%;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.3)">
+      <div style="font-size:44px">🎥</div>
+      <div style="font-size:17px;font-weight:900;color:#1B5E20;margin-top:8px">카메라 허용이 필요해요</div>
+      <div style="font-size:13px;color:#666;margin-top:8px;line-height:1.6">실시간 촬영으로만 인증할 수 있어요.<br/>아래 방법으로 카메라를 켜주세요!</div>
+      <div style="background:#f0fbf4;border-radius:12px;padding:14px;margin-top:16px;text-align:left;font-size:12px;color:#333;line-height:1.9">
+        ${isIOS
+          ? `<b>📱 아이폰 (사파리)</b><br/>① 주소창 왼쪽 <b>aA</b> 버튼 → <b>웹사이트 설정</b> → 카메라 <b>"허용"</b><br/>② 또는 <b>설정 앱 → Safari → 카메라 → "허용"</b>`
+          : `<b>🔒 권한 허용</b><br/>① 주소창 왼쪽 <b>자물쇠</b> 아이콘 클릭<br/>② 카메라 → <b>"허용"</b>으로 변경 후 새로고침`}
+      </div>
+      ${isIOS
+        ? `<div style="background:#fff8e1;border-radius:12px;padding:12px;margin-top:10px;text-align:left;font-size:12px;color:#8D6E1B;line-height:1.7"><b>💡 매번 묻지 않게 하려면</b><br/>사파리 <b>공유 버튼(□↑)</b> → <b>"홈 화면에 추가"</b> → 그 아이콘으로 열면 끝!</div>`
+        : ''}
+      <button onclick="document.getElementById('ovCamPerm').remove()" style="width:100%;margin-top:18px;background:linear-gradient(135deg,#2ECC71,#27AE60);border:none;color:#fff;border-radius:12px;padding:13px;font-size:14px;font-weight:900;cursor:pointer;font-family:inherit">확인했어요</button>
+    </div>`;
+    document.body.appendChild(ov);
   }
 
   /* ── Firebase Storage 동영상 업로드 ── */

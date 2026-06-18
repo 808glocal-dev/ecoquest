@@ -1,4 +1,4 @@
-// success_popup_patch.js
+// success_popup_patch.js (인스타 공유 버튼 추가판)
 (function(){
   'use strict';
 
@@ -28,20 +28,16 @@
   };
   window.MISSION_SOURCES = SOURCES;
 
-  /* 2. AI 표현 자연스럽게 — '🤖 AI 분석' → '✨ 인증하기' */
+  /* 2. AI 표현 자연스럽게 */
   function softenAILabels(){
-    const t = document.getElementById('aiTitle');
-    if(t && /^✨|^📸/.test(t.textContent)===false){}
-    // 버튼 텍스트 자연스럽게
     const ana = document.getElementById('btnAnalyze');
     if(ana && ana.textContent.includes('AI')) ana.textContent = '✨ 인증하기';
-    // 미션 카드 'AI인증' 배지 톤다운
     document.querySelectorAll('.badge-ai').forEach(b=>{
       if(b.textContent.includes('AI')) b.textContent='✨인증';
     });
   }
 
-  /* 3. 성공 팝업 (확 뜨고 2.5초 후 자동 닫힘) */
+  /* 3. 성공 팝업 */
   function ensureSuccessOverlay(){
     if(document.getElementById('ehSuccessOv')) return;
     const el = document.createElement('div');
@@ -76,8 +72,13 @@
 
         <div id="ehSucRef" style="font-size:9px;color:rgba(255,255,255,.45);line-height:1.5;margin-top:6px"></div>
 
+        <button onclick="window.ehShareInsta()"
+          style="margin-top:14px;background:linear-gradient(135deg,#F58529,#DD2A7B 55%,#8134AF);border:none;
+          border-radius:12px;padding:12px 24px;color:#fff;font-size:14px;font-weight:900;
+          cursor:pointer;font-family:inherit;width:100%;box-shadow:0 4px 14px rgba(221,42,123,.35)">📸 인증샷 공유하고 자랑하기</button>
+
         <button onclick="document.getElementById('ehSuccessOv').style.display='none'"
-          style="margin-top:14px;background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.4);
+          style="margin-top:8px;background:rgba(255,255,255,.18);border:1.5px solid rgba(255,255,255,.35);
           border-radius:12px;padding:10px 24px;color:#fff;font-size:13px;font-weight:700;
           cursor:pointer;font-family:inherit;width:100%">확인 ✓</button>
       </div>
@@ -101,7 +102,6 @@
     const cumCo2 = (window.UDATA?.co2 || 0);
     const trees = (cumCo2 / 21.4);
 
-    // 비유 (의미 부여)
     const analogyMap = {
       m1:`☕ 일회용 종이컵 3개 안 쓴 효과`,
       m2:`🚗 승용차 9km 안 탄 효과`,
@@ -126,24 +126,68 @@
     document.getElementById('ehSucTree').textContent = treeMsg;
     document.getElementById('ehSucRef').textContent = `📚 ${ref}`;
 
+    // 공유용 정보 저장
+    window._lastShareMission = mission;
+    window._lastShareCo2 = co2;
+
     document.getElementById('ehSuccessOv').style.display = 'flex';
 
-    // 2.5초 후 자동 닫힘 (사용자가 확인 누르면 즉시)
+    // 자동 닫힘 (공유 버튼 누를 시간 고려해 6초)
     clearTimeout(window._ehSucTimer);
     window._ehSucTimer = setTimeout(()=>{
       const ov = document.getElementById('ehSuccessOv');
       if(ov) ov.style.display = 'none';
-    }, 3500);
+    }, 6000);
   }
   window.ehShowSuccess = showSuccess;
 
-  /* 4. doComplete 훅 — 토스트 대신 팝업 */
+  /* 3-1. 인스타 공유 */
+  window.ehShareInsta = async function(){
+    clearTimeout(window._ehSucTimer);   // 공유 중 팝업 닫히지 않게
+    const m = window._lastShareMission || {};
+    const co2 = window._lastShareCo2 || m.co2 || 0;
+    const text = `오늘 "${m.name || '환경 미션'}" 인증 완료! 🌱\n`
+               + `방금 CO₂ ${co2.toFixed(2)}kg을 줄였어요.\n\n`
+               + `나도 환경 미션 인증하고, 버려질 뻔한 농가 과일 받기 🍎\n`
+               + `👉 https://eco-quest.kr\n\n`
+               + `#에코퀘스트 #EcoQuest #SaveTheFruit #환경챌린지 #탄소중립`;
+    const url = 'https://eco-quest.kr';
+
+    try{
+      // 1순위: 인증샷 이미지까지 함께 공유 (인스타 스토리/피드에 사진 올라감)
+      if(window._lastShareImg && navigator.canShare){
+        try{
+          const blob = await (await fetch(window._lastShareImg)).blob();
+          const file = new File([blob], 'ecoquest_proof.jpg', { type:'image/jpeg' });
+          if(navigator.canShare({ files:[file] })){
+            await navigator.share({ files:[file], text, title:'EcoQuest' });
+            return;
+          }
+        }catch(imgErr){ console.log('[share] 이미지 공유 폴백', imgErr?.message); }
+      }
+      // 2순위: 텍스트 + 링크 공유
+      if(navigator.share){
+        await navigator.share({ title:'EcoQuest', text, url });
+      } else {
+        // 3순위: 클립보드 복사
+        await navigator.clipboard.writeText(text);
+        window.toast && window.toast('📋 복사됐어요! 인스타에 붙여넣기 하세요');
+      }
+    }catch(e){
+      if(e?.name !== 'AbortError') console.log('[share] 취소/실패:', e?.message);
+    }
+  };
+
+  /* 4. doComplete 훅 — 토스트 대신 팝업 + 인증샷 백업 */
   function hookDoComplete(){
     if(window._ehDoCompleteHooked) return;
     const orig = window.doComplete;
     if(typeof orig !== 'function'){ setTimeout(hookDoComplete, 500); return; }
     window.doComplete = async function(...args){
       const savedMission = window._curM ? {...window._curM} : null;
+      // 인증샷 백업 (orig 가 모달 닫기 전에)
+      const imgEl = document.getElementById('prevImg');
+      if(imgEl?.src?.startsWith('data:')) window._lastShareImg = imgEl.src;
       const result = await orig.apply(this, args);
       if(savedMission){
         setTimeout(()=>showSuccess(savedMission), 300);
@@ -151,7 +195,7 @@
       return result;
     };
     window._ehDoCompleteHooked = true;
-    console.log('[success_popup] ✅ doComplete 훅 적용');
+    console.log('[success_popup] ✅ doComplete 훅 적용 (공유 포함)');
   }
 
   /* 5. 실행 */

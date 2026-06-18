@@ -48,7 +48,7 @@
       </div>
       <div style="flex:1;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center">
         <video id="camVideo" autoplay playsinline muted style="width:100%;height:100%;object-fit:cover"></video>
-        <div id="camWm" style="position:absolute;bottom:14px;left:14px;color:rgba(255,255,255,.95);font-size:13px;font-weight:800;text-shadow:0 1px 4px rgba(0,0,0,.9);pointer-events:none;background:rgba(0,0,0,.35);padding:4px 8px;border-radius:6px"></div>
+        <div id="camWm" style="position:absolute;bottom:16px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.6);font-size:11px;font-weight:500;letter-spacing:.5px;text-shadow:0 1px 3px rgba(0,0,0,.7);pointer-events:none;white-space:nowrap"></div>
       </div>
       <div style="padding:14px 18px 6px;text-align:center;color:#fff;font-size:11px;opacity:.65">🔒 갤러리 업로드는 막혀 있어요 · 실시간 촬영만 인증됩니다</div>
       <div style="display:flex;align-items:center;justify-content:center;gap:34px;padding:8px 20px 34px">
@@ -64,10 +64,10 @@
 
     // L2 워터마크 텍스트 (촬영 시각 + 랜덤 코드)
     const now = new Date();
-    const ts = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} `
+    const ts = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')} `
              + `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
     const code = Math.random().toString(36).substring(2,6).toUpperCase();
-    const wmText = `EcoQuest ✓ ${ts} · ${code}`;
+    const wmText = `${ts} · ${code}`;   // 이름 빼고 날짜·시간·코드만 (은은하게)
     document.getElementById('camWm').textContent = wmText;
 
     async function start(){
@@ -101,16 +101,18 @@
       ctx.drawImage(video, 0, 0, w, h);
       ctx.setTransform(1,0,0,1,0,0);
 
-      // ── L2: 동적 워터마크 굽기 ──
-      const fontSize = Math.max(16, Math.round(w * 0.028));
-      ctx.font = `bold ${fontSize}px sans-serif`;
+      // ── L2: 동적 워터마크 (은은하게, 하단 중앙, 사진에만) ──
+      const fontSize = Math.max(12, Math.round(w * 0.019));
+      ctx.font = `500 ${fontSize}px sans-serif`;
       ctx.textBaseline = 'bottom';
-      const pad = Math.round(w * 0.025);
-      const tw = ctx.measureText(wmText).width;
-      ctx.fillStyle = 'rgba(0,0,0,.45)';
-      ctx.fillRect(pad - 6, h - pad - fontSize - 8, tw + 12, fontSize + 14);
-      ctx.fillStyle = 'rgba(255,255,255,.95)';
-      ctx.fillText(wmText, pad, h - pad);
+      ctx.textAlign = 'center';
+      const pad = Math.round(h * 0.028);
+      ctx.shadowColor = 'rgba(0,0,0,.65)';   // 박스 대신 그림자로 가독성만
+      ctx.shadowBlur = 3;
+      ctx.fillStyle = 'rgba(255,255,255,.55)';  // 반투명 — 안 거슬리게
+      ctx.fillText(wmText, w / 2, h - pad);
+      ctx.shadowBlur = 0;
+      ctx.textAlign = 'left';
 
       // ── File 주입 → 기존 인증 흐름(fileIn change) 재활용 ──
       canvas.toBlob((blob)=>{

@@ -32,16 +32,26 @@
         CHALLENGES.push(
           {id:101,emoji:"🚇",title:"친환경 출근 챌린지",
            desc:"대중교통·자전거·도보로 출근하고 사진으로 인증해요! 검증된 통근(Scope 3) 1차 데이터가 쌓여요. 회사 단위 탄소 감축의 핵심이에요.",
-           tag:"🏢 통근 Scope3",baseParticipants:0,hot:true,missionId:"m_commute",
+           tag:"🚌 교통",baseParticipants:0,hot:true,missionId:"m_commute",
            freqOptions:["daily","w5","w3"]},
           {id:102,emoji:"🚄",title:"친환경 출장 챌린지",
            desc:"비행기·자가용 대신 KTX·대중교통으로 출장하고 사진으로 인증해요! 검증된 출장(Scope 3) 1차 데이터가 쌓여요.",
-           tag:"🏢 출장 Scope3",baseParticipants:0,hot:false,missionId:"m_trip",
+           tag:"🚌 교통",baseParticipants:0,hot:false,missionId:"m_trip",
            freqOptions:["w1","w3"]}
         );
       }
+      // category_section_patch 는 window.CHALLENGES 를 참조 → 동기화 보장
+      if(window.MISSIONS && window.MISSIONS !== MISSIONS && !window.MISSIONS.find(m=>m.id==='m_commute')){
+        window.MISSIONS.push(...MISSIONS.filter(m=>m.id==='m_commute'||m.id==='m_trip'));
+      } else if(!window.MISSIONS){ window.MISSIONS = MISSIONS; }
+      if(window.CHALLENGES && window.CHALLENGES !== CHALLENGES && !window.CHALLENGES.find(c=>c.id===101)){
+        window.CHALLENGES.push(...CHALLENGES.filter(c=>c.id===101||c.id===102));
+      } else if(!window.CHALLENGES){ window.CHALLENGES = CHALLENGES; }
       window.renderOfficialChallenges && window.renderOfficialChallenges();
-      console.log('[commute_challenge] 출근·출장 챌린지 추가 완료');
+      // 카테고리 섹션 다시 그리도록 플래그 리셋
+      const _sec = document.getElementById('sec-official');
+      if(_sec) _sec.removeAttribute('data-reorganized');
+      console.log('[commute_challenge] 출근·출장 챌린지 추가 완료 (tag: 🚌 교통)');
     } catch(e){
       console.error('[commute_challenge] MISSIONS/CHALLENGES 접근 실패:', e);
     }

@@ -288,8 +288,8 @@
   }
 
   if(document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', ()=>{ setTimeout(hook,1000); setTimeout(hookSaveVerif,1200); });
+    document.addEventListener('DOMContentLoaded', ()=>{ setTimeout(hook,1000); });
   } else {
-    setTimeout(hook,1000); setTimeout(hookSaveVerif,1200);
+    setTimeout(hook,1000);
   }
 })();

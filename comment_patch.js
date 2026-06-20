@@ -94,7 +94,7 @@
       await window.FB.addDoc(window.FB.collection(window.FB.db,'comments'),{ type, targetId:String(targetId), uid:window.ME.uid,
         nick:window.UDATA?.nickname||'익명 지구지킴이', text, ts:window.FB.serverTimestamp() });
       setTimeout(()=>eqcRefresh(type,targetId),300);
-    }catch(e){ window.toast&&toast('등록 실패: '+e.message); }
+    }catch(e){ console.error('[comment] 저장 실패',e); alert('댓글 저장 실패 ⚠️\n\n코드: '+(e.code||'(없음)')+'\n내용: '+(e.message||e)); }
   };
   window.eqcDelete=async function(id,type,targetId){
     try{ await window.FB.updateDoc(window.FB.doc(window.FB.db,'comments',id),{deleted:true}); eqcRefresh(type,targetId); }

@@ -91,10 +91,9 @@
     if(!window.ME){ window.toast&&toast('로그인이 필요해요'); return; }
     inp.value='';
     try{
-      const dref=window.FB.doc(window.FB.collection(window.FB.db,'comments'));
-      await window.FB.setDoc(dref,{ type, targetId:String(targetId), uid:window.ME.uid,
+      await window.FB.addDoc(window.FB.collection(window.FB.db,'comments'),{ type, targetId:String(targetId), uid:window.ME.uid,
         nick:window.UDATA?.nickname||'익명 지구지킴이', text, ts:window.FB.serverTimestamp() });
-      eqcRefresh(type,targetId);
+      setTimeout(()=>eqcRefresh(type,targetId),300);
     }catch(e){ window.toast&&toast('등록 실패: '+e.message); }
   };
   window.eqcDelete=async function(id,type,targetId){
@@ -103,8 +102,7 @@
   };
   window.eqcReport=async function(id){
     try{
-      const dref=window.FB.doc(window.FB.collection(window.FB.db,'commentReports'));
-      await window.FB.setDoc(dref,{commentId:id, by:window.ME?.uid||'', ts:window.FB.serverTimestamp()});
+      await window.FB.addDoc(window.FB.collection(window.FB.db,'commentReports'),{commentId:id, by:window.ME?.uid||'', ts:window.FB.serverTimestamp()});
       window.toast&&toast('신고 접수됐어요. 검토할게요');
     }catch(e){ window.toast&&toast('신고 실패'); }
   };

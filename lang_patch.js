@@ -242,14 +242,18 @@
     } else if(typeof window.goPage!=='function'){ setTimeout(hookGoPage,800); }
   }
 
-  function addToggle(){
+ function addToggle(){
     if(document.getElementById('eqLangToggle')) return;
+    // ⚙️(openOnboardEdit) 버튼을 찾아 그 "앞"에 🌐 토글 삽입
+    const gear = document.querySelector('button[onclick*="openOnboardEdit"]');
+    if(!gear){ setTimeout(addToggle, 600); return; }   // 헤더 아직 안 그려졌으면 대기
     const b=document.createElement('button');
     b.id='eqLangToggle';
-    b.style.cssText='position:fixed;top:10px;right:10px;z-index:99999;background:rgba(255,255,255,.92);border:1.5px solid #2ECC71;border-radius:20px;padding:5px 13px;font-size:12px;font-weight:800;cursor:pointer;color:#1B5E20;font-family:inherit;box-shadow:0 2px 10px rgba(0,0,0,.15)';
-    b.textContent=(lang==='ko')?'EN':'한';
-    b.onclick=()=>{ lang=(lang==='ko')?'en':'ko'; localStorage.setItem('eq_lang',lang); b.textContent=(lang==='ko')?'EN':'한'; apply(); };
-    document.body.appendChild(b);
+    b.title='한국어 / English';
+    b.style.cssText='background:rgba(255,255,255,.2);border:none;border-radius:8px;padding:4px 8px;color:#fff;font-size:14px;cursor:pointer;margin-right:2px;font-family:inherit;display:inline-flex;align-items:center;gap:3px';
+    b.innerHTML=(lang==='ko')?'🌐<span style="font-size:10px;font-weight:800">EN</span>':'🌐<span style="font-size:10px;font-weight:800">한</span>';
+    b.onclick=()=>{ lang=(lang==='ko')?'en':'ko'; localStorage.setItem('eq_lang',lang); b.innerHTML=(lang==='ko')?'🌐<span style="font-size:10px;font-weight:800">EN</span>':'🌐<span style="font-size:10px;font-weight:800">한</span>'; apply(); };
+    gear.parentNode.insertBefore(b, gear);   // ⚙️ 바로 앞에
     document.documentElement.setAttribute('lang',lang);
   }
 

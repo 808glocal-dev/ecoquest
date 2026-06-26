@@ -53,6 +53,15 @@
       <div style="flex:1;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center">
         <video id="camVideo" autoplay playsinline muted style="width:100%;height:100%;object-fit:cover"></video>
         <div id="camWm" style="position:absolute;bottom:16px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.6);font-size:11px;font-weight:500;letter-spacing:.5px;text-shadow:0 1px 3px rgba(0,0,0,.7);pointer-events:none;white-space:nowrap"></div>
+        <div id="camLoading" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;background:#000">
+          <div style="width:38px;height:38px;border:3px solid rgba(255,255,255,.25);border-top-color:#2ECC71;border-radius:50%;animation:camSpin .8s linear infinite"></div>
+          <div style="font-size:13px;margin-top:14px;opacity:.8">카메라 켜는 중...</div>
+        </div>
+        <div id="camTapStart" style="display:none;position:absolute;inset:0;flex-direction:column;align-items:center;justify-content:center;color:#fff;background:rgba(0,0,0,.85);cursor:pointer;text-align:center;padding:20px">
+          <div style="font-size:40px">👆</div>
+          <div style="font-size:15px;font-weight:800;margin-top:10px">화면을 탭해서 카메라를 켜주세요</div>
+          <div style="font-size:12px;opacity:.7;margin-top:6px;line-height:1.6">화면이 까맣게 보일 때 한 번 탭하면<br/>카메라가 시작돼요</div>
+        </div>
       </div>
       <div style="padding:10px 18px 4px;text-align:center;color:#fff;font-size:11px;opacity:.65">🔒 실시간 촬영만 인증돼요 · 탭해서 촬영</div>
       <div style="display:flex;align-items:center;justify-content:center;gap:34px;padding:6px 20px 34px">
@@ -62,6 +71,13 @@
       </div>
       <canvas id="camCanvas" style="display:none"></canvas>`;
     document.body.appendChild(modal);
+
+    if(!document.getElementById('camSpinStyle')){
+      const st = document.createElement('style');
+      st.id = 'camSpinStyle';
+      st.textContent = '@keyframes camSpin{to{transform:rotate(360deg)}}';
+      document.head.appendChild(st);
+    }
 
     let facing = 'environment';
     const video = document.getElementById('camVideo');
@@ -74,12 +90,60 @@
     const wmText = `${ts} · ${code}`;
     document.getElementById('camWm').textContent = wmText;
 
+    function showLoading(on){
+      const el = document.getElementById('camLoading');
+      if(el) el.style.display = on ? 'flex' : 'none';
+    }
+    function showTapStart(on){
+      const el = document.getElementById('camTapStart');
+      if(el) el.style.display = on ? 'flex' : 'none';
+    }
+
+    // 비디오가 실제로 프레임을 그릴 때까지 재생 보장 (iOS 까만화면 방지)
+    async function playVideo(){
+      try {
+        await video.play();
+      } catch(e){
+        // iOS: 자동재생 거부 → 사용자 탭 유도
+        showLoading(false);
+        showTapStart(true);
+        return false;
+      }
+      return true;
+    }
+
     async function start(){
+      showTapStart(false);
+      showLoading(true);
       if(_stream) _stream.getTracks().forEach(t=>t.stop());
       try {
         // ★ audio 없음 — 카메라만 요청 (마이크 팝업 X, iOS 권한유지 개선)
         _stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode: facing }, audio:false });
         video.srcObject = _stream;
+
+        // 메타데이터(해상도) 들어오면 재생 시작 → 프레임 확보 후 로딩 해제
+        const onReady = async () => {
+          const ok = await playVideo();
+          if(ok){
+            // 실제 프레임 크기가 잡힐 때까지 한 번 더 확인
+            if(video.videoWidth > 0){ showLoading(false); }
+            else {
+              // 드물게 크기 0이면 잠깐 뒤 재확인
+              setTimeout(()=>{ if(video.videoWidth>0) showLoading(false); else { showLoading(false); showTapStart(true); } }, 600);
+            }
+          }
+        };
+        if(video.readyState >= 1){ onReady(); }
+        else { video.onloadedmetadata = onReady; }
+
+        // 안전망: 1.5초 안에 프레임 안 잡히면 탭 유도
+        setTimeout(()=>{
+          if(_stream && video.videoWidth === 0){
+            showLoading(false);
+            showTapStart(true);
+          }
+        }, 1500);
+
       } catch(e){
         cleanup();
         showCamPermGuide();
@@ -129,6 +193,22 @@
 
     const shootBtn = document.getElementById('camShoot');
     shootBtn.addEventListener('click', (e)=>{ e.preventDefault(); takePhoto(); });
+
+    // 까만화면일 때 탭하면 재생 재시도 (iOS 자동재생 거부 대응)
+    const tapStart = document.getElementById('camTapStart');
+    if(tapStart){
+      tapStart.addEventListener('click', async ()=>{
+        showTapStart(false);
+        showLoading(true);
+        if(_stream && video.srcObject){
+          const ok = await playVideo();
+          if(ok && video.videoWidth>0){ showLoading(false); }
+          else { showLoading(false); start(); } // 그래도 안되면 스트림 새로
+        } else {
+          start();
+        }
+      });
+    }
 
     document.getElementById('camClose').onclick = cleanup;
     document.getElementById('camFlip').onclick = ()=>{ facing = facing==='environment'?'user':'environment'; start(); };

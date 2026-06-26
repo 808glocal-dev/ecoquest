@@ -1,6 +1,8 @@
 /* =====================================================
-   EcoQuest – 소속 탭 v9
+   EcoQuest – 소속 탭 v10
    - "기업" → "소속" 전체 변경
+   - v10: 초대 코드 박스를 회사 정보 밑 → 카드 하단으로 이동
+           평소엔 "🔗 멤버 초대하기" 버튼만, 누르면 복사 + 코드 펼침
    ===================================================== */
 (function () {
   'use strict';
@@ -78,6 +80,19 @@
     };
   }
 
+  /* ── 초대 버튼 토글 (복사 + 코드 펼침) ── */
+  window.toggleInviteCode = function (code) {
+    const box = document.getElementById('inviteCodeReveal');
+    if (!box) return;
+    const opening = box.style.display === 'none';
+    box.style.display = opening ? 'block' : 'none';
+    if (opening && code) {
+      navigator.clipboard.writeText(code)
+        .then(() => window.toast && window.toast('초대 코드 복사됐어요! 친구에게 붙여넣기 하세요 📋'))
+        .catch(() => {});
+    }
+  };
+
   window.loadCompanyPage = async function () {
     const box = document.getElementById('companyPageBox');
     if (!box) return;
@@ -115,7 +130,9 @@
       }
       const co = snap.data();
       const isOwner = co.ownerUid === window.ME.uid;
-     const mc = (co.members || []).length || 1;
+      const mc = (co.members || []).length || 1;
+      const code = (co.inviteCode || '').replace(/'/g, '');
+
       box.innerHTML = `
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
           <div style="font-size:36px">${co.emoji||'🏢'}</div>
@@ -124,19 +141,29 @@
             <div style="font-size:12px;color:var(--sub);margin-top:2px">멤버 ${mc}명${isOwner?' · <b style="color:var(--g2)">관리자</b>':''}${co.type?` · ${co.type}`:''}</div>
           </div>
         </div>
-        <div style="background:#f0fbf4;border-radius:10px;padding:10px 12px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;border:1px solid var(--bdr)">
-          <div>
-            <div style="font-size:10px;color:var(--sub)">초대 코드</div>
-            <div style="font-size:18px;font-weight:900;letter-spacing:3px;color:var(--txt)">${co.inviteCode||''}</div>
-          </div>
-          <button onclick="navigator.clipboard.writeText('${co.inviteCode||''}').then(()=>toast('코드 복사됐어요!'))" class="btn btn-g btn-sm">복사</button>
-        </div>
+
         ${isOwner
-          ?`<div style="display:flex;gap:8px">
+          ?`<div style="display:flex;gap:8px;margin-bottom:12px">
                <button onclick="openEditCompany('${cid}')" class="btn btn-gray btn-sm" style="flex:1;padding:10px">✏️ 이름 변경</button>
                <button onclick="openDeleteCompany('${cid}',${mc})" style="flex:1;padding:10px;font-size:12px;font-weight:700;background:#fff0f0;color:var(--red);border:none;border-radius:10px;cursor:pointer;font-family:inherit">🗑️ 삭제</button>
              </div>`
-          :`<button onclick="leaveCompany('${cid}')" class="btn btn-gray" style="padding:10px;font-size:13px">탈퇴하기</button>`}`;
+          :`<button onclick="leaveCompany('${cid}')" class="btn btn-gray" style="padding:10px;font-size:13px;margin-bottom:12px">탈퇴하기</button>`}
+
+        <!-- 초대 영역 (하단) -->
+        <div style="border-top:1px dashed var(--bdr);padding-top:12px">
+          <button onclick="toggleInviteCode('${code}')" class="btn btn-g" style="padding:11px;display:flex;align-items:center;justify-content:center;gap:8px">
+            🔗 멤버 초대하기
+            <span style="font-size:11px;opacity:.85;font-weight:600">코드 복사</span>
+          </button>
+          <div id="inviteCodeReveal" style="display:none;margin-top:10px;background:#f0fbf4;border-radius:10px;padding:12px 14px;border:1px solid var(--bdr)">
+            <div style="font-size:10px;color:var(--sub);margin-bottom:4px">초대 코드 (복사됨)</div>
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div style="font-size:20px;font-weight:900;letter-spacing:3px;color:var(--txt)">${co.inviteCode||''}</div>
+              <button onclick="navigator.clipboard.writeText('${code}').then(()=>toast('복사됐어요!'))" class="btn btn-g btn-sm">다시 복사</button>
+            </div>
+            <div style="font-size:11px;color:var(--sub);margin-top:8px;line-height:1.6">친구·동료가 소속 탭에서 이 코드를 입력하면 우리 소속에 참여해요 🌱</div>
+          </div>
+        </div>`;
       const ms = document.getElementById('companyMissionSec');
       if (ms) ms.style.display = 'block';
       loadCompanyMissionStats(cid);

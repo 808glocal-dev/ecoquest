@@ -1,21 +1,16 @@
 /* =====================================================
-   EcoQuest – 주차별 인증 진척 표시 패치 (weekly_progress_patch.js) v3
+   EcoQuest – 이번 주 출석 도장판 (weekly_progress_patch.js) v4
    ---------------------------------------------------
-   ① 인증할 때마다 verifLog[challengeId]에 오늘 날짜를 쌓음
-   ② 홈 "참여 중인 챌린지" 카드 맨 아래에 "이번 주 ✅✅⬜ 2/3" 표시
-   - 주차 기준: 달력 월~일
-   - 빈도: ac.freq (daily/w5/w3/w1) 사용
-   ---------------------------------------------------
-   v3 핵심 수정:
-   - doComplete 안의 _curChalId가 window에 없어서 챌린지 id를 못 잡던 문제
-     → 원본이 남기는 window.UDATA.verifiedDates(=오늘 인증한 챌린지)에서 역으로 채움
-   - 실제 홈 카드는 이미 세로(column) 구조 → 억지로 감싸지 말고 맨 아래에 박스만 append
-   - 카드 매칭을 renderHomeChalls의 필터와 동일하게 맞춤 (missionId 유효 + challengeId 존재)
+   기존 "챌린지 카드 안 N/목표" 방식 폐기 (카드 구조 의존 → 자꾸 안 보임)
+   → 홈 상단에 독립 위젯으로 "이번 주 월~일 출석 도장 + 연속일수" 표시
+   - 출석 기준: 그날 미션 1개라도 인증 = 출석 (챌린지/일반 미션 모두)
+   - 데이터: missionLogs의 date 필드 사용 (이미 매 인증마다 쌓임)
+   - saveMission 한 곳만 후킹 → 인증 즉시 오늘 도장
+   - 기존 홈 카드 DOM 안 건드림 → 안 깨짐
    ===================================================== */
 (function () {
   'use strict';
 
-  /* ───────────── 날짜 유틸 ───────────── */
   function ymd(d) {
     const y = d.getFullYear();
     const m = String(d.getMonth() + 1).padStart(2, '0');
@@ -25,158 +20,124 @@
   function getWeekRange(base) {
     const d = new Date(base);
     d.setHours(0, 0, 0, 0);
-    const dow = d.getDay();                         // 0=일,1=월,...6=토
-    const diffToMon = (dow === 0) ? -6 : 1 - dow;   // 일요일이면 -6, 아니면 월요일까지
+    const dow = d.getDay();
+    const diffToMon = (dow === 0) ? -6 : 1 - dow;
     const mon = new Date(d);
     mon.setDate(d.getDate() + diffToMon);
-    const sun = new Date(mon);
-    sun.setDate(mon.getDate() + 6);
-    return { mon, sun };
-  }
-  function shortMD(d) { return `${d.getMonth() + 1}/${d.getDate()}`; }
-
-  // 챌린지의 주당 목표 횟수 (daily=7, w5=5, w3=3, w1=1)
-  function weeklyTarget(ac) {
-    if (ac.freqPerWeek) return Math.min(7, ac.freqPerWeek);
-    if (ac.freq === 'daily') return 7;
-    if (ac.freq === 'w5') return 5;
-    if (ac.freq === 'w3') return 3;
-    const n = parseInt((ac.freq || 'w1').replace('w', '')) || 1;
-    return Math.min(7, n);
+    return mon; // 월요일
   }
 
-  // 이번 주에 인증한 횟수 (verifLog 기반, 중복 날짜 제거)
-  function countThisWeek(chalId) {
-    const log = (window.UDATA?.verifLog || {})[chalId] || [];
-    const { mon, sun } = getWeekRange(new Date());
-    const monStr = ymd(mon), sunStr = ymd(sun);
-    const uniq = [...new Set(log)];
-    return uniq.filter(ds => ds >= monStr && ds <= sunStr).length;
+  let _attendDates = new Set(); // 활동한 날짜(YYYY-MM-DD) 전체
+
+  async function loadAttend() {
+    if (!window.ME || !window.FB) return;
+    try {
+      const snap = await window.FB.getDocs(window.FB.collection(window.FB.db, 'missionLogs'));
+      _attendDates = new Set();
+      snap.forEach(d => {
+        const dt = d.data();
+        if (dt.uid === window.ME.uid && dt.date) _attendDates.add(dt.date);
+      });
+      console.log('[attend] 로드 완료, 활동일수:', _attendDates.size);
+      render();
+    } catch (e) {
+      console.log('[attend] 로드 실패:', e.message);
+    }
   }
 
-  /* ───────────── ① 날짜 쌓기 (doComplete 후킹) ───────────── */
-  // 원본 doComplete가 끝나면 window.UDATA.verifiedDates[chalId]에 오늘 날짜가 들어있음.
-  // 그걸 읽어서 verifLog[chalId]에 오늘 날짜를 보장(없으면 추가)한다.
-  function hookDoComplete() {
-    if (window._weeklyHookedDoComplete) return;
-    const orig = window.doComplete;
-    if (typeof orig !== 'function') { setTimeout(hookDoComplete, 600); return; }
-
-    window.doComplete = async function () {
-      const res = await orig.apply(this, arguments);
-      try {
-        const today = ymd(new Date());
-        const vd = window.UDATA?.verifiedDates || {};
-        const vlog = window.UDATA?.verifLog || {};
-        let changed = false;
-        for (const cid in vd) {
-          if (vd[cid] === today) {
-            if (!vlog[cid]) vlog[cid] = [];
-            if (!vlog[cid].includes(today)) { vlog[cid].push(today); changed = true; }
-          }
-        }
-        if (changed && window.ME && window.FB) {
-          window.UDATA.verifLog = vlog;
-          await window.FB.updateDoc(
-            window.FB.doc(window.FB.db, 'users', window.ME.uid),
-            { verifLog: vlog }
-          );
-        }
-        if (window.renderHomeChalls) window.renderHomeChalls();
-      } catch (e) {
-        console.log('[weekly] verifLog 저장 실패:', e.message);
-      }
-      return res;
-    };
-    window._weeklyHookedDoComplete = true;
-    console.log('[weekly] ✅ doComplete 후킹 (verifiedDates 기반 날짜 쌓기)');
+  // 오늘(또는 어제)부터 거꾸로 연속 출석 일수
+  function calcStreak() {
+    let s = 0;
+    const d = new Date(); d.setHours(0, 0, 0, 0);
+    if (!_attendDates.has(ymd(d))) d.setDate(d.getDate() - 1); // 오늘 아직이면 어제부터
+    while (_attendDates.has(ymd(d))) { s++; d.setDate(d.getDate() - 1); }
+    return s;
   }
 
-  /* ───────────── ② 홈 카드에 주차 표시 주입 ───────────── */
-  function weekBoxHtml(ac) {
-    const target = weeklyTarget(ac);
-    const done = countThisWeek(ac.challengeId);
-    const { mon, sun } = getWeekRange(new Date());
+  function ensureWidget() {
+    const home = document.getElementById('page-home');
+    if (!home) return null;
+    let w = document.getElementById('weeklyAttendWidget');
+    if (!w) {
+      w = document.createElement('div');
+      w.id = 'weeklyAttendWidget';
+      const statCard = home.querySelector('.stat-card');
+      if (statCard) statCard.insertAdjacentElement('afterend', w);
+      else home.insertAdjacentElement('afterbegin', w);
+    }
+    return w;
+  }
 
-    let dots = '';
-    for (let i = 0; i < target; i++) {
-      dots += (i < done)
-        ? '<span style="font-size:15px;line-height:1">✅</span>'
-        : '<span style="font-size:15px;line-height:1;opacity:.35">⬜</span>';
+  function render() {
+    const w = ensureWidget();
+    if (!w) return;
+    const mon = getWeekRange(new Date());
+    const todayStr = ymd(new Date());
+    const labels = ['월', '화', '수', '목', '금', '토', '일'];
+
+    let cells = '', weekCount = 0;
+    for (let i = 0; i < 7; i++) {
+      const day = new Date(mon); day.setDate(mon.getDate() + i);
+      const ds = ymd(day);
+      const isToday = ds === todayStr;
+      const isFuture = ds > todayStr;
+      const done = _attendDates.has(ds);
+      if (done) weekCount++;
+
+      let mark, bg, border;
+      if (done) { mark = '🔥'; bg = '#eafaf0'; border = '#a8e6c5'; }
+      else if (isFuture) { mark = '·'; bg = '#f7faf8'; border = 'var(--bdr)'; }
+      else { mark = '○'; bg = '#fff'; border = 'var(--bdr)'; }
+
+      cells +=
+        '<div style="flex:1;text-align:center">' +
+          '<div style="font-size:10px;color:var(--sub);margin-bottom:3px;font-weight:700">' + labels[i] + '</div>' +
+          '<div style="aspect-ratio:1;border-radius:10px;background:' + bg + ';border:1.5px solid ' +
+            (isToday ? 'var(--g1)' : border) + ';display:flex;align-items:center;justify-content:center;font-size:16px;color:#bbb;' +
+            (isToday ? 'box-shadow:0 0 0 2px rgba(46,204,113,.2)' : '') + '">' + mark + '</div>' +
+        '</div>';
     }
 
-    const complete = done >= target;
-    const remain = Math.max(0, target - done);
-    const statusText = complete
-      ? '<span style="color:#1a6b3a;font-weight:800">다 했어요! 🎉</span>'
-      : '<span style="color:var(--sub)">' + remain + '번 더!</span>';
+    const streak = calcStreak();
+    const rightTxt = streak > 0
+      ? streak + '일 연속 🔥'
+      : (weekCount > 0 ? '이번 주 ' + weekCount + '일' : '오늘 첫 인증 도전!');
 
-    return '' +
-      '<div style="background:' + (complete ? '#eafaf0' : '#f7faf8') + ';border:1px solid ' + (complete ? '#a8e6c5' : 'var(--bdr)') + ';' +
-      'border-radius:10px;padding:8px 10px;margin-top:8px">' +
-        '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">' +
-          '<span style="font-size:10px;color:var(--sub);font-weight:700">이번 주 (' + shortMD(mon) + '~' + shortMD(sun) + ')</span>' +
-          '<span style="font-size:11px;font-weight:800;color:' + (complete ? '#1a6b3a' : 'var(--txt)') + '">' + done + '/' + target + ' · ' + statusText + '</span>' +
+    w.innerHTML =
+      '<div style="margin:0 12px 12px;background:linear-gradient(135deg,#fff,#f0fbf4);border-radius:16px;padding:14px 16px;border:1.5px solid var(--bdr)">' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">' +
+          '<div style="font-size:14px;font-weight:900;color:var(--txt)">🔥 이번 주 출석</div>' +
+          '<div style="font-size:12px;font-weight:800;color:var(--g2)">' + rightTxt + '</div>' +
         '</div>' +
-        '<div style="display:flex;gap:4px;flex-wrap:wrap">' + dots + '</div>' +
+        '<div style="display:flex;gap:5px">' + cells + '</div>' +
       '</div>';
   }
 
-  function hookRenderHome() {
-    if (window._weeklyHookedHome) return;
-    const orig = window.renderHomeChalls;
-    if (typeof orig !== 'function') { setTimeout(hookRenderHome, 600); return; }
-
-    window.renderHomeChalls = function () {
-      const r = orig.apply(this, arguments);
-      requestAnimationFrame(() => {
-        try { injectWeekBoxes(); } catch (e) { console.log('[weekly] 주입 실패:', e.message); }
-      });
-      return r;
+  // saveMission 후킹 → 인증 성공 시 오늘 도장 + 즉시 갱신
+  function hookSaveMission() {
+    if (window._attendHookedSave) return;
+    const orig = window.saveMission;
+    if (typeof orig !== 'function') { setTimeout(hookSaveMission, 600); return; }
+    window.saveMission = async function (uid, m) {
+      const res = await orig.apply(this, arguments);
+      try {
+        if (res && uid === window.ME?.uid) {
+          _attendDates.add(ymd(new Date()));
+          render();
+        }
+      } catch (e) { console.log('[attend] 갱신 실패:', e.message); }
+      return res;
     };
-    window._weeklyHookedHome = true;
-    console.log('[weekly] ✅ renderHomeChalls 후킹 (주차 표시)');
-    setTimeout(injectWeekBoxes, 300);
+    window._attendHookedSave = true;
+    console.log('[attend] ✅ saveMission 후킹');
   }
 
-  function injectWeekBoxes() {
-    const wrap = document.getElementById('homeChallList');
-    if (!wrap) return;
-
-    const active = (window.UDATA?.activeChallenges || []);
-    if (!active.length) return;
-
-    const chals = (window.CHALLENGES || []);
-    const validMissionIds = chals.map(c => c.missionId);
-
-    // renderHomeChalls와 동일한 순서/필터로 실제 그려진 카드와 1:1 매칭
-    const shown = active
-      .filter(ac => validMissionIds.includes(ac.missionId))
-      .filter(ac => chals.some(c => c.id === ac.challengeId));
-
-    const cards = wrap.children;
-    for (let i = 0; i < cards.length && i < shown.length; i++) {
-      const card = cards[i];
-      const ac = shown[i];
-      if (!ac) continue;
-
-      // 카드는 이미 세로 구조 → 맨 아래에 박스만 추가/갱신 (감싸지 않음)
-      let box = card.querySelector('.weekly-box');
-      if (!box) {
-        box = document.createElement('div');
-        box.className = 'weekly-box';
-        card.appendChild(box);
-      }
-      box.innerHTML = weekBoxHtml(ac);
-    }
-  }
-
-  /* ───────────── 부트 ───────────── */
   function boot() {
-    if (!window.FB) { setTimeout(boot, 500); return; }
-    hookDoComplete();
-    hookRenderHome();
-    console.log('[weekly] 🚀 부트 완료');
+    if (!window.FB || !window.ME) { setTimeout(boot, 600); return; }
+    ensureWidget();
+    loadAttend();
+    hookSaveMission();
+    console.log('[attend] 🚀 부트 완료');
   }
 
   if (document.readyState === 'loading')

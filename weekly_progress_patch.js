@@ -1,15 +1,16 @@
 /* =====================================================
-   EcoQuest – 주차별 인증 진척 표시 패치 (weekly_progress_patch.js) v2
+   EcoQuest – 주차별 인증 진척 표시 패치 (weekly_progress_patch.js) v3
    ---------------------------------------------------
-   ① 인증할 때마다 날짜를 verifLog[challengeId] 배열에 쌓음 (기존 데이터 안 건드림)
-   ② 홈 "참여 중인 챌린지" 카드에 "이번 주 ✅✅⬜ 2/3" 표시
+   ① 인증할 때마다 verifLog[challengeId]에 오늘 날짜를 쌓음
+   ② 홈 "참여 중인 챌린지" 카드 맨 아래에 "이번 주 ✅✅⬜ 2/3" 표시
    - 주차 기준: 달력 월~일
-   - 빈도: freqPerWeek 있으면 그걸, 없으면 ac.freq(daily/w5/w3) 사용
-   - 로드 위치: challenges 패치 / gemini_patch.js 보다 뒤
+   - 빈도: ac.freq (daily/w5/w3/w1) 사용
    ---------------------------------------------------
-   v2 수정:
-   - 카드가 flex row라 박스가 안 보이던 문제 → 카드를 column으로 감싸 박스를 아래에 배치
-   - 매칭 키 오류 수정 (c.missionId → c.id, ac.missionId → ac.challengeId)
+   v3 핵심 수정:
+   - doComplete 안의 _curChalId가 window에 없어서 챌린지 id를 못 잡던 문제
+     → 원본이 남기는 window.UDATA.verifiedDates(=오늘 인증한 챌린지)에서 역으로 채움
+   - 실제 홈 카드는 이미 세로(column) 구조 → 억지로 감싸지 말고 맨 아래에 박스만 append
+   - 카드 매칭을 renderHomeChalls의 필터와 동일하게 맞춤 (missionId 유효 + challengeId 존재)
    ===================================================== */
 (function () {
   'use strict';
@@ -34,7 +35,7 @@
   }
   function shortMD(d) { return `${d.getMonth() + 1}/${d.getDate()}`; }
 
-  // 챌린지의 주당 목표 횟수
+  // 챌린지의 주당 목표 횟수 (daily=7, w5=5, w3=3, w1=1)
   function weeklyTarget(ac) {
     if (ac.freqPerWeek) return Math.min(7, ac.freqPerWeek);
     if (ac.freq === 'daily') return 7;
@@ -54,52 +55,44 @@
   }
 
   /* ───────────── ① 날짜 쌓기 (doComplete 후킹) ───────────── */
+  // 원본 doComplete가 끝나면 window.UDATA.verifiedDates[chalId]에 오늘 날짜가 들어있음.
+  // 그걸 읽어서 verifLog[chalId]에 오늘 날짜를 보장(없으면 추가)한다.
   function hookDoComplete() {
     if (window._weeklyHookedDoComplete) return;
     const orig = window.doComplete;
     if (typeof orig !== 'function') { setTimeout(hookDoComplete, 600); return; }
 
     window.doComplete = async function () {
-      // 인증 직전 챌린지 id 백업 (원본이 상태를 리셋하기 전에)
-      const chalIdBefore =
-        window.EQ?.curChalId ??
-        window._curChalId ??            // index.html 전역 변수 케이스
-        null;
-      const uidBefore =
-        window.EQ?.curUid ??
-        window._curUid ??
-        window.ME?.uid ??
-        null;
-
       const res = await orig.apply(this, arguments);
-
       try {
-        if (chalIdBefore && uidBefore && window.FB && window.UDATA) {
-          const today = ymd(new Date());
-          const vlog = window.UDATA.verifLog || {};
-          if (!vlog[chalIdBefore]) vlog[chalIdBefore] = [];
-          if (!vlog[chalIdBefore].includes(today)) {
-            vlog[chalIdBefore].push(today);
-            window.UDATA.verifLog = vlog;
-            await window.FB.updateDoc(
-              window.FB.doc(window.FB.db, 'users', uidBefore),
-              { verifLog: vlog }
-            );
+        const today = ymd(new Date());
+        const vd = window.UDATA?.verifiedDates || {};
+        const vlog = window.UDATA?.verifLog || {};
+        let changed = false;
+        for (const cid in vd) {
+          if (vd[cid] === today) {
+            if (!vlog[cid]) vlog[cid] = [];
+            if (!vlog[cid].includes(today)) { vlog[cid].push(today); changed = true; }
           }
-          if (window.renderHomeChalls) window.renderHomeChalls();
         }
+        if (changed && window.ME && window.FB) {
+          window.UDATA.verifLog = vlog;
+          await window.FB.updateDoc(
+            window.FB.doc(window.FB.db, 'users', window.ME.uid),
+            { verifLog: vlog }
+          );
+        }
+        if (window.renderHomeChalls) window.renderHomeChalls();
       } catch (e) {
         console.log('[weekly] verifLog 저장 실패:', e.message);
       }
       return res;
     };
     window._weeklyHookedDoComplete = true;
-    console.log('[weekly] ✅ doComplete 후킹 (날짜 쌓기)');
+    console.log('[weekly] ✅ doComplete 후킹 (verifiedDates 기반 날짜 쌓기)');
   }
 
   /* ───────────── ② 홈 카드에 주차 표시 주입 ───────────── */
-
-  // 이번 주 진척 박스 HTML
   function weekBoxHtml(ac) {
     const target = weeklyTarget(ac);
     const done = countThisWeek(ac.challengeId);
@@ -115,21 +108,20 @@
     const complete = done >= target;
     const remain = Math.max(0, target - done);
     const statusText = complete
-      ? `<span style="color:#1a6b3a;font-weight:800">다 했어요! 🎉</span>`
-      : `<span style="color:var(--sub)">${remain}번 더!</span>`;
+      ? '<span style="color:#1a6b3a;font-weight:800">다 했어요! 🎉</span>'
+      : '<span style="color:var(--sub)">' + remain + '번 더!</span>';
 
-    return `
-      <div style="background:${complete ? '#eafaf0' : '#f7faf8'};border:1px solid ${complete ? '#a8e6c5' : 'var(--bdr,#e5e7eb)'};
-                  border-radius:10px;padding:8px 10px;margin-top:8px">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
-          <span style="font-size:10px;color:var(--sub);font-weight:700">이번 주 (${shortMD(mon)}~${shortMD(sun)})</span>
-          <span style="font-size:11px;font-weight:800;color:${complete ? '#1a6b3a' : 'var(--txt)'}">${done}/${target} · ${statusText}</span>
-        </div>
-        <div style="display:flex;gap:4px;flex-wrap:wrap">${dots}</div>
-      </div>`;
+    return '' +
+      '<div style="background:' + (complete ? '#eafaf0' : '#f7faf8') + ';border:1px solid ' + (complete ? '#a8e6c5' : 'var(--bdr)') + ';' +
+      'border-radius:10px;padding:8px 10px;margin-top:8px">' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">' +
+          '<span style="font-size:10px;color:var(--sub);font-weight:700">이번 주 (' + shortMD(mon) + '~' + shortMD(sun) + ')</span>' +
+          '<span style="font-size:11px;font-weight:800;color:' + (complete ? '#1a6b3a' : 'var(--txt)') + '">' + done + '/' + target + ' · ' + statusText + '</span>' +
+        '</div>' +
+        '<div style="display:flex;gap:4px;flex-wrap:wrap">' + dots + '</div>' +
+      '</div>';
   }
 
-  // renderHomeChalls 후킹 → 그려진 카드 안에 주차 박스 삽입
   function hookRenderHome() {
     if (window._weeklyHookedHome) return;
     const orig = window.renderHomeChalls;
@@ -137,16 +129,16 @@
 
     window.renderHomeChalls = function () {
       const r = orig.apply(this, arguments);
-      // innerHTML 갱신이 끝난 직후 주입
-      requestAnimationFrame(() => { try { injectWeekBoxes(); } catch (e) { console.log('[weekly] 주입 실패:', e.message); } });
+      requestAnimationFrame(() => {
+        try { injectWeekBoxes(); } catch (e) { console.log('[weekly] 주입 실패:', e.message); }
+      });
       return r;
     };
     window._weeklyHookedHome = true;
     console.log('[weekly] ✅ renderHomeChalls 후킹 (주차 표시)');
-    setTimeout(injectWeekBoxes, 300); // 최초 1회
+    setTimeout(injectWeekBoxes, 300);
   }
 
-  // 홈 카드들에 주차 박스 끼워넣기
   function injectWeekBoxes() {
     const wrap = document.getElementById('homeChallList');
     if (!wrap) return;
@@ -154,9 +146,13 @@
     const active = (window.UDATA?.activeChallenges || []);
     if (!active.length) return;
 
-    // 실제 홈 카드는 CHALLENGES에 매칭되는 active만 그려짐 (c.id === ac.challengeId)
     const chals = (window.CHALLENGES || []);
-    const shown = active.filter(ac => chals.some(c => c.id === ac.challengeId));
+    const validMissionIds = chals.map(c => c.missionId);
+
+    // renderHomeChalls와 동일한 순서/필터로 실제 그려진 카드와 1:1 매칭
+    const shown = active
+      .filter(ac => validMissionIds.includes(ac.missionId))
+      .filter(ac => chals.some(c => c.id === ac.challengeId));
 
     const cards = wrap.children;
     for (let i = 0; i < cards.length && i < shown.length; i++) {
@@ -164,19 +160,7 @@
       const ac = shown[i];
       if (!ac) continue;
 
-      // ── 핵심 수정: flex row 카드 → column으로 감싸기 (1회만) ──
-      // 기존 카드는 display:flex;justify-content:space-between 한 줄짜리.
-      // 그 안에 박스를 그냥 넣으면 오른쪽에 끼여 안 보임.
-      // 기존 자식들을 row wrapper로 묶고, 카드를 block으로 바꿔 박스를 아래에 깔아준다.
-      if (!card.dataset.weeklyWrapped) {
-        const inner = document.createElement('div');
-        inner.style.cssText = 'display:flex;align-items:center;justify-content:space-between';
-        while (card.firstChild) inner.appendChild(card.firstChild);
-        card.appendChild(inner);
-        card.style.display = 'block';
-        card.dataset.weeklyWrapped = '1';
-      }
-
+      // 카드는 이미 세로 구조 → 맨 아래에 박스만 추가/갱신 (감싸지 않음)
       let box = card.querySelector('.weekly-box');
       if (!box) {
         box = document.createElement('div');

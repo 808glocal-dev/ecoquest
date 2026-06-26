@@ -144,20 +144,6 @@
         <div style="font-size:10px;color:var(--sub);line-height:1.7;padding:2px 2px 0">* 누적 CO₂는 멤버 인증 행동 기반 <b>회피배출 추정치</b>예요 (평소 대비). 🌳 ${imp.trees}그루 · 🚗 ${imp.carKm}km · ☕ ${imp.cups}개</div>
       </div>`;
 
-      // ─── 존2: 이번 주 캠페인 ───
-      html += `<div style="padding:0 12px;margin-top:16px">
-        <div style="font-size:15px;font-weight:900;color:var(--txt);margin-bottom:8px">🎯 이번 주 캠페인</div>
-        <div style="background:linear-gradient(135deg,#fff,#f0fbf4);border-radius:14px;padding:14px 16px;border:1.5px solid #a8e6c5">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-            <div style="font-size:13px;font-weight:900;color:var(--txt)">${myCo?.campaign?.title || '함께하는 줍깅 위크'}</div>
-            <div style="font-size:10px;color:var(--sub);font-weight:700">${weekRange()}</div>
-          </div>
-          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--sub);margin-bottom:5px"><span>참여율 (활성 멤버)</span><span style="font-weight:900;color:var(--g2)">${active}/${members.length}명 · ${partRate}%</span></div>
-          <div style="height:9px;background:#e8f5ec;border-radius:5px;overflow:hidden"><div style="width:${partRate}%;height:100%;background:linear-gradient(90deg,#2ECC71,#27AE60);transition:width .6s"></div></div>
-          <div style="font-size:10px;color:var(--sub);margin-top:9px;line-height:1.6">💡 멤버가 미션·깅을 인증할수록 참여율이 올라가요. 이 숫자가 곧 ESG 리포트 지표예요.</div>
-        </div>
-      </div>`;
-
       // ─── 존3: 우리 회사 랭킹 ───
       html += `<div style="padding:0 12px;margin-top:18px">
         <div style="font-size:15px;font-weight:900;color:var(--txt);margin-bottom:8px">🏅 우리 회사 랭킹</div>

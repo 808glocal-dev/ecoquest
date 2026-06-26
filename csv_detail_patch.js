@@ -1,4 +1,5 @@
-// csv_detail_patch.js v7
+// csv_detail_patch.js v8
+// v7 → v8: 회원 명부에 '휴대폰'(phoneNumber) 컬럼 추가
 // 핵심 fix: users를 doc.id 포함해서 다시 fetch (기존 _adminData.users는 id 필드 누락)
 (function(){
   'use strict';
@@ -72,7 +73,7 @@
     });
 
     // 진단: 각 소스가 카운트한 user 수
-    console.log('[csv v7] 카운트 결과:', {
+    console.log('[csv v8] 카운트 결과:', {
       'fromVerifs user 수': Object.keys(fromVerifs).length,
       'fromLogs user 수': Object.keys(fromLogs).length,
       'fromDone user 수': Object.keys(fromDone).length,
@@ -151,7 +152,8 @@
     }
     rows.push([]);
 
-    const baseCols = ['닉네임','이메일','미션수(전체)','미션별합계','CO2(kg)','포인트','지역','나이대','성별','직업'];
+    // ★ v8: '휴대폰' 컬럼 추가 (이메일 다음)
+    const baseCols = ['닉네임','이메일','휴대폰','미션수(전체)','미션별합계','CO2(kg)','포인트','지역','나이대','성별','직업'];
     const renderGroup = (label, members) => {
       rows.push([`=== ${label} 소속 회원 (${members.length}명) ===`]);
       rows.push([...baseCols, ...missionCols]);
@@ -161,6 +163,7 @@
         rows.push([
           u.nickname || '익명',
           u.email || '',
+          u.phoneNumber || u.phone || u.kakaoPhone || '',  // ★ v8: 휴대폰 값
           u.missionCount || 0,
           sumOfMissions,
           (u.co2||0).toFixed(2),
@@ -208,7 +211,7 @@
     a._eqOwn = true;
     a.click();
     window.toast && window.toast('✅ CSV 다운로드 완료!');
-    console.log('%c[csv v7] ✅ 다운로드 완료','color:#2ECC71;font-weight:bold');
+    console.log('%c[csv v8] ✅ 다운로드 완료 (휴대폰 컬럼 포함)','color:#2ECC71;font-weight:bold');
   }
 
   // 핵우산 1: anchor.click() 가로채기
@@ -216,7 +219,7 @@
   HTMLAnchorElement.prototype.click = function(){
     const dl = (this.download || '').toLowerCase();
     if(dl.endsWith('.csv') && !this._eqOwn){
-      console.log('[csv v7] ⚡ 가로채기:', this.download);
+      console.log('[csv v8] ⚡ 가로채기:', this.download);
       setTimeout(() => exportDetailedCSV(), 50);
       return;
     }
@@ -247,5 +250,5 @@
   install();
   setInterval(install, 1000);
 
-  console.log('%c[csv v7] ☢️ user.id 포함 fetch + 매칭 정상화','color:#fff;background:#1a1a2e;padding:4px 8px;border-radius:4px;font-weight:bold');
+  console.log('%c[csv v8] ☢️ user.id 포함 fetch + 휴대폰 컬럼 추가','color:#fff;background:#1a1a2e;padding:4px 8px;border-radius:4px;font-weight:bold');
 })();

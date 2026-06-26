@@ -1,38 +1,37 @@
 /* =====================================================
-   EcoQuest – commute_patch.js
+   EcoQuest – commute_patch.js  v2
    출퇴근(통근) 등록 — Scope 3 Cat.7
    ─────────────────────────────────────────────────────
-   • 집↔회사 주소 → 카카오 길찾기로 경로 거리 자동 계산
-   • 교통수단 선택 → 수단별 배출계수 적용
-   • 주 출근일수 → 연간 통근 배출 추정
-   • companyId 로 회사 전체 Scope 3 집계
-   ─────────────────────────────────────────────────────
+   v1 → v2 변경점
+   • 자체 EF 삭제 → window.ECOQUEST_EF(공용) 참조
+   • 등록 모달에 수단별 출처·계산식 박스 자동 표시
+   • 연간 추정에 실제배출/회피배출 둘 다 표기 (정직)
+   • 저장 후 모달 자동 닫힘
+   ★ 로드 위치: emission_factors_patch.js 뒤
    ★ /api/commute-distance.js + KAKAO_REST_API_KEY 필요
-   ★ 로드 위치: 아무 patch 뒤나 OK
    ===================================================== */
 (function(){
   'use strict';
   if(window._commuteLoaded) return;
   window._commuteLoaded = true;
 
-  // ───── 교통수단별 배출계수 (gCO₂/km) — 공식값으로 교체 권장 ─────
-  const EF = {
-    walk_bike: { g:0,   label:'도보·자전거', emoji:'🚶' },
-    subway:    { g:26,  label:'지하철·전철', emoji:'🚇' },
-    bus:       { g:57,  label:'버스',        emoji:'🚌' },
-    car:       { g:210, label:'승용차·택시', emoji:'🚗' },
-  };
-  const WEEKS_PER_YEAR = 48;   // 연간 근무주 (휴가 등 제외 추정)
-  // ───────────────────────────────────────────────────────────
+  const WEEKS_PER_YEAR = 48;
+  function EF(){ return window.ECOQUEST_EF || {}; }
+  function modeKeys(){ return Object.keys(EF()); }
 
-  let _cm = null; // {fromAddr, toAddr, distanceKm, mode, daysPerWeek}
+  let _cm = null;
 
-  function annualKg(distanceKm, mode, daysPerWeek){
-    const g = (EF[mode]?.g) || 0;
-    return distanceKm * 2 * daysPerWeek * WEEKS_PER_YEAR * g / 1000;
+  // 연간 (실제, 회피) kg
+  function annual(distanceKm, mode, daysPerWeek){
+    const calc = window.ecoCalcCommute(distanceKm, mode); // 1회 왕복 기준
+    const factor = daysPerWeek * WEEKS_PER_YEAR;
+    return {
+      actual:  +(calc.actualKg  * factor).toFixed(1),
+      avoided: +(calc.avoidedKg * factor).toFixed(1),
+      perTrip: calc
+    };
   }
 
-  /* ── 소속 탭 진입 버튼 ── */
   function injectEntry(){
     const page = document.getElementById('page-company');
     if(!page) return;
@@ -44,14 +43,13 @@
     card.onclick = () => window.openCommute();
     card.innerHTML = `<div style="display:flex;align-items:center;justify-content:space-between">
       <div><div style="font-size:14px;font-weight:900">🚇 내 출퇴근 등록 ${has?'<span style="font-size:10px;color:#a8d4ff">✓ 등록됨</span>':''}</div>
-      <div style="font-size:11px;color:rgba(255,255,255,.82);margin-top:4px">집↔회사 한 번 등록 → 연간 통근 탄소배출 자동 계산 (Scope 3)</div></div>
+      <div style="font-size:11px;color:rgba(255,255,255,.82);margin-top:4px">집↔회사 한 번 등록 → 통근 탄소배출 자동 계산 (Scope 3)</div></div>
       <div style="font-size:22px">📍→🏢</div></div>`;
     page.insertBefore(card, page.firstChild);
   }
   setInterval(injectEntry, 1500);
   setTimeout(injectEntry, 1600);
 
-  /* ── 모달 ── */
   window.openCommute = function(){
     const prev = (window.UDATA && window.UDATA.commute) || null;
     _cm = prev ? { ...prev } : { fromAddr:'', toAddr:'', distanceKm:null, mode:null, daysPerWeek:5 };
@@ -73,6 +71,7 @@
     const b = document.getElementById('commuteBody');
     if(!b) return;
     const s = _cm;
+    const ef = EF();
     const inputStyle = 'width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:12px 14px;color:#fff;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box';
 
     b.innerHTML = `
@@ -94,7 +93,7 @@
 
         <div style="font-size:12px;color:rgba(255,255,255,.7);font-weight:700;margin:18px 0 8px">🚊 주 교통수단</div>
         <div id="cmModes" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-          ${Object.keys(EF).map(k=>`<button onclick="window._cmPickMode('${k}')" id="cmMode-${k}" style="display:flex;align-items:center;gap:8px;justify-content:center;padding:13px;border-radius:10px;cursor:pointer;font-family:inherit;font-size:13px;font-weight:700;border:${s.mode===k?'2px solid #4da3ff':'1.5px solid rgba(255,255,255,.2)'};background:${s.mode===k?'rgba(77,163,255,.18)':'rgba(255,255,255,.06)'};color:#fff"><span style="font-size:18px">${EF[k].emoji}</span>${EF[k].label}</button>`).join('')}
+          ${modeKeys().map(k=>`<button onclick="window._cmPickMode('${k}')" id="cmMode-${k}" style="display:flex;align-items:center;gap:8px;justify-content:center;padding:13px;border-radius:10px;cursor:pointer;font-family:inherit;font-size:13px;font-weight:700;border:${s.mode===k?'2px solid #4da3ff':'1.5px solid rgba(255,255,255,.2)'};background:${s.mode===k?'rgba(77,163,255,.18)':'rgba(255,255,255,.06)'};color:#fff"><span style="font-size:18px">${ef[k].emoji}</span>${ef[k].label}</button>`).join('')}
         </div>
 
         <div style="font-size:12px;color:rgba(255,255,255,.7);font-weight:700;margin:18px 0 8px">📅 주 출근일수 <span style="color:rgba(255,255,255,.45);font-weight:400">(재택·하이브리드 반영)</span></div>
@@ -103,15 +102,24 @@
         </div>
 
         <div id="cmResultBox" style="margin-top:20px;${(s.distanceKm&&s.mode)?'':'display:none'}">
-          <div style="background:linear-gradient(135deg,#1565c0,#42a5f5);border-radius:16px;padding:18px;text-align:center;color:#fff">
-            <div style="font-size:11px;color:rgba(255,255,255,.85);font-weight:700">내 연간 통근 탄소배출 (추정)</div>
-            <div style="margin-top:6px"><span id="cmAnnual" style="font-size:32px;font-weight:900">0</span> <span style="font-size:14px;font-weight:700">kg CO₂/년</span></div>
-            <div id="cmFormula" style="font-size:10px;color:rgba(255,255,255,.7);margin-top:6px"></div>
+          <div style="background:linear-gradient(135deg,#1565c0,#42a5f5);border-radius:16px;padding:16px;color:#fff">
+            <div style="font-size:11px;color:rgba(255,255,255,.85);font-weight:700;text-align:center">내 연간 통근 (추정)</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">
+              <div style="text-align:center;background:rgba(255,255,255,.12);border-radius:10px;padding:10px">
+                <div style="font-size:10px;color:rgba(255,255,255,.8)">실제 배출</div>
+                <div style="margin-top:2px"><span id="cmActual" style="font-size:24px;font-weight:900">0</span> <span style="font-size:11px">kg/년</span></div>
+              </div>
+              <div style="text-align:center;background:rgba(168,230,197,.25);border-radius:10px;padding:10px">
+                <div style="font-size:10px;color:#d3ffe6">승용차 대비 절감</div>
+                <div style="margin-top:2px"><span id="cmAvoided" style="font-size:24px;font-weight:900;color:#d3ffe6">0</span> <span style="font-size:11px;color:#d3ffe6">kg/년</span></div>
+              </div>
+            </div>
+            <div id="cmFormula" style="font-size:10px;color:rgba(255,255,255,.7);margin-top:8px;text-align:center"></div>
           </div>
+          <div id="cmEfBox" style="margin-top:10px"></div>
         </div>
 
         <button onclick="window._cmSave()" id="cmSaveBtn" style="width:100%;margin-top:16px;background:#fff;color:#0d47a1;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:900;cursor:pointer;font-family:inherit">저장하기</button>
-
         <div id="cmCompanyBox" style="margin-top:20px"></div>
       </div>`;
     if(s.distanceKm && s.mode) recalcCommute();
@@ -145,7 +153,7 @@
 
   window._cmPickMode = function(k){
     _cm.mode = k;
-    Object.keys(EF).forEach(m=>{
+    modeKeys().forEach(m=>{
       const el = document.getElementById('cmMode-'+m); if(!el) return;
       const on = m===k;
       el.style.border = on?'2px solid #4da3ff':'1.5px solid rgba(255,255,255,.2)';
@@ -166,14 +174,17 @@
 
   function recalcCommute(){
     if(!_cm.distanceKm || !_cm.mode){ return; }
-    const kg = annualKg(_cm.distanceKm, _cm.mode, _cm.daysPerWeek);
+    const a = annual(_cm.distanceKm, _cm.mode, _cm.daysPerWeek);
     const box = document.getElementById('cmResultBox'); if(box) box.style.display = '';
-    const a = document.getElementById('cmAnnual'); if(a) a.textContent = Math.round(kg).toLocaleString();
+    const ae = document.getElementById('cmActual'); if(ae) ae.textContent = Math.round(a.actual).toLocaleString();
+    const av = document.getElementById('cmAvoided'); if(av) av.textContent = Math.round(a.avoided).toLocaleString();
     const f = document.getElementById('cmFormula');
     if(f){
-      const g = EF[_cm.mode].g;
-      f.textContent = `${_cm.distanceKm}km × 왕복 × 주 ${_cm.daysPerWeek}일 × ${WEEKS_PER_YEAR}주 × ${g}g`;
+      const ef = EF()[_cm.mode];
+      f.textContent = `${_cm.distanceKm}km × 왕복 × 주 ${_cm.daysPerWeek}일 × ${WEEKS_PER_YEAR}주 × ${ef.g}gCO₂/${_cm.mode==='car'?'km':'인·km'}`;
     }
+    const efBox = document.getElementById('cmEfBox');
+    if(efBox && window.ecoEfExplain) efBox.innerHTML = window.ecoEfExplain(_cm.mode, {compact:true});
   }
 
   window._cmSave = async function(){
@@ -182,24 +193,24 @@
     const btn = document.getElementById('cmSaveBtn');
     btn.disabled = true; btn.textContent = '저장 중...';
     try {
-      const kg = +annualKg(_cm.distanceKm, _cm.mode, _cm.daysPerWeek).toFixed(1);
+      const a = annual(_cm.distanceKm, _cm.mode, _cm.daysPerWeek);
       const commute = {
         fromAddr: _cm.fromAddr, toAddr: _cm.toAddr,
         distanceKm: _cm.distanceKm, mode: _cm.mode,
-        daysPerWeek: _cm.daysPerWeek, annualKg: kg
+        daysPerWeek: _cm.daysPerWeek,
+        annualActualKg: a.actual, annualAvoidedKg: a.avoided
       };
       await window.FB.updateDoc(window.FB.doc(window.FB.db, 'users', window.ME.uid), { commute });
       if(window.UDATA) window.UDATA.commute = commute;
-      window.toast && window.toast(`✅ 등록 완료! 연간 ${Math.round(kg).toLocaleString()}kg`);
+      window.toast && window.toast(`✅ 등록 완료! 연간 실제 ${Math.round(a.actual).toLocaleString()}kg · 절감 ${Math.round(a.avoided).toLocaleString()}kg`);
       document.getElementById('ovCommute')?.remove();
     } catch(e){
       console.error('[commute] 저장 오류', e);
       window.toast && window.toast('저장 실패: ' + e.message);
+      btn.disabled = false; btn.textContent = '저장하기';
     }
-    btn.disabled = false; btn.textContent = '저장하기';
   };
 
-  /* ── 회사 단위 집계 ── */
   async function loadCompanyCommute(){
     const box = document.getElementById('cmCompanyBox');
     if(!box || !window.ME || !window.FB) return;
@@ -211,20 +222,28 @@
         window.FB.where('companyId', '==', cid)
       );
       const snap = await window.FB.getDocs(q);
-      let total = 0, registered = 0, members = 0;
+      let totalActual = 0, totalAvoided = 0, registered = 0, members = 0;
       snap.forEach(doc => {
         members++;
         const c = doc.data().commute;
-        if(c && typeof c.annualKg === 'number'){ total += c.annualKg; registered++; }
+        if(c && (typeof c.annualActualKg === 'number' || typeof c.annualKg === 'number')){
+          totalActual  += (c.annualActualKg ?? c.annualKg ?? 0);
+          totalAvoided += (c.annualAvoidedKg ?? 0);
+          registered++;
+        }
       });
       box.innerHTML = `
         <div style="background:rgba(255,255,255,.05);border-radius:14px;padding:16px;border:1px solid rgba(255,255,255,.12)">
-          <div style="font-size:11px;color:#a8d4ff;font-weight:700;letter-spacing:1px;margin-bottom:10px">🏢 우리 회사 통근 배출 (Scope 3 Cat.7)</div>
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <div style="font-size:12px;color:rgba(255,255,255,.7)">등록 ${registered}/${members}명 연간 합계</div>
-            <div style="font-size:20px;font-weight:900;color:#fff">${Math.round(total).toLocaleString()} <span style="font-size:12px;font-weight:700;color:rgba(255,255,255,.7)">kg/년</span></div>
+          <div style="font-size:11px;color:#a8d4ff;font-weight:700;letter-spacing:1px;margin-bottom:10px">🏢 우리 회사 통근 (Scope 3 Cat.7)</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <div style="font-size:12px;color:rgba(255,255,255,.7)">실제 배출 (등록 ${registered}/${members}명)</div>
+            <div style="font-size:18px;font-weight:900;color:#fff">${Math.round(totalActual).toLocaleString()} <span style="font-size:11px;color:rgba(255,255,255,.7)">kg/년</span></div>
           </div>
-          <div style="font-size:10px;color:rgba(255,255,255,.45);margin-top:8px;line-height:1.5">* 임직원이 각자 등록할수록 정확해져요 · ESG 보고서용 회사 집계</div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div style="font-size:12px;color:#a8e6c5">승용차 대비 절감 추정</div>
+            <div style="font-size:18px;font-weight:900;color:#a8e6c5">${Math.round(totalAvoided).toLocaleString()} <span style="font-size:11px">kg/년</span></div>
+          </div>
+          <div style="font-size:10px;color:rgba(255,255,255,.45);margin-top:8px;line-height:1.5">* 실제 배출 = Scope3 인벤토리 입력값 · 절감 = 회피배출 추정(인벤토리 별도). 임직원이 각자 등록할수록 정확해져요.</div>
         </div>`;
     } catch(e){
       console.log('[commute] 회사 집계 실패:', e.message);
@@ -232,5 +251,5 @@
     }
   }
 
-  console.log('[commute_patch] 로드됨');
+  console.log('[commute_patch v2] 로드됨 (공용 EF 참조)');
 })();

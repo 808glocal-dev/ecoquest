@@ -35,16 +35,42 @@
   function injectEntry(){
     const page = document.getElementById('page-company');
     if(!page) return;
-    if(document.getElementById('commuteEntry')) return;
-    const has = !!(window.UDATA && window.UDATA.commute);
+    const c = (window.UDATA && window.UDATA.commute) || null;
+    const has = !!(c && c.distanceKm && c.mode);
+    const existing = document.getElementById('commuteEntry');
+    // 이미 카드가 있어도 등록 상태가 바뀌었으면 내용 갱신
+    if(existing){
+      if(existing._has === has) return;     // 변화 없으면 그대로
+      existing.remove();                     // 변했으면 새로 그림
+    }
+    const ef = (window.ECOQUEST_EF && c) ? window.ECOQUEST_EF[c.mode] : null;
     const card = document.createElement('div');
     card.id = 'commuteEntry';
+    card._has = has;
     card.style.cssText = 'margin:12px;padding:15px 16px;background:linear-gradient(135deg,#0d47a1,#1976d2);border-radius:14px;color:#fff;cursor:pointer;box-shadow:0 4px 14px rgba(13,71,161,.25)';
     card.onclick = () => window.openCommute();
-    card.innerHTML = `<div style="display:flex;align-items:center;justify-content:space-between">
-      <div><div style="font-size:14px;font-weight:900">🚇 내 출퇴근 등록 ${has?'<span style="font-size:10px;color:#a8d4ff">✓ 등록됨</span>':''}</div>
-      <div style="font-size:11px;color:rgba(255,255,255,.82);margin-top:4px">집↔회사 한 번 등록 → 통근 탄소배출 자동 계산 (Scope 3)</div></div>
-      <div style="font-size:22px">📍→🏢</div></div>`;
+
+    if(has){
+      // ── 등록됨 → "수정" 모드 카드 ──
+      const summary = `${ef?ef.emoji:'🚊'} ${ef?ef.label:c.mode} · 편도 ${c.distanceKm}km · 주 ${c.daysPerWeek||5}일`;
+      card.innerHTML = `<div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:14px;font-weight:900">🚇 내 출퇴근 수정 <span style="font-size:10px;color:#a8d4ff;font-weight:700">✓ 등록됨</span></div>
+          <div style="font-size:12px;color:#cfe3fb;margin-top:5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${summary}</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.7);margin-top:4px">${c.fromAddr||'집'} → ${c.toAddr||'회사'}</div>
+        </div>
+        <div style="text-align:center;flex-shrink:0">
+          <div style="font-size:20px">✏️</div>
+          <div style="font-size:9px;color:#a8d4ff;margin-top:2px;white-space:nowrap">탭해서 수정 ›</div>
+        </div>
+      </div>`;
+    } else {
+      // ── 미등록 → "등록" 안내 카드 ──
+      card.innerHTML = `<div style="display:flex;align-items:center;justify-content:space-between">
+        <div><div style="font-size:14px;font-weight:900">🚇 내 출퇴근 등록</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.82);margin-top:4px">집↔회사 한 번 등록 → 통근 탄소배출 자동 계산 (Scope 3)</div></div>
+        <div style="font-size:22px">📍→🏢</div></div>`;
+    }
     page.insertBefore(card, page.firstChild);
   }
   setInterval(injectEntry, 1500);
@@ -52,6 +78,7 @@
 
   window.openCommute = function(){
     const prev = (window.UDATA && window.UDATA.commute) || null;
+    const isEdit = !!(prev && prev.distanceKm && prev.mode);
     _cm = prev ? { ...prev } : { fromAddr:'', toAddr:'', distanceKm:null, mode:null, daysPerWeek:5 };
     document.getElementById('ovCommute')?.remove();
     const ov = document.createElement('div');
@@ -59,9 +86,10 @@
     ov.style.cssText = 'position:fixed;inset:0;background:#0a1530;z-index:11500;display:flex;flex-direction:column;overflow-y:auto';
     ov.innerHTML = `
       <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,.1)">
-        <div style="color:#fff;font-size:14px;font-weight:900">🚇 출퇴근 등록 — Scope 3 통근</div>
+        <div style="color:#fff;font-size:14px;font-weight:900">🚇 ${isEdit?'출퇴근 수정':'출퇴근 등록'} — Scope 3 통근</div>
         <button onclick="document.getElementById('ovCommute').remove()" style="background:rgba(255,255,255,.15);border:none;color:#fff;width:34px;height:34px;border-radius:50%;font-size:18px;cursor:pointer;font-family:inherit">✕</button>
       </div>
+      ${isEdit?'<div style="background:rgba(168,212,255,.12);color:#cfe3fb;font-size:11px;padding:8px 16px;flex-shrink:0;line-height:1.6">✏️ 기존 정보를 불러왔어요. 주소·수단·일수를 바꾸고 <b>저장하기</b>를 누르면 수정돼요.</div>':''}
       <div id="commuteBody" style="flex:1;padding:18px 16px 40px"></div>`;
     document.body.appendChild(ov);
     renderCommute();
@@ -72,6 +100,8 @@
     if(!b) return;
     const s = _cm;
     const ef = EF();
+    const isEdit = !!(s.distanceKm && s.mode);
+    const saveLabel = isEdit ? '수정 저장하기' : '저장하기';
     const inputStyle = 'width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:12px 14px;color:#fff;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box';
 
     b.innerHTML = `
@@ -119,7 +149,7 @@
           <div id="cmEfBox" style="margin-top:10px"></div>
         </div>
 
-        <button onclick="window._cmSave()" id="cmSaveBtn" style="width:100%;margin-top:16px;background:#fff;color:#0d47a1;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:900;cursor:pointer;font-family:inherit">저장하기</button>
+        <button onclick="window._cmSave()" id="cmSaveBtn" style="width:100%;margin-top:16px;background:#fff;color:#0d47a1;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:900;cursor:pointer;font-family:inherit">${saveLabel}</button>
         <div id="cmCompanyBox" style="margin-top:20px"></div>
       </div>`;
     if(s.distanceKm && s.mode) recalcCommute();
@@ -191,6 +221,7 @@
     if(!window.ME || !window.FB){ window.toast && window.toast('로그인이 필요해요'); return; }
     if(!_cm.distanceKm || !_cm.mode){ window.toast && window.toast('거리 계산과 교통수단 선택을 먼저 해주세요'); return; }
     const btn = document.getElementById('cmSaveBtn');
+    const wasEdit = !!(window.UDATA && window.UDATA.commute && window.UDATA.commute.distanceKm);
     btn.disabled = true; btn.textContent = '저장 중...';
     try {
       const a = annual(_cm.distanceKm, _cm.mode, _cm.daysPerWeek);
@@ -202,12 +233,16 @@
       };
       await window.FB.updateDoc(window.FB.doc(window.FB.db, 'users', window.ME.uid), { commute });
       if(window.UDATA) window.UDATA.commute = commute;
-      window.toast && window.toast(`✅ 등록 완료! 연간 실제 ${Math.round(a.actual).toLocaleString()}kg · 절감 ${Math.round(a.avoided).toLocaleString()}kg`);
+      window.toast && window.toast(`✅ ${wasEdit?'수정':'등록'} 완료! 연간 실제 ${Math.round(a.actual).toLocaleString()}kg · 절감 ${Math.round(a.avoided).toLocaleString()}kg`);
       document.getElementById('ovCommute')?.remove();
+      // 소속 페이지 카드 즉시 갱신 (수정 모드로 다시 그려짐)
+      const oldCard = document.getElementById('commuteEntry');
+      if(oldCard) oldCard.remove();
+      setTimeout(()=>{ try{ injectEntry(); }catch(e){} }, 100);
     } catch(e){
       console.error('[commute] 저장 오류', e);
       window.toast && window.toast('저장 실패: ' + e.message);
-      btn.disabled = false; btn.textContent = '저장하기';
+      btn.disabled = false; btn.textContent = wasEdit ? '수정 저장하기' : '저장하기';
     }
   };
 

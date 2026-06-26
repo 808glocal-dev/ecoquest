@@ -125,7 +125,7 @@
     // 먹거리
     3:'food', 10:'food', 12:'food',
     // 이동
-    2:'transport', 5:'transport', 17:'transport',
+   2:'transport', 5:'transport', 17:'transport', 101:'transport', 102:'transport',
     // 제로웨이스트
     1:'waste', 4:'waste', 7:'waste', 8:'waste', 11:'waste',
     13:'waste', 16:'waste', 19:'waste', 20:'waste', 25:'waste',

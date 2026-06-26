@@ -150,24 +150,45 @@
     window.renderOfficialChallenges = function(){ render(); };
   }
 
-  // 기존 카테고리 칩(전체/먹거리/…) 잔재 숨김 — category_section_patch.js를 못 빼도 안 보이게
+  // 기존 카테고리 칩(전체/먹거리/…) 잔재 숨김 — 다른 patch가 칩을 만들어도 안 보이게
+  const CHIP_LABELS = ['먹거리','이동','제로웨이스트','에너지','자연','학습·생활','생태십계명'];
   function hideOldChips(){
     const sec = document.getElementById('sec-official');
     if(!sec) return;
-    sec.querySelectorAll('button').forEach(b=>{
-      if(b.textContent.trim() === '전체'){
-        const wrap = b.parentElement;
-        if(wrap && wrap.id !== 'officialGrid' && wrap.id !== 'catNav' && wrap !== sec){
-          wrap.style.display = 'none';
-        }
+    // '전체' 라는 글자만 가진 잎(leaf) 요소 찾기
+    let leaf = null;
+    const nodes = sec.querySelectorAll('*');
+    for(const el of nodes){
+      if(el.children.length === 0 && (el.textContent||'').trim() === '전체'){ leaf = el; break; }
+    }
+    if(!leaf) return;
+    // 그 위로 올라가면서, 카테고리 칩을 3개 이상 품은 컨테이너 = 칩바 → 숨김
+    let node = leaf;
+    while(node && node !== sec){
+      if(node.id !== 'officialGrid' && node.id !== 'catNav'){
+        const txt = node.textContent || '';
+        const hits = CHIP_LABELS.filter(l => txt.includes(l)).length;
+        if(hits >= 3){ node.style.display = 'none'; return; }
       }
-    });
+      node = node.parentElement;
+    }
+  }
+
+  // 칩이 언제 그려지든(다른 patch가 늦게 띄워도) 바로 숨기도록 감시
+  function watchChips(){
+    const sec = document.getElementById('sec-official');
+    if(!sec){ setTimeout(watchChips, 500); return; }
+    hideOldChips();
+    try{
+      const mo = new MutationObserver(()=>hideOldChips());
+      mo.observe(sec, {childList:true, subtree:true});
+    }catch(e){}
   }
 
   function boot(){
     if(typeof window.CHALLENGES === 'undefined'){ setTimeout(boot,400); return; }
     override();
-    hideOldChips();
+    watchChips();
     const grid = document.getElementById('officialGrid');
     if(grid && grid.children.length) render();
     document.querySelectorAll('.tb[data-page="chal"]').forEach(tb=>{

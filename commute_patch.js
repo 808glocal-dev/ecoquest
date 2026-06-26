@@ -191,7 +191,7 @@
       await window.FB.updateDoc(window.FB.doc(window.FB.db, 'users', window.ME.uid), { commute });
       if(window.UDATA) window.UDATA.commute = commute;
       window.toast && window.toast(`✅ 등록 완료! 연간 ${Math.round(kg).toLocaleString()}kg`);
-      loadCompanyCommute();
+      document.getElementById('ovCommute')?.remove();
     } catch(e){
       console.error('[commute] 저장 오류', e);
       window.toast && window.toast('저장 실패: ' + e.message);

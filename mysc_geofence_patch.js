@@ -22,16 +22,18 @@
   const MYSC_LNG = 127.0585651;
   const RADIUS_M = 500;
 
+  // ── MYSC companyId (정확 판별) ──
+  const MYSC_COMPANY_ID = 'yHHT6T6ieD5ZENAMlwTR';
+
   // ── 이 사용자가 MYSC 소속인지 판별 ──
   function isMyscUser(){
     const d = window.UDATA || {};
+    // 1) companyId 정확 일치 (가장 확실)
+    if(d.companyId === MYSC_COMPANY_ID) return true;
+    // 2) 보조: companyId/회사명에 mysc 포함
     const cid = (d.companyId || '').toString().toLowerCase();
     const cname = (d.companyName || d.company || '').toString().toLowerCase();
-    // companyId 또는 회사명에 mysc 포함 시
-    if(cid.includes('mysc')) return true;
-    if(cname.includes('mysc')) return true;
-    // 전역에 알려진 MYSC companyId가 있으면 그것도 비교
-    if(window.MYSC_COMPANY_ID && d.companyId === window.MYSC_COMPANY_ID) return true;
+    if(cid.includes('mysc') || cname.includes('mysc')) return true;
     return false;
   }
 

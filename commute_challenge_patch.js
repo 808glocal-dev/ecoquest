@@ -156,8 +156,12 @@
         distanceKm: Number(commute.distanceKm)||0, roundTripKm: calc.roundTripKm,
         efG: calc.ef.g, efGrade: calc.ef.grade,
         actualKg: calc.actualKg, avoidedKg: calc.avoidedKg,
+        geo: (window._myscGeo && (Date.now()-window._myscGeo.verifiedAt < 120000))
+          ? { lat: window._myscGeo.lat, lng: window._myscGeo.lng, distM: window._myscGeo.dist, verified: true }
+          : null,
         date: today, ts: window.FB.serverTimestamp()
       });
+      window._myscGeo = null;
       closeOv('ovCmk');
       window.renderHomeChalls && window.renderHomeChalls();
       window.renderTodayQuests && window.renderTodayQuests(uid);

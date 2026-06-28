@@ -23,7 +23,7 @@
   const RADIUS_M = 500;
 
   // ── MYSC companyId (정확 판별) ──
-  const MYSC_COMPANY_ID = 'yHHT6T6ieD5ZENAMlwTR';
+  const MYSC_COMPANY_ID = 'yhHT6T6IeD5ZENAMNwTR';
 
   // ── 이 사용자가 MYSC 소속인지 판별 ──
   function isMyscUser(){

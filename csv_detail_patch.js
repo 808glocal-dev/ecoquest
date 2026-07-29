@@ -1,238 +1,329 @@
-// csv_detail_patch.js v8
-// v7 → v8: 회원 명부에 '휴대폰'(phoneNumber) 컬럼 추가
-// 핵심 fix: users를 doc.id 포함해서 다시 fetch (기존 _adminData.users는 id 필드 누락)
+// csv_detail_patch.js v10
+// ─────────────────────────────────────────────────────────────
+// 이 파일 하나면 됩니다. monthly_* 패치들은 모두 삭제하세요.
+//
+// CSV 버튼 한 번 → 파일이 회사 수만큼 각각 다운로드됩니다.
+//   1) EcoQuest_전체요약_날짜.csv      — 월별 전체 / 월별×기업 / 월별×미션 / 기업 누적
+//   2) EcoQuest_[회사명]_날짜.csv      — 회사별. 월별 요약 + 회원×월 + 미션×월 (합계 자동)
+//
+// 월 판정 기준: missionLogs 의 date 필드
+// ─────────────────────────────────────────────────────────────
 (function(){
   'use strict';
 
-  async function exportDetailedCSV(){
-    if(!window._adminData){ window.toast && window.toast("통계 탭에서 먼저 로딩!"); return; }
-    window.toast && window.toast("📊 CSV 생성 중...");
+  const DT = ['date','createdAt','completedAt','ts','timestamp'];
+  const r2 = n => Math.round(n*100)/100;
+  const today = () => new Date().toISOString().split('T')[0];
 
-    // ★★★ v7 핵심: users를 doc.id 포함해서 다시 fetch
-    const [userSnap, coSnap, vSnap] = await Promise.all([
-      window.FB.getDocs(window.FB.collection(window.FB.db, 'users')),
-      window.FB.getDocs(window.FB.collection(window.FB.db, 'companies')),
-      window.FB.getDocs(window.FB.collection(window.FB.db, 'verifications')).catch(()=>({docs:[]})),
-    ]);
+  function monthKey(v){
+    if(v == null) return null;
+    let d;
+    if(typeof v === 'string'){
+      const m = v.match(/^(\d{4})[-./]?(\d{1,2})/);
+      if(m) return m[1] + '-' + String(m[2]).padStart(2,'0');
+      d = new Date(v);
+    } else if(typeof v === 'number'){ d = new Date(v < 1e12 ? v*1000 : v); }
+    else if(typeof v.toDate === 'function'){ d = v.toDate(); }
+    else if(v.seconds != null){ d = new Date(v.seconds*1000); }
+    else if(v instanceof Date){ d = v; }
+    if(!d || isNaN(d.getTime())) return null;
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+  }
+  const rowMonth = r => { for(const k of DT) if(r[k] != null){ const m = monthKey(r[k]); if(m) return m; } return null; };
 
-    const users = userSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    const companies = coSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    const verifs = vSnap.docs ? vSnap.docs.map(x => x.data()) : [];
-    const logs = window._adminData.logs || [];
-
-    // ===== 진단 =====
-    const usersWithDoneArr = users.filter(u => Array.isArray(u.doneMissions) && u.doneMissions.length > 0);
-    const usersWithDoneObj = users.filter(u => u.doneMissions && typeof u.doneMissions === 'object' && !Array.isArray(u.doneMissions) && Object.keys(u.doneMissions).length > 0);
-    const sampleUser = users.find(u => (u.missionCount||0) > 5);
-    const diag = {
-      '전체 user 수': users.length,
-      'verifications': verifs.length,
-      'missionLogs': logs.length,
-      'doneMissions(배열) user': usersWithDoneArr.length,
-      'doneMissions(객체) user': usersWithDoneObj.length,
-      '예시 user 닉네임': sampleUser?.nickname || '-',
-      '예시 user.id': sampleUser?.id || '-',
-      '예시 user missionCount': sampleUser?.missionCount || 0,
-      '예시 doneMissions 길이': sampleUser?.doneMissions?.length ?? '-',
-    };
-    console.table(diag);
-
-    /* ===== 3개 소스에서 카운트 ===== */
-    const fromVerifs = {};
-    verifs.forEach(v => {
-      if(!v.uid || !v.missionId) return;
-      if(!fromVerifs[v.uid]) fromVerifs[v.uid] = {};
-      fromVerifs[v.uid][v.missionId] = (fromVerifs[v.uid][v.missionId]||0) + 1;
-    });
-
-    const fromLogs = {};
-    logs.forEach(l => {
-      if(!l.uid || !l.missionId) return;
-      if(!fromLogs[l.uid]) fromLogs[l.uid] = {};
-      fromLogs[l.uid][l.missionId] = (fromLogs[l.uid][l.missionId]||0) + 1;
-    });
-
-    const fromDone = {};
-    users.forEach(u => {
-      if(!u.id || !u.doneMissions) return;
-      fromDone[u.id] = {};
-      if(Array.isArray(u.doneMissions)){
-        u.doneMissions.forEach(mid => {
-          if(typeof mid === 'string'){
-            fromDone[u.id][mid] = (fromDone[u.id][mid]||0) + 1;
-          } else if(mid && typeof mid === 'object' && mid.id){
-            fromDone[u.id][mid.id] = (fromDone[u.id][mid.id]||0) + 1;
-          }
-        });
-      } else if(typeof u.doneMissions === 'object'){
-        Object.entries(u.doneMissions).forEach(([mid, cnt]) => {
-          const n = typeof cnt === 'number' ? cnt : (cnt?.count || 1);
-          fromDone[u.id][mid] = n;
-        });
-      }
-    });
-
-    // 진단: 각 소스가 카운트한 user 수
-    console.log('[csv v8] 카운트 결과:', {
-      'fromVerifs user 수': Object.keys(fromVerifs).length,
-      'fromLogs user 수': Object.keys(fromLogs).length,
-      'fromDone user 수': Object.keys(fromDone).length,
-    });
-
-    // 합치기 (3개 소스 중 max)
-    const userMissionCount = {};
-    const allUids = new Set([...Object.keys(fromVerifs), ...Object.keys(fromLogs), ...Object.keys(fromDone)]);
-    allUids.forEach(uid => {
-      userMissionCount[uid] = {};
-      const allMids = new Set([
-        ...Object.keys(fromVerifs[uid]||{}),
-        ...Object.keys(fromLogs[uid]||{}),
-        ...Object.keys(fromDone[uid]||{}),
-      ]);
-      allMids.forEach(mid => {
-        userMissionCount[uid][mid] = Math.max(
-          fromVerifs[uid]?.[mid] || 0,
-          fromLogs[uid]?.[mid] || 0,
-          fromDone[uid]?.[mid] || 0,
-        );
-      });
-    });
-
-    // 진단 정보에 추가
-    diag['카운트된 user 수'] = Object.keys(userMissionCount).length;
-    diag['예시 user 미션별 카운트'] = sampleUser ? JSON.stringify(userMissionCount[sampleUser.id]||{}).substr(0,150) : '-';
-
-    // 모든 미션 ID 합집합
-    const allMissionIdsSet = new Set();
-    Object.values(userMissionCount).forEach(counts => Object.keys(counts).forEach(mid => allMissionIdsSet.add(mid)));
-    if(typeof MISSIONS !== 'undefined') MISSIONS.forEach(m => allMissionIdsSet.add(m.id));
-    const allMissionIds = [...allMissionIdsSet].sort((a,b)=>{
-      const na = parseInt(String(a).replace('m','')) || 0;
-      const nb = parseInt(String(b).replace('m','')) || 0;
-      return na - nb;
-    });
-
-    const mName = id => (typeof MISSIONS!=='undefined' && MISSIONS.find(m=>m.id===id)?.name) || id;
-    const mEmoji = id => (typeof MISSIONS!=='undefined' && MISSIONS.find(m=>m.id===id)?.emoji) || '';
-    const missionCols = allMissionIds.map(id => `${mEmoji(id)}${mName(id)}`);
-
-    const companyStats = companies.map(co => {
-      const members = users.filter(u => u.companyId === co.id);
-      return {
-        co, members,
-        totalCo2: members.reduce((s,u)=>s+(u.co2||0),0),
-        totalMission: members.reduce((s,u)=>s+(u.missionCount||0),0),
-        totalPoint: members.reduce((s,u)=>s+(u.point||0),0),
-      };
-    }).sort((a,b)=>b.totalCo2-a.totalCo2);
-
-    const noCompUsers = users.filter(u => !u.companyId);
-    const rows = [];
-
-    // 진단 정보 박아넣기
-    rows.push(['=== 🔍 진단 정보 ===']);
-    Object.entries(diag).forEach(([k,v]) => rows.push([k, String(v)]));
-    rows.push([]);
-
-    rows.push(['=== 기업별 요약 ===']);
-    rows.push(['기업명','유형','회원수','총 CO2(kg)','총 미션','총 포인트','평균 CO2/명','초대코드']);
-    companyStats.forEach(s => {
-      rows.push([
-        s.co.name || '', s.co.type || '', s.members.length,
-        s.totalCo2.toFixed(2), s.totalMission, s.totalPoint,
-        s.members.length ? (s.totalCo2/s.members.length).toFixed(2) : '0',
-        s.co.inviteCode || ''
-      ]);
-    });
-    if(noCompUsers.length){
-      const tc = noCompUsers.reduce((s,u)=>s+(u.co2||0),0);
-      const tm = noCompUsers.reduce((s,u)=>s+(u.missionCount||0),0);
-      const tp = noCompUsers.reduce((s,u)=>s+(u.point||0),0);
-      rows.push(['(소속 없음)','',noCompUsers.length,tc.toFixed(2),tm,tp,(tc/noCompUsers.length).toFixed(2),'']);
-    }
-    rows.push([]);
-
-    // ★ v8: '휴대폰' 컬럼 추가 (이메일 다음)
-    const baseCols = ['닉네임','이메일','휴대폰','미션수(전체)','미션별합계','CO2(kg)','포인트','지역','나이대','성별','직업'];
-    const renderGroup = (label, members) => {
-      rows.push([`=== ${label} 소속 회원 (${members.length}명) ===`]);
-      rows.push([...baseCols, ...missionCols]);
-      members.forEach(u => {
-        const counts = userMissionCount[u.id] || {};
-        const sumOfMissions = Object.values(counts).reduce((s,n) => s+n, 0);
-        rows.push([
-          u.nickname || '익명',
-          u.email || '',
-          u.phoneNumber || u.phone || u.kakaoPhone || '',  // ★ v8: 휴대폰 값
-          u.missionCount || 0,
-          sumOfMissions,
-          (u.co2||0).toFixed(2),
-          u.point || 0,
-          u.region || '',
-          u.age || '',
-          u.gender || '',
-          u.job || '',
-          ...allMissionIds.map(id => counts[id] || 0)
-        ]);
-      });
-      rows.push([]);
-    };
-
-    companyStats.forEach(s => renderGroup(`[${s.co.name}]`, s.members));
-    if(noCompUsers.length) renderGroup('[(소속 없음)]', noCompUsers);
-
-    rows.push(['=== 미션별 전체 인증 현황 ===']);
-    rows.push(['미션ID','미션명','총 인증횟수','참여 인원수','CO2/회(kg)','총 CO2 절감(kg)']);
-    allMissionIds.forEach(id => {
-      let totalCount = 0;
-      const participants = new Set();
-      Object.keys(userMissionCount).forEach(uid => {
-        const cnt = userMissionCount[uid][id] || 0;
-        if(cnt > 0){ totalCount += cnt; participants.add(uid); }
-      });
-      const mission = typeof MISSIONS !== 'undefined' ? MISSIONS.find(m=>m.id===id) : null;
-      const co2PerMission = mission?.co2 || 0;
-      rows.push([
-        id, mName(id), totalCount, participants.size,
-        co2PerMission.toFixed(3),
-        (totalCount * co2PerMission).toFixed(2)
-      ]);
-    });
-
-    const escape = v => {
+  /* ── 다운로드 (자기 파일은 가로채기 우회) ── */
+  const origAnchorClick = HTMLAnchorElement.prototype.click;
+  function download(filename, rows){
+    const esc = v => {
       const s = String(v ?? '');
-      return /[",\n]/.test(s) ? `"${s.replace(/"/g,'""')}"` : s;
+      return /[",\n]/.test(s) ? '"' + s.replace(/"/g,'""') + '"' : s;
     };
-    const csv = rows.map(r => r.map(escape).join(',')).join('\n');
-    const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8'});
+    const csv = rows.map(r => (r||[]).map(esc).join(',')).join('\n');
     const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `EcoQuest_상세_${new Date().toISOString().split('T')[0]}.csv`;
+    a.href = URL.createObjectURL(new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8'}));
+    a.download = filename;
     a._eqOwn = true;
-    a.click();
-    window.toast && window.toast('✅ CSV 다운로드 완료!');
-    console.log('%c[csv v8] ✅ 다운로드 완료 (휴대폰 컬럼 포함)','color:#2ECC71;font-weight:bold');
+    origAnchorClick.call(a);
   }
 
-  // 핵우산 1: anchor.click() 가로채기
-  const origAnchorClick = HTMLAnchorElement.prototype.click;
+  /* ── 데이터 수집 ── */
+  async function gather(){
+    const [userSnap, coSnap, logSnap] = await Promise.all([
+      window.FB.getDocs(window.FB.collection(window.FB.db, 'users')),
+      window.FB.getDocs(window.FB.collection(window.FB.db, 'companies')),
+      window.FB.getDocs(window.FB.collection(window.FB.db, 'missionLogs')),
+    ]);
+
+    const users = {};      userSnap.docs.forEach(d => users[d.id] = Object.assign({id:d.id}, d.data()));
+    const comps = {};      coSnap.docs.forEach(d => comps[d.id] = Object.assign({id:d.id}, d.data()));
+    const logs  = logSnap.docs.map(d => d.data());
+
+    const mCo2  = id => (typeof MISSIONS!=='undefined' && MISSIONS.find(m=>m.id===id)?.co2) || 0;
+    const mName = id => (typeof MISSIONS!=='undefined' && MISSIONS.find(m=>m.id===id)?.name) || id;
+
+    const coNameOf = uid => {
+      const u = users[uid];
+      if(!u || !u.companyId) return '(소속 없음)';
+      return (comps[u.companyId] && comps[u.companyId].name) || u.companyId;
+    };
+    const nickOf = uid => (users[uid] && users[uid].nickname) || '(미상)';
+
+    const months = new Set();
+    const byCo = {}, byMember = {}, byType = {}, byCoType = {};
+    let dated = 0, undated = 0;
+
+    logs.forEach(l => {
+      const mo = rowMonth(l);
+      if(!mo){ undated++; return; }
+      dated++; months.add(mo);
+
+      const uid = l.uid || 'unknown';
+      const c   = coNameOf(uid);
+      const mid = l.missionId || '?';
+      const co2 = (typeof l.co2 === 'number' && !isNaN(l.co2)) ? l.co2 : mCo2(mid);
+
+      const a = byCo[c+'|'+mo] = byCo[c+'|'+mo] || {c, mo, n:0, v:0, u:new Set()};
+      a.n++; a.v += co2; a.u.add(uid);
+
+      const b = byMember[c+'|'+uid+'|'+mo] = byMember[c+'|'+uid+'|'+mo] || {c, uid, mo, n:0, v:0};
+      b.n++; b.v += co2;
+
+      const t = byType[mid+'|'+mo] = byType[mid+'|'+mo] || {mid, mo, n:0, v:0};
+      t.n++; t.v += co2;
+
+      const ct = byCoType[c+'|'+mid+'|'+mo] = byCoType[c+'|'+mid+'|'+mo] || {c, mid, mo, n:0, v:0};
+      ct.n++; ct.v += co2;
+    });
+
+    return {
+      users, comps, logs, months:[...months].sort(),
+      byCo, byMember, byType, byCoType,
+      dated, undated, mName, mCo2, coNameOf, nickOf,
+      companyNames: [...new Set(Object.values(byCo).map(x=>x.c))].sort()
+    };
+  }
+
+  /* ── 월별 요약 블록 (합계 자동) ── */
+  function monthlyBlock(D, filterCo){
+    const M = D.months;
+    const rows = [];
+    rows.push(['월','활동 회원수','미션수','CO2 절감(kg)','자동차 환산(km)','일회용컵 환산(개)','나무(그루)']);
+
+    let tn = 0, tv = 0; const tu = new Set();
+    M.forEach(mo => {
+      const recs = Object.values(D.byCo).filter(x => x.mo === mo && (!filterCo || x.c === filterCo));
+      if(!recs.length) return;
+      let n=0, v=0; const u=new Set();
+      recs.forEach(x => { n+=x.n; v+=x.v; x.u.forEach(k=>u.add(k)); });
+      tn += n; tv += v; u.forEach(k=>tu.add(k));
+      rows.push([mo, u.size, n, r2(v), Math.round(v/0.21), Math.round(v/0.011), r2(v/21.4)]);
+    });
+    rows.push(['합계', tu.size, tn, r2(tv), Math.round(tv/0.21), Math.round(tv/0.011), r2(tv/21.4)]);
+    return rows;
+  }
+
+  /* ── 회원 × 월 블록 (행 합계 + 열 합계) ── */
+  function memberBlock(D, coName){
+    const M = D.months;
+    const rows = [];
+    rows.push(['닉네임',
+      ...M.map(mo => mo + ' 미션'),
+      ...M.map(mo => mo + ' CO2(kg)'),
+      '합계 미션','합계 CO2(kg)']);
+
+    const per = {};
+    Object.values(D.byMember).filter(x => x.c === coName).forEach(x => {
+      const p = per[x.uid] = per[x.uid] || {n:{}, v:{}, tn:0, tv:0};
+      p.n[x.mo] = x.n; p.v[x.mo] = x.v; p.tn += x.n; p.tv += x.v;
+    });
+
+    const colN = {}, colV = {};
+    M.forEach(mo => { colN[mo] = 0; colV[mo] = 0; });
+    let gn = 0, gv = 0;
+
+    Object.keys(per).sort((a,b) => per[b].tv - per[a].tv).forEach(uid => {
+      const p = per[uid];
+      M.forEach(mo => { colN[mo] += (p.n[mo]||0); colV[mo] += (p.v[mo]||0); });
+      gn += p.tn; gv += p.tv;
+      rows.push([D.nickOf(uid),
+        ...M.map(mo => p.n[mo] || 0),
+        ...M.map(mo => r2(p.v[mo] || 0)),
+        p.tn, r2(p.tv)]);
+    });
+
+    rows.push(['합계',
+      ...M.map(mo => colN[mo]),
+      ...M.map(mo => r2(colV[mo])),
+      gn, r2(gv)]);
+
+    return { rows, memberCount: Object.keys(per).length };
+  }
+
+  /* ── 미션종류 × 월 블록 ── */
+  function typeBlock(D, filterCo){
+    const M = D.months;
+    const src = filterCo
+      ? Object.values(D.byCoType).filter(x => x.c === filterCo)
+      : Object.values(D.byType);
+
+    const rows = [];
+    rows.push(['미션ID','미션명',
+      ...M.map(mo => mo + ' 건수'),
+      ...M.map(mo => mo + ' CO2(kg)'),
+      '합계 건수','합계 CO2(kg)']);
+
+    const mids = [...new Set(src.map(x => x.mid))].sort((a,b) =>
+      (parseInt(String(a).replace(/\D/g,''))||999) - (parseInt(String(b).replace(/\D/g,''))||999));
+
+    const colN = {}, colV = {};
+    M.forEach(mo => { colN[mo] = 0; colV[mo] = 0; });
+    let gn = 0, gv = 0;
+
+    mids.forEach(mid => {
+      const n = {}, v = {};
+      src.filter(x => x.mid === mid).forEach(x => { n[x.mo] = x.n; v[x.mo] = x.v; });
+      let rn = 0, rv = 0;
+      M.forEach(mo => {
+        rn += (n[mo]||0); rv += (v[mo]||0);
+        colN[mo] += (n[mo]||0); colV[mo] += (v[mo]||0);
+      });
+      gn += rn; gv += rv;
+      rows.push([mid, D.mName(mid),
+        ...M.map(mo => n[mo] || 0),
+        ...M.map(mo => r2(v[mo] || 0)),
+        rn, r2(rv)]);
+    });
+
+    rows.push(['','합계',
+      ...M.map(mo => colN[mo]),
+      ...M.map(mo => r2(colV[mo])),
+      gn, r2(gv)]);
+
+    return rows;
+  }
+
+  /* ── 회사별 파일 ── */
+  function companyRows(D, coName){
+    const rows = [];
+    const mb = memberBlock(D, coName);
+
+    rows.push(['EcoQuest 탄소감축 리포트']);
+    rows.push(['기업', coName]);
+    rows.push(['기간', D.months.length ? (D.months[0] + ' ~ ' + D.months[D.months.length-1]) : '-']);
+    rows.push(['활동 회원 수', mb.memberCount]);
+    rows.push(['생성일', today()]);
+    rows.push([]);
+
+    rows.push(['=== 월별 요약 ===']);
+    monthlyBlock(D, coName).forEach(r => rows.push(r));
+    rows.push([]);
+
+    rows.push(['=== 회원별 · 월별 ===']);
+    mb.rows.forEach(r => rows.push(r));
+    rows.push([]);
+
+    rows.push(['=== 미션종류별 · 월별 ===']);
+    typeBlock(D, coName).forEach(r => rows.push(r));
+    rows.push([]);
+
+    rows.push(['※ CO2 절감량은 활동별 배출계수 기반 추정치입니다.']);
+    rows.push(['※ 환산 기준 — 자동차 0.21kgCO2/km, 일회용컵 0.011kg/개, 나무 21.4kg/그루·년']);
+    return rows;
+  }
+
+  /* ── 전체요약 파일 ── */
+  function overallRows(D){
+    const rows = [];
+    rows.push(['EcoQuest 전체 요약']);
+    rows.push(['생성일', today()]);
+    rows.push(['missionLogs 총 건수', D.logs.length]);
+    rows.push(['월별 집계 성공', D.dated]);
+    rows.push(['날짜 없어 제외', D.undated]);
+    rows.push(['인식된 월', D.months.join(' / ') || '(없음)']);
+    rows.push([]);
+
+    rows.push(['=== 월별 전체 합계 ===']);
+    monthlyBlock(D, null).forEach(r => rows.push(r));
+    rows.push([]);
+
+    rows.push(['=== 월별 × 기업 ===']);
+    rows.push(['월','기업','활동 회원수','미션수','CO2 절감(kg)','1인당(kg)']);
+    Object.values(D.byCo)
+      .sort((a,b) => a.mo === b.mo ? b.v - a.v : a.mo.localeCompare(b.mo))
+      .forEach(x => rows.push([x.mo, x.c, x.u.size, x.n, r2(x.v), x.u.size ? r2(x.v/x.u.size) : 0]));
+    rows.push([]);
+
+    rows.push(['=== 기업별 누적 (전 기간) ===']);
+    rows.push(['기업','활동 회원수','미션수','CO2 절감(kg)','1인당(kg)']);
+    D.companyNames.forEach(c => {
+      const recs = Object.values(D.byCo).filter(x => x.c === c);
+      let n=0, v=0; const u=new Set();
+      recs.forEach(x => { n+=x.n; v+=x.v; x.u.forEach(k=>u.add(k)); });
+      rows.push([c, u.size, n, r2(v), u.size ? r2(v/u.size) : 0]);
+    });
+    rows.push([]);
+
+    rows.push(['=== 월별 × 미션종류 (전체) ===']);
+    typeBlock(D, null).forEach(r => rows.push(r));
+    return rows;
+  }
+
+  /* ── 메인 ── */
+  async function exportDetailedCSV(opts){
+    opts = opts || {};
+    try{
+      window.toast && window.toast('📊 집계 중...');
+      const D = await gather();
+
+      if(!D.months.length){
+        window.toast && window.toast('날짜 있는 로그가 없어 월별 집계 불가');
+        console.warn('[csv v10] 샘플 로그:', D.logs[0]);
+        return;
+      }
+
+      const targets = opts.only ? [opts.only] : D.companyNames;
+      const files = [];
+
+      if(!opts.only) files.push(['EcoQuest_전체요약_' + today() + '.csv', overallRows(D)]);
+      targets.forEach(c => {
+        const safe = String(c).replace(/[\\/:*?"<>|]/g, '_');
+        files.push(['EcoQuest_' + safe + '_' + today() + '.csv', companyRows(D, c)]);
+      });
+
+      files.forEach((f, i) => setTimeout(() => download(f[0], f[1]), i * 700));
+
+      window.toast && window.toast('✅ ' + files.length + '개 파일 다운로드 (' + D.months.join(', ') + ')');
+      console.log('%c[csv v10] ✅ ' + files.length + '개 파일',
+        'color:#fff;background:#1a6b3a;padding:3px 8px;border-radius:4px');
+      console.log('월:', D.months.join(', '));
+      console.log('집계 ' + D.dated + '건 / 날짜없어 제외 ' + D.undated + '건');
+      console.log('파일:', files.map(f=>f[0]).join('\n  '));
+    } catch(e){
+      window.toast && window.toast('실패: ' + e.message);
+      console.error('[csv v10]', e);
+    }
+  }
+
+  window.exportDetailedCSV = exportDetailedCSV;
+  window.exportCompanyCSV  = c => exportDetailedCSV({ only: c });
+
+  /* ── 버튼 연결 ── */
   HTMLAnchorElement.prototype.click = function(){
-    const dl = (this.download || '').toLowerCase();
-    if(dl.endsWith('.csv') && !this._eqOwn){
-      console.log('[csv v8] ⚡ 가로채기:', this.download);
+    const dl = (this.download || '');
+    if(dl.toLowerCase().endsWith('.csv') && !this._eqOwn){
+      console.log('[csv v10] 가로채기:', dl);
       setTimeout(() => exportDetailedCSV(), 50);
       return;
     }
     return origAnchorClick.apply(this, arguments);
   };
 
-  // 핵우산 2: 버튼 클릭
   document.addEventListener('click', function(e){
     const el = e.target.closest('button, a');
     if(!el) return;
     const text = (el.textContent || '').trim();
     const onclick = el.getAttribute('onclick') || '';
-    if(/CSV|csv/i.test(text) || /CSV|csv|exportCSV/i.test(onclick)){
+    if(/csv/i.test(text) || /csv/i.test(onclick)){
       e.preventDefault();
       e.stopImmediatePropagation();
       e.stopPropagation();
@@ -241,14 +332,13 @@
     }
   }, true);
 
-  // 핵우산 3
   function install(){
     window.exportCSV = exportDetailedCSV;
-    if('ehExportCSV' in window) window.ehExportCSV = exportDetailedCSV;
+    if('ehExportCSV' in window)  window.ehExportCSV  = exportDetailedCSV;
     if('esgExportCSV' in window) window.esgExportCSV = exportDetailedCSV;
   }
   install();
   setInterval(install, 1000);
 
-  console.log('%c[csv v8] ☢️ user.id 포함 fetch + 휴대폰 컬럼 추가','color:#fff;background:#1a1a2e;padding:4px 8px;border-radius:4px;font-weight:bold');
+  console.log('%c[csv v10] 회사별 월별 CSV 준비됨','color:#fff;background:#1a1a2e;padding:4px 8px;border-radius:4px;font-weight:bold');
 })();

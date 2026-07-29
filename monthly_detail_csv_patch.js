@@ -1,12 +1,12 @@
-/* monthly_detail_csv_patch.js  v1
-   csv_detail_patch.js 는 user.doneMissions(날짜 없음)를 세기 때문에 월별 분리가 불가능.
-   이 패치는 missionLogs(date 필드 보유)를 소스로 같은 구조의 리포트를 월별로 생성한다.
+/* monthly_detail_csv_patch.js  v2
+   v1이 안 먹은 이유: 📅 버튼이 안 보였거나(관리자 이메일 판정 실패),
+   기존 "상세 CSV" 버튼을 계속 누르고 있었음.
 
-   출력 섹션
-     1. 월별 × 기업 요약
-     2. 기업별 · 월별 × 회원
-     3. 월별 × 미션종류
-     4. 진단 정보
+   v2 방식
+     - 화면의 어떤 CSV 버튼을 누르든 가로채서 월별 리포트를 내려받음
+     - 관리자 페이지가 열려 있으면 📅 패널도 함께 표시
+     - 로드되면 콘솔 배너 + 토스트로 알림 (설치 확인용)
+     - 원본 상세 CSV가 필요하면 콘솔에서 originalDetailCsv() 호출
 */
 (function(){
   'use strict';
@@ -39,25 +39,20 @@
     return 0;
   }
 
-  /* ── 로드 ───────────────────────────────── */
   async function loadAll(){
     if(!window.FB || !window.FB.db) throw new Error('Firebase 미초기화');
     const C = window.FB.collection, D = window.FB.db, G = window.FB.getDocs;
-
     const [logSnap, userSnap, coSnap] = await Promise.all([
       G(C(D,'missionLogs')),
       G(C(D,'users')),
       G(C(D,'companies')).catch(()=>({forEach:()=>{}}))
     ]);
-
     const logs = [];  logSnap.forEach(d => logs.push(Object.assign({_id:d.id}, d.data())));
     const users = {}; userSnap.forEach(d => users[d.id] = Object.assign({id:d.id}, d.data()));
     const companies = {}; coSnap.forEach(d => companies[d.id] = Object.assign({id:d.id}, d.data()));
-
     return { logs, users, companies };
   }
 
-  /* ── 집계 ───────────────────────────────── */
   function build(logs, users, companies, from, to){
     const NO_CO = '(소속 없음)';
     const coName = uid => {
@@ -68,14 +63,13 @@
     const nick = uid => (users[uid] && (users[uid].nickname || users[uid].name)) || '(탈퇴/미상)';
 
     const months = new Set();
-    const coMonth = {};      // 기업|월
-    const memberMonth = {};  // 기업|uid|월
-    const typeMonth = {};    // 미션|월
+    const coMonth = {}, memberMonth = {}, typeMonth = {};
     let dated = 0, undated = 0, orphan = 0;
+    const undatedSample = [];
 
     logs.forEach(r => {
       const m = pickMonth(r);
-      if(!m){ undated++; return; }
+      if(!m){ undated++; if(undatedSample.length < 3) undatedSample.push(r); return; }
       dated++;
       if(from && m < from) return;
       if(to   && m > to)   return;
@@ -97,15 +91,14 @@
       memberMonth[mk].cnt++; memberMonth[mk].co2 += co2;
 
       const tk = mid + '|' + m;
-      if(!typeMonth[tk]) typeMonth[tk] = { mid, mnm, month:m, cnt:0, co2:0, users:new Set() };
-      typeMonth[tk].cnt++; typeMonth[tk].co2 += co2; typeMonth[tk].users.add(uid);
+      if(!typeMonth[tk]) typeMonth[tk] = { mid, mnm, month:m, cnt:0, co2:0 };
+      typeMonth[tk].cnt++; typeMonth[tk].co2 += co2;
     });
 
     return { months:[...months].sort(), coMonth, memberMonth, typeMonth,
-             dated, undated, orphan, total:logs.length, coName, nick };
+             dated, undated, orphan, undatedSample, total:logs.length, nick };
   }
 
-  /* ── CSV ────────────────────────────────── */
   function saveCsv(filename, rows){
     const csv = rows.map(row => (row||[]).map(c => {
       const s = (c == null ? '' : String(c));
@@ -129,32 +122,20 @@
   window.exportMonthlyDetail = async function(opts){
     opts = opts || {};
     try{
-      toast('📊 missionLogs 집계 중...');
+      toast('📊 missionLogs 월별 집계 중...');
       const { logs, users, companies } = await loadAll();
       const { from, to } = range();
       const B = build(logs, users, companies, from, to);
 
       if(!B.months.length){
         toast('집계 가능한 데이터가 없어요 (로그 ' + B.total + '건)');
-        console.warn('[monthlyDetail] 샘플 로그:', logs[0]);
+        console.warn('[월별] 날짜 인식 실패. 샘플:', logs[0]);
         return;
       }
 
       const rows = [];
       const M = B.months;
 
-      /* 1. 월별 × 기업 */
-      rows.push(['=== 월별 × 기업 요약 ===']);
-      rows.push(['월','기업','활동 회원수','미션수','CO2 절감(kg)','1인당(kg)']);
-      const coKeys = Object.values(B.coMonth).sort((a,b)=>
-        a.month===b.month ? b.co2-a.co2 : a.month.localeCompare(b.month));
-      coKeys.forEach(d => rows.push([
-        d.month, d.co, d.users.size, d.cnt, r2(d.co2),
-        d.users.size ? r2(d.co2/d.users.size) : 0
-      ]));
-
-      /* 월 합계 */
-      rows.push([]);
       rows.push(['=== 월별 전체 합계 ===']);
       rows.push(['월','활동 회원수','미션수','CO2 절감(kg)','자동차 환산(km)','일회용컵 환산(개)']);
       M.forEach(m => {
@@ -165,46 +146,44 @@
         rows.push([m, us.size, cnt, r2(co2), Math.round(co2/0.21), Math.round(co2/0.011)]);
       });
 
-      /* 2. 기업별 · 월별 × 회원 */
+      rows.push([]);
+      rows.push(['=== 월별 × 기업 ===']);
+      rows.push(['월','기업','활동 회원수','미션수','CO2 절감(kg)','1인당(kg)']);
+      Object.values(B.coMonth)
+        .sort((a,b)=> a.month===b.month ? b.co2-a.co2 : a.month.localeCompare(b.month))
+        .forEach(d => rows.push([d.month, d.co, d.users.size, d.cnt, r2(d.co2),
+                                 d.users.size ? r2(d.co2/d.users.size) : 0]));
+
       const byCo = {};
-      Object.values(B.memberMonth).forEach(d => {
-        (byCo[d.co] = byCo[d.co] || []).push(d);
-      });
+      Object.values(B.memberMonth).forEach(d => { (byCo[d.co] = byCo[d.co] || []).push(d); });
       Object.keys(byCo).sort().forEach(co => {
         if(opts.only && co !== opts.only) return;
         rows.push([]);
         rows.push(['=== [' + co + '] 월별 × 회원 ===']);
         rows.push(['닉네임'].concat(M.map(m=>m+' 미션'), M.map(m=>m+' CO2(kg)'), ['합계 미션','합계 CO2(kg)']));
-
         const perUser = {};
         byCo[co].forEach(d => {
           const u = perUser[d.uid] = perUser[d.uid] || { cnt:{}, co2:{}, tc:0, tco2:0 };
           u.cnt[d.month] = d.cnt; u.co2[d.month] = d.co2;
           u.tc += d.cnt; u.tco2 += d.co2;
         });
-        Object.keys(perUser)
-          .sort((a,b)=>perUser[b].tco2 - perUser[a].tco2)
-          .forEach(uid => {
-            const u = perUser[uid];
-            rows.push([B.nick(uid)]
-              .concat(M.map(m=>u.cnt[m]||0), M.map(m=>r2(u.co2[m]||0)), [u.tc, r2(u.tco2)]));
-          });
+        Object.keys(perUser).sort((a,b)=>perUser[b].tco2 - perUser[a].tco2).forEach(uid => {
+          const u = perUser[uid];
+          rows.push([B.nick(uid)]
+            .concat(M.map(m=>u.cnt[m]||0), M.map(m=>r2(u.co2[m]||0)), [u.tc, r2(u.tco2)]));
+        });
       });
 
-      /* 3. 월별 × 미션종류 */
       rows.push([]);
       rows.push(['=== 월별 × 미션종류 ===']);
       rows.push(['미션ID','미션명'].concat(M.map(m=>m+' 건수'), M.map(m=>m+' CO2(kg)')));
-      const mids = [...new Set(Object.values(B.typeMonth).map(d=>d.mid))];
-      mids.forEach(mid => {
+      [...new Set(Object.values(B.typeMonth).map(d=>d.mid))].forEach(mid => {
         const recs = Object.values(B.typeMonth).filter(d=>d.mid===mid);
-        const nm = recs[0].mnm;
         const cnt = {}, co2 = {};
         recs.forEach(d => { cnt[d.month]=d.cnt; co2[d.month]=d.co2; });
-        rows.push([mid, nm].concat(M.map(m=>cnt[m]||0), M.map(m=>r2(co2[m]||0))));
+        rows.push([mid, recs[0].mnm].concat(M.map(m=>cnt[m]||0), M.map(m=>r2(co2[m]||0))));
       });
 
-      /* 4. 진단 */
       rows.push([]);
       rows.push(['=== 진단 ===']);
       rows.push(['missionLogs 총 건수', B.total]);
@@ -215,8 +194,9 @@
 
       const tag = (from||'all') + '_' + (to||'all');
       saveCsv('EcoQuest_월별_' + tag + '.csv', rows);
-      toast('✅ 월별 CSV 완료 (' + B.dated + '건 집계, ' + B.undated + '건 제외)');
-      console.log('[monthlyDetail]', B);
+      toast('✅ 월별 CSV 완료 (' + B.dated + '건 집계 / ' + B.undated + '건 제외)');
+      console.log('[월별] 결과', B);
+      if(B.undatedSample.length) console.warn('[월별] 날짜 없는 로그 샘플:', B.undatedSample);
     } catch(e){ toast('실패: ' + e.message); console.error(e); }
   };
 
@@ -229,7 +209,7 @@
     console.log('missionLogs 총 :', B.total);
     console.log('날짜 인식 성공 :', B.dated);
     console.log('날짜 없음      :', B.undated);
-    console.log('인식된 월      :', B.months.join(', '));
+    console.log('인식된 월      :', B.months.join(', ') || '(없음)');
     B.months.forEach(m => {
       let cnt=0, co2=0; const us=new Set();
       Object.values(B.coMonth).filter(d=>d.month===m).forEach(d=>{
@@ -238,12 +218,40 @@
       console.log('  ' + m + ' → ' + cnt + '건 / ' + r2(co2) + 'kg / ' + us.size + '명');
     });
     if(logs[0]) console.log('로그 필드:', Object.keys(logs[0]).join(', '));
-    toast('진단 결과는 콘솔(F12)에 출력했어요');
+    if(B.undatedSample.length) console.warn('날짜 없는 로그 샘플:', B.undatedSample);
+    toast('진단 결과는 콘솔(F12)에 있어요');
     return B;
   };
 
-  /* ── 관리자 전용 버튼 ───────────────────── */
-  const isAdmin = () => window.ME && window.ADMIN && window.ME.email === window.ADMIN;
+  /* ── ★ CSV 버튼 가로채기 ────────────────── */
+  let _bypass = false;
+  window.originalDetailCsv = function(){
+    _bypass = true;
+    toast('원본 CSV 모드 — 아무 CSV 버튼이나 눌러주세요');
+    setTimeout(()=>{ _bypass = false; }, 15000);
+  };
+
+  document.addEventListener('click', function(e){
+    if(_bypass) return;
+    const el = e.target.closest('button, a, div[onclick]');
+    if(!el) return;
+    const txt = (el.textContent || '').trim();
+    if(txt.length > 40) return;                 // 긴 텍스트 블록 제외
+    if(!/csv/i.test(txt)) return;               // 'CSV' 글자 없는 건 통과
+    if(el.closest('#mdPanel')) return;          // 내 패널 버튼은 그대로
+
+    e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+    console.log('[월별] CSV 버튼 가로챔 →', txt);
+    window.exportMonthlyDetail();
+  }, true);
+
+  /* ── 패널 (관리자 페이지 열렸을 때) ──────── */
+  function adminOpen(){
+    const p = document.getElementById('adminPage');
+    return p && p.style.display !== 'none' && p.style.display !== '';
+  }
 
   function buildPanel(){
     if(document.getElementById('mdBtn')) return;
@@ -252,9 +260,9 @@
     btn.id = 'mdBtn';
     btn.textContent = '📅';
     btn.style.cssText =
-      'position:fixed;right:14px;bottom:82px;width:44px;height:44px;border-radius:22px;' +
+      'position:fixed;right:14px;bottom:20px;width:48px;height:48px;border-radius:24px;' +
       'background:#1a1a2e;color:#fff;display:flex;align-items:center;justify-content:center;' +
-      'font-size:20px;box-shadow:0 4px 14px rgba(0,0,0,.3);cursor:pointer;z-index:9998';
+      'font-size:22px;box-shadow:0 4px 16px rgba(0,0,0,.35);cursor:pointer;z-index:99999';
     btn.onclick = () => {
       const p = document.getElementById('mdPanel');
       p.style.display = (p.style.display === 'none') ? 'block' : 'none';
@@ -267,10 +275,10 @@
     const p = document.createElement('div');
     p.id = 'mdPanel';
     p.style.cssText =
-      'position:fixed;right:14px;bottom:134px;width:244px;background:#fff;border-radius:14px;' +
-      'padding:14px;box-shadow:0 8px 28px rgba(0,0,0,.25);z-index:9999;display:none;font-family:inherit';
+      'position:fixed;right:14px;bottom:76px;width:246px;background:#fff;border-radius:14px;' +
+      'padding:14px;box-shadow:0 8px 30px rgba(0,0,0,.3);z-index:99999;display:none;font-family:inherit';
     p.innerHTML =
-      '<div style="font-size:12px;font-weight:900;color:#1a2e1a;margin-bottom:4px">📅 월별 리포트</div>' +
+      '<div style="font-size:12px;font-weight:900;color:#1a2e1a">📅 월별 리포트</div>' +
       '<div style="font-size:10px;color:#aaa;margin-bottom:8px">missionLogs 기준</div>' +
       '<div style="display:flex;gap:6px;align-items:center">' +
         '<input id="mdFrom" placeholder="2026-07" style="width:50%;padding:7px;border:1px solid #ddd;border-radius:7px;font-size:12px;font-family:inherit;text-align:center"/>' +
@@ -290,11 +298,15 @@
     ['mdBtn','mdPanel'].forEach(id => { const el = document.getElementById(id); if(el) el.remove(); });
   }
 
-  setInterval(() => { if(isAdmin()) buildPanel(); else removePanel(); }, 3000);
+  setInterval(() => { if(adminOpen()) buildPanel(); else removePanel(); }, 1500);
 
+  /* ── 설치 확인 ──────────────────────────── */
   setTimeout(() => {
-    if(isAdmin()) buildPanel();
-    console.log('[monthlyDetail] ready · exportMonthlyDetail() / monthlyDetailDebug()');
-  }, 2000);
+    console.log('%c[월별 패치 v2] 설치됨 ✅', 'background:#1a6b3a;color:#fff;padding:3px 8px;border-radius:4px');
+    console.log('  · CSV 버튼을 누르면 월별 리포트가 나옵니다');
+    console.log('  · 진단: monthlyDetailDebug()');
+    console.log('  · 원본 상세 CSV: originalDetailCsv() 실행 후 CSV 버튼 클릭');
+    toast('📅 월별 패치 설치됨');
+  }, 2500);
 
 })();

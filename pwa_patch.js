@@ -20,7 +20,7 @@
     add('meta', { name: 'theme-color', content: '#1a6b3a' });
     add('meta', { name: 'apple-mobile-web-app-capable', content: 'yes' });
     add('meta', { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' });
-    add('meta', { name: 'apple-mobile-web-app-title', content: 'EcoQuest' });
+    add('meta', { name: 'apple-mobile-web-app-title', content: '뽀송별' });
     add('link', { rel: 'apple-touch-icon', href: '/icons/icon-192.png' });
   }
 

@@ -1,4 +1,4 @@
-const CACHE_NAME = "ecoquest-v1";
+const CACHE_NAME = "pposong-v2-20261109";
 const ASSETS = ["/", "/index.html", "/manifest.json"];
 
 self.addEventListener("install", e => {

@@ -1,19 +1,43 @@
 {
-  "name": "EcoQuest — 작은 행동이 지구를 바꿔요",
-  "short_name": "EcoQuest",
-  "description": "AI 사진 인증 환경 미션 플랫폼. 미션을 완수하고 못난이 농산물 보상을 받으세요.",
+  "name": "뽀송별 — 작은 하루가 포근해지는 별",
+  "short_name": "뽀송별",
+  "description": "동물 친구들과 함께 쉬며 작은 실천을 기록하는 별",
   "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0f3d20",
-  "theme_color": "#1a6b3a",
+  "theme_color": "#14244e",
   "lang": "ko",
-  "categories": ["lifestyle", "education", "utilities"],
+  "categories": [
+    "lifestyle",
+    "education",
+    "utilities"
+  ],
   "icons": [
-    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "/icons/icon-192-maskable.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
-    { "src": "/icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-192-maskable.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ]
 }

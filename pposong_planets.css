@@ -1,0 +1,89 @@
+/* 뽀송별: game-only visual layer. The original app is not removed. */
+#ppWorldRoot{position:fixed;inset:0;z-index:12000;overflow:hidden;font-family:'Noto Sans KR',-apple-system,BlinkMacSystemFont,sans-serif;color:#fff;isolation:isolate;background:radial-gradient(circle at 70% 32%,#314b7e 0,#111a3b 45%,#080f27 100%);--panel:rgba(16,32,60,.75);--line:rgba(242,250,255,.25);--white:rgba(255,255,255,.97);font-size:14px;overscroll-behavior:none}
+#ppWorldRoot *{box-sizing:border-box}#ppWorldRoot button{font-family:inherit;cursor:pointer}#ppWorldRoot button:focus-visible{outline:3px solid #ffeaa8;outline-offset:3px}
+#ppWorldRoot [hidden]{display:none!important}#ppWorldRoot .pp-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+#ppWorldRoot .pp-stars{position:absolute;inset:0;pointer-events:none;background-image:radial-gradient(2px 2px at 10% 20%,#fff 70%,transparent),radial-gradient(2px 2px at 70% 8%,#fff 70%,transparent),radial-gradient(1px 1px at 31% 72%,#fff 70%,transparent),radial-gradient(1px 1px at 91% 62%,#fff 70%,transparent);background-size:430px 390px,570px 440px,360px 310px,490px 420px;opacity:.72;animation:pp-twinkle 8s ease-in-out infinite alternate}
+@keyframes pp-twinkle{to{opacity:.32;transform:translateY(8px)}}
+#ppWorldRoot .pp-top{position:absolute;z-index:35;top:0;left:0;right:0;padding:calc(14px + env(safe-area-inset-top)) max(18px,env(safe-area-inset-right)) 14px max(18px,env(safe-area-inset-left));display:flex;gap:12px;align-items:center;pointer-events:none}
+#ppWorldRoot .pp-top>*{pointer-events:auto}
+#ppWorldRoot .pp-brand{border:0;background:rgba(12,28,57,.55);backdrop-filter:blur(18px);color:#fff;border-radius:18px;padding:8px 14px;display:flex;align-items:center;gap:9px;box-shadow:0 6px 25px #08102040;white-space:nowrap}
+#ppWorldRoot .pp-brand strong{font-size:19px;letter-spacing:-.8px}#ppWorldRoot .pp-brand em{font-style:normal;font-size:10px;opacity:.7}
+#ppWorldRoot .pp-chip{border:1px solid var(--line);background:var(--panel);color:#fff;backdrop-filter:blur(18px);border-radius:24px;display:flex;align-items:center;gap:8px;padding:9px 12px;box-shadow:0 8px 26px #06132a30;white-space:nowrap}
+#ppWorldRoot .pp-chip small{font-size:11px;color:#dae8f6}#ppWorldRoot .pp-chip b{font-size:14px}
+#ppWorldRoot .pp-grow{flex:1}#ppWorldRoot .pp-iconbtn{border:1px solid var(--line);background:var(--panel);color:#fff;width:42px;height:42px;border-radius:16px;display:grid;place-items:center;backdrop-filter:blur(16px);font-size:19px;box-shadow:0 8px 22px #08112644}
+#ppWorldRoot .pp-zoomline{position:absolute;z-index:5;top:0;left:0;right:0;bottom:0;overflow:hidden}
+#ppWorldRoot .pp-scene{position:absolute;inset:0;overflow:hidden;touch-action:none;cursor:crosshair;--sky:#233b67}
+#ppWorldRoot .pp-scene::before{content:"";inset:0;position:absolute;background:radial-gradient(ellipse at 50% 46%,#ffffff16 0%,transparent 62%),linear-gradient(180deg,#526b9c44,#080f2760);pointer-events:none;z-index:0}
+#ppWorldRoot .pp-world{width:1500px;height:1000px;position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform}
+#ppWorldRoot .pp-land{position:absolute;inset:0;background-position:center;background-size:100% 100%;filter:drop-shadow(0 28px 48px #010a1f80)}
+#ppWorldRoot .pp-land:after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 48% 48%,transparent 28%,#07385e1a 78%);pointer-events:none}
+#ppWorldRoot .pp-prop{position:absolute;z-index:3;transform:translate(-50%,-72%);filter:drop-shadow(0 11px 6px #1a402a55);font-size:36px;pointer-events:none;user-select:none;animation:pp-prop 5s ease-in-out infinite alternate}
+@keyframes pp-prop{to{transform:translate(-50%,-76%) rotate(2deg)}}
+#ppWorldRoot .pp-station{position:absolute;z-index:10;transform:translate(-50%,-67%);display:flex;align-items:center;flex-direction:column;background:transparent;border:0;color:#fff;min-width:90px;max-width:154px;filter:drop-shadow(0 12px 10px #1934467a);transition:filter .2s,scale .2s}
+#ppWorldRoot .pp-station .pp-pole{width:67px;height:67px;background:radial-gradient(circle at 34% 30%,#fff,#fceacc);border:4px solid #fff8;box-shadow:0 7px 16px #204b5e60, inset 0 0 9px #fff;border-radius:24px;display:grid;place-items:center;font-size:38px;animation:pp-float 4s ease-in-out infinite}
+#ppWorldRoot .pp-station .pp-label{font-size:13px;font-weight:800;background:#1e314dcc;backdrop-filter:blur(12px);border:1px solid #ffffff70;padding:5px 10px;white-space:nowrap;border-radius:12px;transform:translateY(7px);box-shadow:0 4px 12px #19304b5e}
+#ppWorldRoot .pp-station:hover,#ppWorldRoot .pp-station.pp-near{scale:1.07;filter:drop-shadow(0 0 14px #ffefabbb)}
+#ppWorldRoot .pp-station.pp-done .pp-pole:after{content:'✓';position:absolute;right:3px;top:0;background:#4bba8b;color:white;border:2px solid white;border-radius:50%;width:19px;height:19px;font-size:13px;font-weight:900}
+@keyframes pp-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+#ppWorldRoot .pp-actor{position:absolute;transform:translate(-50%,-72%);z-index:14;display:flex;align-items:center;flex-direction:column;will-change:left,top;pointer-events:auto}
+#ppWorldRoot .pp-actor img{width:95px;height:98px;object-fit:contain;filter:drop-shadow(0 13px 5px #07152b70);animation:pp-bob 1s ease-in-out infinite alternate}
+#ppWorldRoot .pp-actor.pp-sitting img{transform:rotate(-7deg) translateY(12px) scale(.86);animation:none}
+#ppWorldRoot .pp-actor.pp-walking img{animation:pp-hop .22s ease-in-out infinite alternate}
+#ppWorldRoot .pp-actor .pp-shadow{height:18px;width:65px;position:absolute;bottom:9px;left:50%;transform:translateX(-50%);background:#172f324b;filter:blur(7px);border-radius:50%;z-index:-1}
+#ppWorldRoot .pp-actor .pp-name{background:#ffffffdb;color:#304766;border:1px solid #fff;border-radius:9px;padding:3px 9px;font-size:12px;white-space:nowrap;font-weight:800;box-shadow:0 4px 10px #16264a4d}
+@keyframes pp-hop{to{transform:translateY(-10px) rotate(5deg)}}@keyframes pp-bob{to{transform:translateY(-5px)}}
+#ppWorldRoot .pp-visitor{position:absolute;z-index:11;transform:translate(-50%,-74%);border:0;background:none;color:#fff;display:flex;flex-direction:column;align-items:center;cursor:pointer;transition:filter .2s}
+#ppWorldRoot .pp-visitor img{width:78px;height:83px;object-fit:contain;filter:drop-shadow(0 12px 9px #182c3a66);animation:pp-float 3.6s ease-in-out infinite}
+#ppWorldRoot .pp-visitor .pp-visitorname{font-size:12px;font-weight:800;background:#25425dce;border:1px solid #fff8;border-radius:10px;padding:4px 8px;white-space:nowrap}
+#ppWorldRoot .pp-visitor:hover img{filter:drop-shadow(0 0 12px #ffffff80)}
+#ppWorldRoot .pp-bottom{position:absolute;z-index:36;bottom:calc(18px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:8px;padding:7px;border:1px solid #ffffff83;border-radius:25px;background:#f8fcffe8;box-shadow:0 12px 38px #06172a80;backdrop-filter:blur(18px);max-width:calc(100% - 20px)}
+#ppWorldRoot .pp-nav{min-width:75px;border:0;background:none;color:#526c7e;border-radius:18px;padding:9px 12px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:800;white-space:nowrap}
+#ppWorldRoot .pp-nav span{font-size:23px}#ppWorldRoot .pp-nav.pp-current{color:#195f5f;background:#c3efe1}
+#ppWorldRoot .pp-side{position:absolute;z-index:32;right:18px;top:90px;display:flex;flex-direction:column;gap:10px;align-items:flex-end}
+#ppWorldRoot .pp-earthpill{background:rgba(10,26,52,.68);border:1px solid #ffffff55;border-radius:20px;padding:12px;display:flex;align-items:center;gap:10px;backdrop-filter:blur(12px);box-shadow:0 9px 22px #0004}
+#ppWorldRoot .pp-earthpill img{width:51px;height:51px;object-fit:contain;transition:filter 1.5s}
+#ppWorldRoot .pp-earthpill b{font-size:13px}#ppWorldRoot .pp-earthpill small{display:block;color:#cde3e9;font-size:11px;margin-top:3px}
+#ppWorldRoot .pp-help{position:absolute;z-index:31;left:18px;bottom:108px;background:rgba(10,27,55,.7);backdrop-filter:blur(8px);border:1px solid #ffffff40;border-radius:15px;padding:9px 13px;color:#eef;font-size:12px;line-height:1.65;max-width:270px;pointer-events:none}
+#ppWorldRoot .pp-joystick{position:absolute;z-index:32;left:24px;bottom:calc(115px + env(safe-area-inset-bottom));height:110px;width:110px;border-radius:50%;border:2px solid #ffffff70;background:#ffffff20;backdrop-filter:blur(6px);display:none;touch-action:none}
+#ppWorldRoot .pp-stick{position:absolute;width:44px;height:44px;border-radius:50%;background:#e3fff1c9;box-shadow:0 2px 10px #08213b88;left:32px;top:32px;pointer-events:none}
+#ppWorldRoot .pp-toast{position:absolute;left:50%;bottom:calc(100px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:49;background:#20334cde;color:#fff;border:1px solid #ffffff88;border-radius:20px;padding:10px 18px;opacity:0;pointer-events:none;transition:opacity .3s;max-width:90vw;text-align:center}
+#ppWorldRoot .pp-toast.pp-show{opacity:1}
+#ppWorldRoot .pp-panel{position:absolute;z-index:44;right:18px;top:88px;bottom:107px;width:min(440px,calc(100vw - 36px));background:#f9fcfffa;color:#2c4256;border:1px solid #fff;border-radius:26px;box-shadow:0 20px 55px #06112b99;overflow:hidden;display:flex;flex-direction:column;backdrop-filter:blur(18px)}
+#ppWorldRoot .pp-panelhead{display:flex;align-items:center;gap:12px;padding:19px 20px 15px;background:linear-gradient(130deg,#d3f8e9,#f4f9ff);border-bottom:1px solid #d9e9ea}
+#ppWorldRoot .pp-panelhead strong{font-size:19px;color:#2d5c63}#ppWorldRoot .pp-panelhead small{color:#6a8591;font-size:11px}
+#ppWorldRoot .pp-panelclose{margin-left:auto;border:0;border-radius:12px;background:#ffffffb8;color:#54727b;font-size:22px;width:34px;height:34px}
+#ppWorldRoot .pp-panelbody{padding:17px 18px 20px;overflow-y:auto;scrollbar-width:thin;flex:1;color:#304756}
+#ppWorldRoot .pp-note{border-radius:15px;padding:12px 13px;background:#eaf4f3;color:#5b747c;font-size:12px;line-height:1.7;margin-bottom:12px}
+#ppWorldRoot .pp-list{display:flex;flex-direction:column;gap:9px}
+#ppWorldRoot .pp-list button{display:flex;align-items:center;gap:10px;width:100%;border:1px solid #e0e9ea;background:#fff;color:#2d4c55;text-align:left;border-radius:15px;padding:12px 11px;font-size:13px}
+#ppWorldRoot .pp-list button:hover{border-color:#90d3bf;box-shadow:0 4px 12px #6da0a02b}
+#ppWorldRoot .pp-list .pp-listicon{font-size:25px;min-width:31px}#ppWorldRoot .pp-list b{display:block;font-size:13px}#ppWorldRoot .pp-list small{display:block;color:#81939b;font-size:11px;margin-top:3px}
+#ppWorldRoot .pp-button{border:0;border-radius:14px;padding:12px 17px;color:#fff;background:linear-gradient(125deg,#4eaf92,#5b9cba);font-weight:900;font-size:13px}
+#ppWorldRoot .pp-quiet{background:#e9f3f5;color:#40636c}#ppWorldRoot .pp-twobtn{display:flex;gap:9px;margin-top:12px}#ppWorldRoot .pp-twobtn>*{flex:1}
+#ppWorldRoot .pp-overview{position:absolute;inset:0;z-index:20;overflow:auto;background:radial-gradient(circle at 50% 45%,#31416d66,#111b34e3 80%);padding:105px 30px 115px}
+#ppWorldRoot .pp-overview h1{font-size:clamp(23px,4vw,38px);text-align:center;line-height:1.4;text-shadow:0 6px 20px #0006;margin:0 0 6px}
+#ppWorldRoot .pp-overview>p{text-align:center;color:#c9d5ed;font-size:13px;margin-bottom:27px}
+#ppWorldRoot .pp-planetgrid{margin:0 auto;max-width:1100px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
+#ppWorldRoot .pp-planet{border:1px solid #fff5;border-radius:27px;position:relative;color:#fff;min-height:208px;background:linear-gradient(155deg,#ffffff24,#ffffff0a);box-shadow:0 10px 24px #0003;backdrop-filter:blur(15px);overflow:hidden;padding:15px 10px 17px;display:flex;align-items:center;flex-direction:column}
+#ppWorldRoot .pp-planet img{height:130px;width:150px;max-width:100%;object-fit:contain;filter:drop-shadow(0 14px 13px #08122770);border-radius:50%;transition:transform .3s;mix-blend-mode:normal;mask-image:radial-gradient(ellipse closest-side,#000 58%,transparent 90%)}
+#ppWorldRoot .pp-planet:hover img{transform:scale(1.08) rotate(3deg)}#ppWorldRoot .pp-planet b{font-size:16px;margin-top:3px}#ppWorldRoot .pp-planet small{font-size:11px;opacity:.72;margin-top:5px}
+#ppWorldRoot .pp-planet.pp-active{outline:2px solid #a8f0d9}
+#ppWorldRoot .pp-planetgrid .pp-planet::after{content:"";position:absolute;height:6px;width:55%;bottom:4px;background:radial-gradient(ellipse,#ffffff8c,transparent);filter:blur(5px)}
+#ppWorldRoot .pp-cardstats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:15px 0}
+#ppWorldRoot .pp-cardstats article{background:#eef8f6;border-radius:17px;padding:17px;text-align:center}#ppWorldRoot .pp-cardstats strong{font-size:24px;color:#2e8b79;display:block}#ppWorldRoot .pp-cardstats small{color:#6b8c8f;font-size:11px}
+#ppWorldRoot .pp-avatarbig{width:102px;height:110px;object-fit:contain;margin:4px auto 9px;display:block;animation:pp-float 4s ease-in-out infinite}
+#ppWorldRoot .pp-visitor-card{display:flex;align-items:center;gap:12px;border-radius:18px;border:1px solid #dfede8;background:#f6faf8;padding:11px;margin-bottom:9px}
+#ppWorldRoot .pp-visitor-card img{width:65px;height:67px;object-fit:contain}#ppWorldRoot .pp-visitor-card b{font-size:14px}#ppWorldRoot .pp-visitor-card small{display:block;color:#789098;margin-top:5px;font-size:11px}
+#ppWorldRoot .pp-kbd{font-size:11px;border-radius:5px;border:1px solid #ffffff99;padding:1px 4px;background:#ffffff25}
+#ppWorldRoot .pp-faint{font-size:12px;color:#78909b;line-height:1.7}
+#ppWorldRoot .pp-toggle{appearance:none;width:45px;height:26px;background:#b7c9cf;border-radius:20px;position:relative;vertical-align:middle;transition:background .2s;cursor:pointer}
+#ppWorldRoot .pp-toggle:checked{background:#52b799}#ppWorldRoot .pp-toggle:after{content:"";width:20px;height:20px;position:absolute;left:3px;top:3px;background:white;border-radius:50%;transition:left .2s}#ppWorldRoot .pp-toggle:checked:after{left:22px}
+#ppWorldRoot .pp-onboard{position:absolute;z-index:50;inset:0;display:flex;align-items:center;justify-content:center;padding:22px;background:#091732d8;backdrop-filter:blur(9px)}
+#ppWorldRoot .pp-onboardbox{background:#f5fbfd;color:#37555d;border-radius:30px;padding:25px;text-align:center;width:min(470px,100%);box-shadow:0 23px 50px #0410247b}
+#ppWorldRoot .pp-onboardbox h2{font-size:28px;margin:0 0 7px}#ppWorldRoot .pp-onboardbox p{font-size:13px;color:#779092;line-height:1.65}
+#ppWorldRoot .pp-quietbutton{border:none;background:transparent;color:#527e8e;padding:10px;font-size:12px}
+#ppWorldRoot .pp-galaxy-hint{position:absolute;left:18px;top:95px;z-index:20;font-size:12px;color:#d1dcf8;background:#122c52a1;border:1px solid #ffffff44;padding:8px 12px;border-radius:13px}
+@media(max-width:760px){#ppWorldRoot .pp-top{gap:6px;padding:calc(8px + env(safe-area-inset-top)) 10px 7px}#ppWorldRoot .pp-brand{padding:8px 9px;border-radius:13px}#ppWorldRoot .pp-brand strong{font-size:15px}#ppWorldRoot .pp-brand em{display:none}#ppWorldRoot .pp-chip{padding:7px 9px;font-size:11px}#ppWorldRoot .pp-chip small{font-size:9px}#ppWorldRoot .pp-iconbtn{width:36px;height:36px;border-radius:12px}#ppWorldRoot .pp-earthpill{padding:5px 8px;border-radius:13px}#ppWorldRoot .pp-earthpill img{width:36px;height:36px}#ppWorldRoot .pp-earthpill b{font-size:10px}#ppWorldRoot .pp-earthpill small{font-size:9px}#ppWorldRoot .pp-side{right:11px;top:70px;gap:6px}#ppWorldRoot .pp-bottom{bottom:calc(9px + env(safe-area-inset-bottom));width:calc(100% - 16px);padding:4px;border-radius:18px;gap:0;justify-content:space-around}#ppWorldRoot .pp-nav{min-width:0;flex:1;padding:6px 3px;font-size:9px;gap:2px;border-radius:13px}#ppWorldRoot .pp-nav span{font-size:18px}#ppWorldRoot .pp-help{display:none}#ppWorldRoot .pp-joystick{display:block}#ppWorldRoot .pp-panel{top:120px;right:8px;bottom:85px;width:calc(100% - 16px);border-radius:20px}#ppWorldRoot .pp-overview{padding:113px 14px 90px}#ppWorldRoot .pp-overview>p{margin-bottom:12px}#ppWorldRoot .pp-planetgrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}#ppWorldRoot .pp-planet{min-height:185px;border-radius:18px}#ppWorldRoot .pp-planet img{height:113px}#ppWorldRoot .pp-planet b{font-size:13px}#ppWorldRoot .pp-planet small{font-size:10px}#ppWorldRoot .pp-joystick{left:14px;bottom:calc(90px + env(safe-area-inset-bottom));width:96px;height:96px}#ppWorldRoot .pp-stick{left:27px;top:27px}#ppWorldRoot .pp-toast{bottom:94px;font-size:12px;width:max-content;max-width:92vw}}
+@media(prefers-reduced-motion:reduce){#ppWorldRoot *,#ppWorldRoot *::before,#ppWorldRoot *::after{animation-duration:.001ms!important;transition-duration:.001ms!important}}
+/* Existing UI remains available for authentication and existing modules. */
+body.pp-world-running #ovAI.on,body.pp-world-running #ovOnboard.on,body.pp-world-running #ovChal.on,body.pp-world-running .overlay.on{z-index:16001!important}body.pp-world-running #toast{z-index:16005!important}

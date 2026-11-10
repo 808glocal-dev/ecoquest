@@ -165,12 +165,12 @@ export class WorldEngine {
   const scenicPos=[[9,7],[-12,8],[11,-3],[-11,-6],[12,11],[-10,10],[13,-8]];
   const [px,pz]=scenicPos[worldIndex];this.spawn(scenicKinds[worldIndex],px,pz,1.7,worldIndex*7);
   this.buildBench(4,4);this.buildBench(-6,8);
-  const recordAt=[-11,-12],shopAt=[12,-11];this.addStation(90,recordAt,null,'record');this.addStation(91,shopAt,null,'shop');
+  const recordAt=[-11,-12],shopAt=[12,-11];this.addStation(90,recordAt,null,'record');this.addStation(91,shopAt,null,'shop');this.addStation(92,[3,10],null,'play');
  }
  buildBench(x,z){const y=this.ground(x,z);for(let q of [-1,1])this.add('box',[x+q*.8,y+.42,z],[.13,.8,.2],0x8b7868);this.add('box',[x,y+.87,z],[2,.18,.65],0xb68969);this.add('box',[x,y+1.3,z-.28],[2,.55,.16],0xb68969)}
  addStation(i,[x,z],mission=null,kind='mission'){
   const y=this.ground(x,z),s={i,x,z,kind,missionId:mission?.id||null,missionName:mission?.name||null};this.stations.push(s);
-  const color=kind==='record'?0x9bbaea:kind==='shop'?0xe9b9d7:0xf4d4a2;
+  const color=kind==='play'?0x85e0a7:kind==='record'?0x9bbaea:kind==='shop'?0xe9b9d7:0xf4d4a2;
   this.add('cylinder',[x,y+.25,z],[.91,.5,.91],0xd6c8b9);
   this.add('cylinder',[x,y+1.22,z],[.17,1.9,.17],0xa78f82);
   this.addSphere([x,y+2.27,z],.47,color);

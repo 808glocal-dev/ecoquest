@@ -1,6 +1,6 @@
 // EcoQuest Service Worker
 // 버전 올릴 때마다 CACHE 이름의 숫자를 바꾸면 사용자 기기에서 자동 갱신됨
-const CACHE = 'pposong-live-v7-20261110';
+const CACHE = 'pposong-live-v8-20261110';
 
 // 설치: 앱 셸(핵심 파일)만 미리 캐시
 const CORE = [

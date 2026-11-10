@@ -3256,7 +3256,7 @@ if(chalId === null) return;
 if(window.__Pposong3DLoaded)return;window.__Pposong3DLoaded=true;
 const css=`
 #ps3-root{position:fixed;inset:0;z-index:12000;background:#070b1d;color:#fff;font-family:'Noto Sans KR',system-ui,sans-serif;overflow:hidden}
-#ps3-root[hidden]{display:none!important}#ps3-stage{position:absolute;inset:0}#ps3-stage canvas{display:block;width:100%;height:100%;touch-action:none}
+#ps3-root[hidden]{display:none!important}#ps3-stage{position:absolute;inset:0;touch-action:none;cursor:grab;user-select:none}#ps3-stage.dragging{cursor:grabbing}#ps3-stage canvas{display:block;width:100%;height:100%;touch-action:none}
 #ps3-ui{position:absolute;inset:0;pointer-events:none}#ps3-ui button,#ps3-ui input,#ps3-ui .ps3-panel{pointer-events:auto}#ps3-top{position:absolute;top:16px;left:16px;right:16px;display:flex;justify-content:space-between;align-items:start;gap:10px}
 .ps3-pill{border:1px solid #ffffff55;background:#101d35c9;backdrop-filter:blur(14px);border-radius:999px;color:#fff;padding:10px 14px;font-size:13px}.ps3-pill button{border:0;background:transparent;color:inherit;cursor:pointer;font:inherit}.ps3-tiny{font-size:11px;color:#b9d8e1}.ps3-btn{border:1px solid #c1dbea77;border-radius:16px;background:#e1f8ef;color:#233e38;font-weight:700;padding:11px 18px;cursor:pointer;font-family:inherit}.ps3-btn.alt{background:#17253ddc;color:#fff}
 #ps3-actions{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);display:flex;gap:8px;align-items:center;justify-content:center;max-width:95vw;flex-wrap:wrap}
@@ -3266,10 +3266,14 @@ const css=`
 #ps3-notice{position:absolute;top:80px;left:50%;transform:translateX(-50%);padding:9px 16px;border-radius:20px;background:#091528df;color:#fff;font-size:12px;max-width:80%;text-align:center;display:none}
 #ps3-mobile{position:absolute;bottom:98px;left:18px;display:grid;gap:8px;grid-template-columns:repeat(3,48px);pointer-events:auto;z-index:2}#ps3-mobile button{background:#152d48df;border:1px solid #aaceff99;color:white;border-radius:13px;height:46px;font-size:20px;touch-action:none;user-select:none;cursor:pointer}#ps3-mobile button:active{background:#a6eeda;color:#122439}
 #ps3-root input[type=checkbox]{accent-color:#a2f5c4}
+#ps3-zoom{position:absolute;right:18px;bottom:120px;display:grid;gap:8px;pointer-events:auto}
+#ps3-zoom button{font:700 19px system-ui;color:#e9fbff;border:1px solid #ffffff60;background:#13273ddc;border-radius:12px;width:40px;height:40px;cursor:pointer}
+#ps3-zoom button:hover{background:#335975}
+#ps3-mouseguide{position:absolute;right:16px;bottom:62px;font-size:11px;color:#d0e4f2;text-align:right;line-height:1.5;text-shadow:0 1px 4px #000}
 @media(max-width:680px){#ps3-mobile{display:grid;bottom:93px;left:12px;grid-template-columns:repeat(3,44px)}#ps3-mobile button{height:43px}#ps3-help{display:none}#ps3-top{left:9px;right:9px;top:9px}.ps3-pill{padding:7px 9px;font-size:11px}#ps3-actions{bottom:13px}#ps3-panel{top:62px;bottom:94px;right:9px;width:min(350px,calc(100vw - 18px))}.ps3-btn{padding:10px 12px;font-size:12px}}
 `;
 const st=document.createElement('style');st.textContent=css;document.head.append(st);
-const root=document.createElement('section');root.id='ps3-root';root.hidden=true;root.tabIndex=0;root.style.outline='none';root.innerHTML=`<div id="ps3-stage"></div><div id="ps3-ui"><div id="ps3-top"><div class="ps3-pill"><b>☁️ 뽀송별 <small style="font-size:9px;opacity:.6">v7</small></b><div class="ps3-tiny" id="ps3-location">광활한 우주</div></div><div class="ps3-pill"><span id="ps3-count">🌱 0회</span> · <span id="ps3-carbon">약 0kg CO₂</span><button id="ps3-hide" title="기존 화면으로"> ✕ </button></div></div><div id="ps3-notice"></div><aside class="ps3-panel" id="ps3-panel"><div style="display:flex;justify-content:space-between;align-items:center"><strong id="ps3-panel-title">별 이야기</strong><button class="ps3-btn alt" id="ps3-panel-close">닫기</button></div><div id="ps3-list"></div></aside><div id="ps3-help">← ↑ ↓ → / WASD로 움직이기<br>우주에서는 휠로 확대 · 행성을 눌러 접근<br>착륙 후에는 바닥을 눌러 걸어가기</div><div id="ps3-mobile" aria-label="이동 방향 버튼"><span></span><button data-move="up">↑</button><span></span><button data-move="left">←</button><button data-move="down">↓</button><button data-move="right">→</button></div><div id="ps3-actions"></div></div>`;document.body.append(root);
+const root=document.createElement('section');root.id='ps3-root';root.hidden=true;root.tabIndex=0;root.style.outline='none';root.innerHTML=`<div id="ps3-stage"></div><div id="ps3-ui"><div id="ps3-top"><div class="ps3-pill"><b>☁️ 뽀송별 <small style="font-size:10px;opacity:.65">v8</small></b><div class="ps3-tiny" id="ps3-location">광활한 우주</div></div><div class="ps3-pill"><span id="ps3-count">🌱 0회</span> · <span id="ps3-carbon">약 0kg CO₂</span><button id="ps3-hide" title="기존 화면으로"> ✕ </button></div></div><div id="ps3-notice"></div><aside class="ps3-panel" id="ps3-panel"><div style="display:flex;justify-content:space-between;align-items:center"><strong id="ps3-panel-title">별 이야기</strong><button class="ps3-btn alt" id="ps3-panel-close">닫기</button></div><div id="ps3-list"></div></aside><div id="ps3-help">🖱️ 드래그: 우주 이동 / 지상 시점 회전<br>휠: 확대·축소 · 행성 클릭: 접근<br>지상 클릭: 걷기 · 방향키: 이동</div><div id="ps3-mobile" aria-label="이동 방향 버튼"><span></span><button data-move="up">↑</button><span></span><button data-move="left">←</button><button data-move="down">↓</button><button data-move="right">→</button></div><div id="ps3-actions"></div><div id="ps3-zoom" aria-label="화면 확대 축소"><button type="button" id="ps3-zoom-in" title="확대">+</button><button type="button" id="ps3-zoom-out" title="축소">−</button></div><div id="ps3-mouseguide">🖱️ 마우스 드래그 · 휠 · 클릭</div></div>`;document.body.append(root);
 const E=id=>document.getElementById(id), stage=E('ps3-stage'), acts=E('ps3-actions'), loc=E('ps3-location'), panel=E('ps3-panel'), list=E('ps3-list');
 const PLANETS=[
 {id:'forest',name:'초록숨별',color:0x6bd594,ground:0x82c991,sky:0xc1f5ee,desc:'숲과 작은 오솔길'},
@@ -3284,6 +3288,9 @@ const MISSIONS=Array.isArray(window.__ps3MissionData)?window.__ps3MissionData:[]
 const planetForMission=(m)=>{let i=Number(String(m.id).replace(/\D/g,''))||1;return ['forest','home','food','home','sharing','food','ocean','wind','forest','home','forest','food','food','home','food','home','food','ocean','forest','home','sharing','wind','sharing','sharing','sharing','sharing','forest','wind','sharing','food','quiet','forest','home','food','food','ocean','sharing','quiet','quiet','sharing'][(i-1)%40]};
 let THREE,scene,camera,renderer,clock,avatar,room=null,mode='space',selected=0,zoom=43,rotation=0,dragging=false,lastX=0,downX=0,downY=0,dragDistance=0,planetMeshes=[],landObjects=[],groundMesh=null,missionStations=[],spaceCompanion=null,otherActors=new Map(),moving={},desired=null,interact=null,anim=null,raf=0,active=false,fromLaunch=false;
 let currentUser=null, presence=null, presenceDb=null, unsub=null, pulse=null, visible=false,shareProgress=false,ready=false;
+// 마우스 조작: 우주 이동/행성 관찰/지상 3인칭 시점
+let landYaw=0.15,landPitch=.60,landDistance=11.8,approachYaw=0,approachPitch=.24,approachDistance=9.5;
+let pointerInfo=null,zoomCheck=0;
 const moon=()=>new THREE.Mesh(new THREE.SphereGeometry(1,20,14),new THREE.MeshStandardMaterial({color:0xf7f3e1,roughness:.85}));
 const mat=(c)=>new THREE.MeshStandardMaterial({color:c,roughness:.9});
 function roundMesh(parent,c,r,x,y,z){const a=new THREE.Mesh(new THREE.SphereGeometry(r,16,12),mat(c));a.position.set(x,y,z);parent.add(a);return a}
@@ -3295,8 +3302,11 @@ function bench(x,z){const group=new THREE.Group();for(let h of [.42,.93]){const 
 function cleanScene(){if(scene)scene.traverse(o=>{if(o.geometry)o.geometry.dispose?.();if(o.material){const a=Array.isArray(o.material)?o.material:[o.material];a.forEach(m=>m.dispose?.());}});scene=new THREE.Scene();planetMeshes=[];landObjects=[];otherActors.clear();}
 function baseScene(col){cleanScene();scene.background=new THREE.Color(col);scene.add(new THREE.HemisphereLight(0xffffff,0x7e7896,2.4));const light=new THREE.DirectionalLight(0xffffff,2.3);light.position.set(-12,25,16);scene.add(light)}
 function space(){mode='space';stopPresence();room=null;desired=null;avatar=null;spaceCompanion=null;groundMesh=null;missionStations=[];baseScene(0x060d24);scene.fog=null;camera.position.set(0,15,zoom);camera.lookAt(0,0,0);E('ps3-mobile').style.visibility='visible';loc.textContent='끝없이 펼쳐진 별들';for(let i=0;i<620;i++){const t=new THREE.Mesh(new THREE.SphereGeometry(.025+Math.random()*.085,6,5),new THREE.MeshBasicMaterial({color:i%7?0xb4c9ff:0xffe3be}));t.position.set((Math.random()-.5)*200,(Math.random()-.5)*140,(Math.random()-.5)*130);scene.add(t)}PLANETS.forEach((p,i)=>{const a=i*Math.PI*2/7;const mesh=new THREE.Mesh(new THREE.SphereGeometry(2.3,36,24),new THREE.MeshStandardMaterial({color:p.color,roughness:.8}));mesh.position.set(Math.cos(a)*13,Math.sin(a*.8)*3.5,Math.sin(a)*11);mesh.userData.planet=i;scene.add(mesh);planetMeshes.push(mesh);const halo=new THREE.Mesh(new THREE.TorusGeometry(2.8,.07,6,64),new THREE.MeshBasicMaterial({color:p.color,transparent:true,opacity:.45}));halo.position.copy(mesh.position);halo.rotation.x=1.1;scene.add(halo)});spaceCompanion=character(0xfff3e6);spaceCompanion.scale.set(.42,.42,.42);spaceCompanion.position.set(-.9,-1.0,-3.5);camera.add(spaceCompanion);scene.add(camera);drawActions();notify('방향키로 우주 산책 · 행성을 눌러 착륙해요');}
-function approach(i){mode='approach';if(spaceCompanion){camera.remove(spaceCompanion);spaceCompanion=null;}selected=i;let p=planetMeshes[i];camera.position.set(p.position.x+1.5,p.position.y+2.1,p.position.z+9);camera.lookAt(p.position);loc.textContent=PLANETS[i].name+' · '+PLANETS[i].desc;drawActions();}
-function land(){const p=PLANETS[selected];mode='land';room=p.id;desired=null;spaceCompanion=null;missionStations=[];baseScene(p.sky);scene.fog=new THREE.Fog(p.sky,22,77);const ground=new THREE.Mesh(new THREE.CylinderGeometry(32,32,1.4,80),mat(p.ground));ground.position.y=-.73;scene.add(ground);groundMesh=ground;const edge=new THREE.Mesh(new THREE.CylinderGeometry(32.1,32.1,.3,80),mat(p.color));edge.position.y=-1.6;scene.add(edge);for(let i=0;i<75;i++){const a=Math.random()*Math.PI*2,r=6+Math.random()*24;const x=Math.sin(a)*r,z=Math.cos(a)*r;Math.random()<.67?tree(x,z):boulder(x,.13,z,.22+Math.random()*.28,p.color)}const stations=MISSIONS.filter(m=>planetForMission(m)===p.id);stations.forEach((m,i)=>{let a=i*2.399,r=8+Math.sqrt(i+1)*2.5;const x=Math.sin(a)*r,z=Math.cos(a)*r;station(x,z,i);missionStations.push({x,z,mission:m})});bench(3,3);avatar=character();avatar.position.set(0,0,0);scene.add(avatar);camera.position.set(0,9,12);camera.lookAt(0,1,0);E('ps3-mobile').style.visibility='visible';loc.textContent=p.name+' · 산책 중';drawActions();startPresence();notify('방향키 또는 바닥 터치로 걸어 보세요');}
+function approach(i){mode='approach';if(spaceCompanion){camera.remove(spaceCompanion);spaceCompanion=null;}selected=i;approachYaw=0;approachPitch=.24;approachDistance=9.5;positionApproachCamera();loc.textContent=PLANETS[i].name+' · '+PLANETS[i].desc;drawActions();}
+function positionApproachCamera(){if(!camera||!planetMeshes[selected])return;const p=planetMeshes[selected].position;const cp=Math.cos(approachPitch);camera.position.set(p.x+Math.sin(approachYaw)*cp*approachDistance,p.y+Math.sin(approachPitch)*approachDistance,p.z+Math.cos(approachYaw)*cp*approachDistance);camera.lookAt(p)}
+function positionLandCamera(dt=1){if(!avatar||!camera)return;const cp=Math.cos(landPitch),a=avatar.position;const target=new THREE.Vector3(a.x+Math.sin(landYaw)*cp*landDistance,a.y+Math.sin(landPitch)*landDistance+1,a.z+Math.cos(landYaw)*cp*landDistance);camera.position.lerp(target,Math.min(1,dt*7));camera.lookAt(a.x,a.y+1.1,a.z)}
+function zoomBy(delta){if(mode==='space'){zoom=Math.max(9,Math.min(110,zoom+delta));camera.position.z=zoom;camera.lookAt(camera.position.x*.16,camera.position.y*.15,0)}else if(mode==='approach'){approachDistance=Math.max(4.1,Math.min(30,approachDistance+delta*.6));positionApproachCamera()}else if(mode==='land'){landDistance=Math.max(4,Math.min(24,landDistance+delta*.6));positionLandCamera(1)}zoomCheck++}
+function land(){const p=PLANETS[selected];mode='land';landYaw=.15;landPitch=.60;landDistance=11.8;room=p.id;desired=null;spaceCompanion=null;missionStations=[];baseScene(p.sky);scene.fog=new THREE.Fog(p.sky,22,77);const ground=new THREE.Mesh(new THREE.CylinderGeometry(32,32,1.4,80),mat(p.ground));ground.position.y=-.73;scene.add(ground);groundMesh=ground;const edge=new THREE.Mesh(new THREE.CylinderGeometry(32.1,32.1,.3,80),mat(p.color));edge.position.y=-1.6;scene.add(edge);for(let i=0;i<75;i++){const a=Math.random()*Math.PI*2,r=6+Math.random()*24;const x=Math.sin(a)*r,z=Math.cos(a)*r;Math.random()<.67?tree(x,z):boulder(x,.13,z,.22+Math.random()*.28,p.color)}const stations=MISSIONS.filter(m=>planetForMission(m)===p.id);stations.forEach((m,i)=>{let a=i*2.399,r=8+Math.sqrt(i+1)*2.5;const x=Math.sin(a)*r,z=Math.cos(a)*r;station(x,z,i);missionStations.push({x,z,mission:m})});bench(3,3);avatar=character();avatar.position.set(0,0,0);scene.add(avatar);camera.position.set(0,9,12);positionLandCamera(1);E('ps3-mobile').style.visibility='visible';loc.textContent=p.name+' · 산책 중';drawActions();startPresence();notify('방향키 또는 바닥 터치로 걸어 보세요');}
 function drawActions(){acts.replaceChildren();const add=(label,fn,alt=false)=>{const b=document.createElement('button');b.type='button';b.className='ps3-btn'+(alt?' alt':'');b.textContent=label;b.onclick=fn;acts.append(b)};if(mode==='space'){add('🪐 행성 선택 · 착륙',()=>showPlanetPanel(),true);add('🎮 방향키로 우주 이동',()=>notify('← ↑ ↓ → 또는 WASD, 화면 왼쪽 방향 버튼을 사용하세요'),true)}else if(mode==='approach'){add('🚀 착륙하기',land);add('우주로',space,true)}else {add('🌱 이 별의 미션',showMissions);add('🪑 앉기 / 일어나기',()=>{avatar.userData.sit=!avatar.userData.sit;notify(avatar.userData.sit?'잠시 쉬어가요':'다시 산책해요')},true);add('👋 친구',showFriends,true);add('🚀 우주로',space,true)}}
 function showPanel(title,entries){E('ps3-panel-title').textContent=title;list.replaceChildren();entries.forEach(e=>{const b=document.createElement('button');b.className='ps3-item';b.textContent=e.label;b.onclick=()=>{panel.classList.remove('open');e.action?.()};list.append(b)});panel.classList.add('open')}
 function showPlanetPanel(){showPanel('어느 별로 갈까요?',PLANETS.map((p,i)=>({label:p.name+' · '+p.desc,action:()=>approach(i)})))}
@@ -3348,8 +3358,7 @@ function update(dt){
    avatar.rotation.y=Math.atan2(x,z);avatar.userData.walk+=dt*11;
    avatar.position.y=Math.abs(Math.sin(avatar.userData.walk))*.07;
  }else avatar.position.y=avatar.userData.sit?-.34:0;
- const target=new THREE.Vector3(avatar.position.x+2,avatar.position.y+7,avatar.position.z+9);
- camera.position.lerp(target,Math.min(1,dt*3));camera.lookAt(avatar.position.x,1,avatar.position.z);
+ positionLandCamera(dt);
 }
 function bindInputs(){
  const keyMap={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',w:'up',s:'down',a:'left',d:'right',W:'up',S:'down',A:'left',D:'right'};
@@ -3360,7 +3369,7 @@ function bindInputs(){
    if(e.key==='Escape')hideGame();
  },true);
  document.addEventListener('keyup',e=>{const k=keyMap[e.key];if(k){moving[k]=false;if(active)e.preventDefault()}},true);
- window.addEventListener('blur',()=>Object.keys(moving).forEach(k=>moving[k]=false));
+ window.addEventListener('blur',()=>{Object.keys(moving).forEach(k=>moving[k]=false);pointerInfo=null;dragging=false;stage.classList.remove('dragging')});
  document.querySelectorAll('#ps3-mobile button').forEach(b=>{
    const m=b.dataset.move;
    b.addEventListener('pointerdown',e=>{moving[m]=true;b.setPointerCapture?.(e.pointerId);e.preventDefault()});
@@ -3369,51 +3378,89 @@ function bindInputs(){
  const ray=new THREE.Raycaster();
  function pick(clientX,clientY){
    const rect=renderer.domElement.getBoundingClientRect();
+   if(!rect.width||!rect.height)return null;
    const point=new THREE.Vector2((clientX-rect.left)/rect.width*2-1,-(clientY-rect.top)/rect.height*2+1);
    ray.setFromCamera(point,camera);return ray;
  }
+ function finishPointer(){pointerInfo=null;dragging=false;stage.classList.remove('dragging')}
+ function moveToGround(e){
+   if(!groundMesh||!avatar||!pick(e.clientX,e.clientY))return;
+   // Stations can be clicked as well as open ground; their full 3D shapes are clickable.
+   const targetObjects=landObjects.filter(o=>o.userData?.station);
+   const stationHit=ray.intersectObjects(targetObjects,true);
+   if(stationHit.length){let hit=stationHit[0].object;while(hit&&!hit.userData?.station)hit=hit.parent;
+     const s=missionStations.find(p=>Math.hypot(p.x-hit?.position.x,p.z-hit?.position.z)<.6);
+     if(s){desired={x:s.x,z:s.z,mission:s.mission};notify('미션 장소로 걸어가요');return}
+   }
+   const groundHit=ray.intersectObject(groundMesh,false);
+   if(!groundHit.length){notify('길 위를 눌러 걸어가 보세요');return}
+   const {x,z}=groundHit[0].point;
+   const station=missionStations.find(s=>Math.hypot(x-s.x,z-s.z)<1.8);
+   desired={x:station?.x??x,z:station?.z??z,mission:station?.mission??null};
+   notify(station?'미션 장소로 걸어가요':'그곳까지 걸어가요');
+ }
+ stage.addEventListener('contextmenu',e=>e.preventDefault());
  stage.addEventListener('pointerdown',e=>{
-   if(mode==='space'){dragging=true;lastX=e.clientX;downX=e.clientX;downY=e.clientY;dragDistance=0}
+   if(!active||!renderer||!['space','approach','land'].includes(mode))return;
+   // Right-click drag rotates the 3D camera; left-click remains selectable.
+   if(e.pointerType==='mouse'&&e.button!==0&&e.button!==2)return;
+   pointerInfo={id:e.pointerId,x:e.clientX,y:e.clientY,lastX:e.clientX,lastY:e.clientY,moved:0,button:e.button};
+   stage.setPointerCapture?.(e.pointerId);
+   e.preventDefault();
  });
  stage.addEventListener('pointermove',e=>{
-   if(dragging&&mode==='space'){
-     const dx=e.clientX-lastX;lastX=e.clientX;dragDistance+=Math.abs(dx);
-     camera.position.x=Math.max(-58,Math.min(58,camera.position.x-dx*.045));
-     camera.lookAt(camera.position.x*.16,camera.position.y*.15,0)
+   if(!active||!pointerInfo||pointerInfo.id!==e.pointerId)return;
+   const dx=e.clientX-pointerInfo.lastX,dy=e.clientY-pointerInfo.lastY;
+   pointerInfo.lastX=e.clientX;pointerInfo.lastY=e.clientY;
+   pointerInfo.moved=Math.max(pointerInfo.moved,Math.hypot(e.clientX-pointerInfo.x,e.clientY-pointerInfo.y));
+   if(pointerInfo.moved<4)return;
+   dragging=true;stage.classList.add('dragging');
+   if(mode==='space'){
+     // A roomy star-map: drag moves the camera sideways/up/down (both mouse buttons).
+     camera.position.x=Math.max(-80,Math.min(80,camera.position.x-dx*.075*(zoom/45)));
+     camera.position.y=Math.max(-55,Math.min(55,camera.position.y+dy*.075*(zoom/45)));
+     camera.lookAt(camera.position.x*.16,camera.position.y*.15,0);
+   }else if(mode==='approach'){
+     approachYaw-=dx*.009;
+     approachPitch=Math.max(-.25,Math.min(1.25,approachPitch+dy*.007));
+     positionApproachCamera();
+   }else if(mode==='land'){
+     landYaw-=dx*.009;
+     landPitch=Math.max(.18,Math.min(1.28,landPitch+dy*.007));
+     positionLandCamera(1);
    }
+   e.preventDefault();
  });
  stage.addEventListener('pointerup',e=>{
+   if(!pointerInfo||pointerInfo.id!==e.pointerId)return;
+   const was=pointerInfo;
+   const clicked=was.moved<8&&Math.hypot(e.clientX-was.x,e.clientY-was.y)<8&&was.button===0;
+   finishPointer();
+   if(!clicked)return;
+   if(!pick(e.clientX,e.clientY))return;
    if(mode==='space'){
-     const isClick=dragDistance<9&&Math.hypot(e.clientX-downX,e.clientY-downY)<10;
-     dragging=false;if(!isClick)return;
-     pick(e.clientX,e.clientY);
      const hit=ray.intersectObjects(planetMeshes);
      if(hit.length)approach(hit[0].object.userData.planet);
-   }else if(mode==='land'&&groundMesh){
-     pick(e.clientX,e.clientY);
-     const hit=ray.intersectObject(groundMesh,false);
-     if(!hit.length)return;
-     const {x,z}=hit[0].point;
-     const station=missionStations.find(s=>Math.hypot(x-s.x,z-s.z)<1.4);
-     desired={x:station?.x??x,z:station?.z??z,mission:station?.mission??null};
-     notify(station?'미션 장소로 걸어가요':'그곳까지 천천히 걸어가요');
-   }
+   }else if(mode==='land')moveToGround(e);
  });
- stage.addEventListener('pointercancel',()=>dragging=false);
- stage.addEventListener('wheel',e=>{
-   if(mode!=='space')return;e.preventDefault();
-   zoom=Math.max(11,Math.min(95,zoom+Math.sign(e.deltaY)*3));
-   camera.position.z=zoom;camera.lookAt(camera.position.x*.16,camera.position.y*.15,0);
- },{passive:false});
+ for(const ev of ['pointercancel','lostpointercapture'])stage.addEventListener(ev,finishPointer);
+ // Listen on the game root, including the empty UI, so every wheel event zooms correctly.
+ root.addEventListener('wheel',e=>{
+   if(!active||e.target.closest('#ps3-panel'))return;
+   e.preventDefault();zoomBy(Math.sign(e.deltaY)*2.6);
+ },{passive:false,capture:true});
+ E('ps3-zoom-in').addEventListener('click',()=>zoomBy(-3));
+ E('ps3-zoom-out').addEventListener('click',()=>zoomBy(3));
+ // Mobile pinch zoom on the 3D canvas.
  let pinch=0;
  stage.addEventListener('touchmove',e=>{
-   if(mode!=='space'||e.touches.length!==2)return;
+   if(!active||e.touches.length!==2)return;
    e.preventDefault();
    const a=e.touches[0],b=e.touches[1],d=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);
-   if(pinch){zoom=Math.max(11,Math.min(95,zoom+(pinch-d)*.055));camera.position.z=zoom}
+   if(pinch)zoomBy((pinch-d)*.06);
    pinch=d;
  },{passive:false});
- stage.addEventListener('touchend',()=>pinch=0);
+ stage.addEventListener('touchend',e=>{if(e.touches.length<2)pinch=0});
 }
 function resize(){if(!renderer||!camera)return;const w=stage.clientWidth||window.innerWidth,h=stage.clientHeight||window.innerHeight;renderer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix()}
 function tick(){if(!active)return;raf=requestAnimationFrame(tick);const dt=Math.min(clock.getDelta(),.05);update(dt);renderer.render(scene,camera)}
@@ -3422,7 +3469,7 @@ async function openGame(){if(active)return;root.hidden=false;active=true;root.fo
 function hideGame(){if(!active)return;active=false;cancelAnimationFrame(raf);root.hidden=true;stopPresence();panel.classList.remove('open');Object.keys(moving).forEach(k=>moving[k]=false)}
 function refreshStats(){const d=window.UDATA||{};E('ps3-count').textContent='🌱 '+(Math.max(0,Number(d.missionCount)||0))+'회';E('ps3-carbon').textContent='약 '+(Math.max(0,Number(d.co2)||0)).toFixed(2)+'kg CO₂'}
 const openBtn=document.createElement('button');openBtn.id='ps3-launch';openBtn.type='button';openBtn.className='ps3-btn';openBtn.textContent='🪐 뽀송별 3D 여행';Object.assign(openBtn.style,{position:'fixed',bottom:'88px',right:'14px',zIndex:'1200',boxShadow:'0 4px 18px #14324566'});openBtn.onclick=openGame;document.body.append(openBtn);
-window.PPOSONG3D={open:openGame,close:hideGame,getState:()=>({active,mode,room,ready,spaceCamera:camera?{x:camera.position.x,y:camera.position.y,z:camera.position.z}:null,avatar:avatar?{x:avatar.position.x,y:avatar.position.y,z:avatar.position.z}:null,controls:{...moving}})};
+window.PPOSONG3D={open:openGame,close:hideGame,getState:()=>({active,mode,room,ready,spaceCamera:camera?{x:camera.position.x,y:camera.position.y,z:camera.position.z}:null,avatar:avatar?{x:avatar.position.x,y:avatar.position.y,z:avatar.position.z}:null,controls:{...moving},mouse:{zoom,landYaw,landPitch,landDistance,approachYaw,approachDistance,zoomCheck}})};
 if(location.search.includes('pposongDemo=1'))openGame();
 window.addEventListener('pagehide',()=>{if(visible&&room&&window.ME?.uid)stopPresence()});
 setInterval(()=>{if(active&&!window.ME?.uid&&visible)toggleVisible(false);if(active)refreshStats()},3000);
@@ -3433,7 +3480,7 @@ setInterval(()=>{if(active&&!window.ME?.uid&&visible)toggleVisible(false);if(act
 (function(){
   'use strict';
   // Version marker lets you check whether Vercel delivered the new HTML (and not a cached old page).
-  window.PPOSONG_VERSION = 'v7-20261110-motion-fix';
+  window.PPOSONG_VERSION = 'v8-20261110-mouse-fix';
   document.documentElement.dataset.pposongVersion = window.PPOSONG_VERSION;
   const params = new URLSearchParams(location.search);
   let started = false;

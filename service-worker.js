@@ -1,16 +1,12 @@
 // EcoQuest Service Worker
 // 버전 올릴 때마다 CACHE 이름의 숫자를 바꾸면 사용자 기기에서 자동 갱신됨
-const CACHE = 'pposong-v2-20261109';
+const CACHE = 'ecoquest-pposong-20261110-v5';
 
 // 설치: 앱 셸(핵심 파일)만 미리 캐시
 const CORE = [
   '/',
   '/index.html',
-  '/manifest.json',
-  '/pposong_game.js',
-  '/pposong_game.css',
-  '/assets/bosong/bunny.webp',
-  '/assets/bosong/planet.webp'
+  '/manifest.json'
 ];
 
 self.addEventListener('install', (e) => {
@@ -57,12 +53,6 @@ self.addEventListener('fetch', (e) => {
         })
         .catch(() => caches.match(req).then((r) => r || caches.match('/index.html')))
     );
-    return;
-  }
-
-  // 뽀송별 JS/CSS는 네트워크 우선: 기존 사용자도 변경 즉시 반영
-  if (/^\/(?:pposong_game\.(?:js|css))$/.test(url.pathname)) {
-    e.respondWith(fetch(req).catch(() => caches.match(req)));
     return;
   }
 

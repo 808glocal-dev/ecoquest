@@ -8,7 +8,7 @@
 <meta name="naver-site-verification" content="5c104ccc8c3d7744756c5c96e323e265eefab06d" />
 
 <!-- ===== 검색 노출용 SEO ===== -->
-<title>에코퀘스트 EcoQuest — AI로 환경 미션 인증하고 탄소배출을 줄여요</title>
+<title>뽀송별 ☁️ — 포근한 우주 산책</title>
 <meta name="description" content="에코퀘스트(EcoQuest)는 텀블러·줍깅·대중교통 등 환경 미션을 사진으로 인증하면, 버려질 뻔한 농가 제철 과일을 받는 시민 참여 플랫폼입니다. 시민의 탄소 감축과 농가 푸드로스 감축을 동시에.">
 <meta name="keywords" content="에코퀘스트, EcoQuest, 환경 미션, 탄소중립, 탄소중립포인트, 줍깅, 텀블러, 못난이 농산물, 푸드로스, 친환경 챌린지, ESG">
 
@@ -370,9 +370,20 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
 @keyframes introBounce{0%{transform:scale(.5);opacity:0}70%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
 @keyframes introGrow{0%{transform:scale(0) translateY(20px);opacity:0}100%{transform:scale(1) translateY(0);opacity:1}}  
 </style>
+<style id="pposong-live-theme">
+/* Pposong game visual shell. Original login flow remains intact. */
+#loginScreen{background:radial-gradient(circle at 76% 20%,#344a7b 0,#142444 32%,#080e20 76%),#080e20!important;position:relative;overflow:hidden}
+#loginScreen:before{content:"✦         ·     ✧           ✦       ·   ✧";position:absolute;inset:10% 4%;pointer-events:none;color:#b7d8ff;opacity:.5;font-size:24px;letter-spacing:40px;line-height:5;white-space:pre-wrap}
+#loginScreen .login-earth{filter:drop-shadow(0 0 28px #95ecca);font-size:92px}
+#loginScreen .login-title{font-weight:900;letter-spacing:-2px}
+#loginScreen .login-sub{position:relative}
+#pposong-guest{display:block;width:min(320px,100%);font-size:14px;font-weight:700;background:#ffffff18;border:1px solid #ffffff55;border-radius:16px;padding:13px 20px;color:white;cursor:pointer;margin-top:12px;position:relative}
+#ps3-launch{transition:transform .15s}
+#ps3-launch:active{transform:scale(.97)}
+</style>
 </head>
+<body>
 <script src="patch.js"></script>
-</body>
 
 <div id="loading"><div class="spin">🌍</div><p style="margin-top:12px;color:var(--sub);font-size:13px">잠시만요...</p></div>
 <div id="introScreen" style="display:none">
@@ -380,7 +391,7 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
     <div class="intro-bg"></div>
     <div class="intro-content">
       <div class="intro-logo">🌍</div>
-      <div class="intro-brand">EcoQuest</div>
+      <div class="intro-brand">뽀송별</div>
       <div class="intro-q">오늘 이 중에<br/><span class="intro-q-em">하나라도 했나요?</span></div>
       <div class="intro-sub">탭 하나로 내 행동의 가치를 확인해요</div>
       <div class="intro-grid">
@@ -428,8 +439,8 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
 </div>
 <div id="loginScreen">
   <div class="login-earth">🌍</div>
-  <div class="login-title">EcoQuest</div>
-  <div class="login-sub">작은 행동이 지구를 바꿔요<br/>오늘의 환경 미션에 도전하세요!</div>
+  <div class="login-title">뽀송별</div>
+  <div class="login-sub">작은 하루가 포근해지는 별<br/>아무것도 하지 않아도 괜찮아요 ☁️</div>
   <button class="btn-google" id="btnLogin">
     <img src="https://www.google.com/favicon.ico" width="20" height="20" alt="G"/>
     Google로 시작하기
@@ -440,7 +451,7 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
 <div id="app">
   <div class="hdr">
     <div class="hdr-row">
-  <div class="logo" onclick="openOv('ovAbout')" style="cursor:pointer">🌍 EcoQuest</div>
+  <div class="logo" onclick="openOv('ovAbout')" style="cursor:pointer">☁️ 뽀송별</div>
       <div class="hdr-right">
         <div class="avatar" id="uAvatar">👤</div>
         <span class="uname" id="uName">-</span>
@@ -545,7 +556,7 @@ label{font-size:12px;color:var(--sub);margin-bottom:6px;display:block}
   <div class="page" id="page-chal">
     <div class="ctabs">
       <button class="ctab on" id="ctab-official" onclick="setCTab('official')">🏅 공식 챌린지</button>
-<button class="ctab" id="ctab-room" onclick="setCTab('room')" style="display:none">👥 방 챌린지</button>>
+<button class="ctab" id="ctab-room" onclick="setCTab('room')" style="display:none">👥 방 챌린지</button>
     </div>
     <div id="sec-official">
       <div class="sec"><div class="sec-t">🔥 공식 챌린지</div></div>
@@ -3238,6 +3249,117 @@ if(chalId === null) return;
 
   
 <script>window.__ps3MissionData=[{"id":"m1","emoji":"🧴","name":"텀블러로 카페 이용하기","point":50,"co2":0.332,"kw":"텀블러, 개인 컵, 머그컵"},{"id":"m2","emoji":"🚌","name":"대중교통 이용하기","point":80,"co2":1.17,"kw":"버스, 지하철, 기차"},{"id":"m3","emoji":"🥗","name":"채식 메뉴 선택하기","point":60,"co2":0.8,"kw":"채식, 샐러드, 야채 요리"},{"id":"m4","emoji":"💡","name":"불필요한 전등 끄기","point":30,"co2":0.13,"kw":"꺼진 전등, 절전"},{"id":"m5","emoji":"♻️","name":"분리수거 완벽하게","point":40,"co2":0.21,"kw":"분리수거통, 재활용"},{"id":"m6","emoji":"🛍️","name":"장바구니 사용하기","point":35,"co2":0.15,"kw":"장바구니, 에코백"},{"id":"m7","emoji":"🚿","name":"샤워 5분 이내로","point":45,"co2":0.38,"kw":"샤워, 타이머, 욕실"},{"id":"m8","emoji":"🚲","name":"자전거/도보 이동","point":70,"co2":1.05,"kw":"자전거, 도보, 헬멧"},{"id":"m9","emoji":"🌱","name":"식물 물 주기","point":25,"co2":0.05,"kw":"화분, 식물"},{"id":"m10","emoji":"📱","name":"전자기기 절전 모드","point":30,"co2":0.12,"kw":"절전 모드, 배터리"},{"id":"m11","emoji":"🚯","name":"줍깅 (쓰레기 줍기)","point":80,"co2":0.5,"kw":"쓰레기봉투, 집게, 줍깅, 플로깅"},{"id":"m12","emoji":"🛵","name":"배달앱 일회용품 안 받기","point":40,"co2":0.3,"kw":"배달앱 주문화면, 일회용품 제외, 수저 안 받기"},{"id":"m13","emoji":"🫙","name":"용기내 챌린지","point":50,"co2":0.25,"kw":"개인 용기, 다회용기, 포장 용기"},{"id":"m14","emoji":"🔌","name":"멀티탭 전원 끄기","point":30,"co2":0.12,"kw":"멀티탭, 전원 off, 대기전력"},{"id":"m15","emoji":"🍽️","name":"음식 남김 없이 먹기","point":35,"co2":0.6,"kw":"빈 그릇, 음식 다 먹기, 클린 플레이트"},{"id":"m16","emoji":"🪣","name":"리필스테이션 이용","point":60,"co2":0.8,"kw":"리필스테이션, 리필 용기, 세제 리필"},{"id":"m17","emoji":"🌿","name":"비건/채식 식당 방문","point":70,"co2":1.2,"kw":"채식 식당, 비건 식당, 메뉴판"},{"id":"m18","emoji":"🥤","name":"빨대 없이 음료 마시기","point":25,"co2":0.05,"kw":"빨대 없는 컵, 노 스트로우, 음료"},{"id":"m19","emoji":"🪴","name":"베란다 텃밭/식물 근황","point":30,"co2":0.1,"kw":"베란다 텃밭, 식물, 화분, 새싹"},{"id":"m20","emoji":"🧾","name":"전자영수증 발급받기","point":10,"co2":0.02,"kw":"전자영수증, 앱 영수증, 카카오 영수증"},{"id":"m21","emoji":"🥤","name":"일회용컵 반환하기","point":100,"co2":0.05,"kw":"일회용컵 반환, 보증금 반환기"},{"id":"m22","emoji":"🚗","name":"무공해차 대여하기","point":200,"co2":1.5,"kw":"전기차, 수소차, 무공해차 대여앱"},{"id":"m23","emoji":"🛒","name":"친환경제품 구매하기","point":500,"co2":0.3,"kw":"친환경 인증, 에코 제품, 환경마크"},{"id":"m24","emoji":"♻️","name":"고품질 재활용품 배출","point":300,"co2":0.15,"kw":"재활용 수거함, 고품질 분리배출"},{"id":"m25","emoji":"📱","name":"폐휴대폰 반납하기","point":500,"co2":2.0,"kw":"폐휴대폰 수거함, 중고폰 반납"},{"id":"m26","emoji":"👶","name":"미래세대 실천행동","point":100,"co2":0.1,"kw":"어린이 환경교육, 가족 환경실천"},{"id":"m27","emoji":"🌳","name":"나무 심기","point":3000,"co2":5.0,"kw":"나무 심기, 식목일, 묘목"},{"id":"m28","emoji":"☀️","name":"베란다 태양광 설치","point":10000,"co2":10.0,"kw":"베란다 태양광, 미니 태양광 패널"},{"id":"m29","emoji":"🔄","name":"재생원료 제품 구매","point":100,"co2":0.2,"kw":"재생원료, 재활용 소재 제품"},{"id":"m30","emoji":"🫙","name":"개인용기 식품포장","point":500,"co2":0.3,"kw":"개인 용기, 다회용기 포장"},{"id":"m31","emoji":"🙏","name":"자연물에 감사하기","point":30,"co2":0.1,"kw":"자연 풍경, 하늘, 나무, 꽃"},{"id":"m32","emoji":"🌿","name":"자연 속 산책","point":50,"co2":0.3,"kw":"공원, 숲, 산책로, 자연"},{"id":"m33","emoji":"🌡️","name":"냉난방 온도 지키기","point":40,"co2":0.5,"kw":"온도계, 에어컨, 보일러"},{"id":"m34","emoji":"🍎","name":"음식물 쓰레기 제로","point":45,"co2":0.7,"kw":"음식물, 퇴비, 빈 용기"},{"id":"m35","emoji":"🍠","name":"지역 농산물 구매","point":60,"co2":0.5,"kw":"전통시장, 로컬푸드, 직거래"},{"id":"m36","emoji":"💧","name":"빗물/재사용수 활용","point":40,"co2":0.2,"kw":"물 받기, 화분, 양동이"},{"id":"m37","emoji":"🤝","name":"중고/나눔 이용하기","point":70,"co2":0.8,"kw":"중고, 당근마켓, 나눔"},{"id":"m38","emoji":"📚","name":"환경 지식 공유","point":50,"co2":0.1,"kw":"환경 책, 기사, SNS"},{"id":"m39","emoji":"💪","name":"몸 건강 챙기기","point":40,"co2":0.3,"kw":"만보기, 운동, 건강한 식사"},{"id":"m40","emoji":"💝","name":"이웃 나눔 실천","point":80,"co2":0.4,"kw":"기부, 봉사, 이웃 나눔"}];</script>
-<script src="pposong_3d.js" defer></script>
+<script id="pposong-game-build">
+/* 뽀송별 3D 플레이어: 원본 users/missionLogs를 쓰거나 삭제하지 않습니다. */
+(async function(){
+'use strict';
+if(window.__Pposong3DLoaded)return;window.__Pposong3DLoaded=true;
+const css=`
+#ps3-root{position:fixed;inset:0;z-index:12000;background:#070b1d;color:#fff;font-family:'Noto Sans KR',system-ui,sans-serif;overflow:hidden}
+#ps3-root[hidden]{display:none!important}#ps3-stage{position:absolute;inset:0}#ps3-stage canvas{display:block;width:100%;height:100%;touch-action:none}
+#ps3-ui{position:absolute;inset:0;pointer-events:none}#ps3-ui button,#ps3-ui input,#ps3-ui .ps3-panel{pointer-events:auto}#ps3-top{position:absolute;top:16px;left:16px;right:16px;display:flex;justify-content:space-between;align-items:start;gap:10px}
+.ps3-pill{border:1px solid #ffffff55;background:#101d35c9;backdrop-filter:blur(14px);border-radius:999px;color:#fff;padding:10px 14px;font-size:13px}.ps3-pill button{border:0;background:transparent;color:inherit;cursor:pointer;font:inherit}.ps3-tiny{font-size:11px;color:#b9d8e1}.ps3-btn{border:1px solid #c1dbea77;border-radius:16px;background:#e1f8ef;color:#233e38;font-weight:700;padding:11px 18px;cursor:pointer;font-family:inherit}.ps3-btn.alt{background:#17253ddc;color:#fff}
+#ps3-actions{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);display:flex;gap:8px;align-items:center;justify-content:center;max-width:95vw;flex-wrap:wrap}
+#ps3-help{position:absolute;left:16px;bottom:25px;max-width:210px;line-height:1.7;font-size:12px;color:#d3e5e8;text-shadow:0 2px 6px #000}
+#ps3-panel{position:absolute;right:18px;top:80px;bottom:100px;width:min(360px,calc(100vw - 36px));border:1px solid #ffffff4a;background:#0e1a2de8;backdrop-filter:blur(18px);border-radius:24px;padding:18px;display:none;overflow-y:auto;box-shadow:0 24px 60px #0008}
+#ps3-panel.open{display:block}#ps3-list{display:grid;gap:8px;margin-top:10px}.ps3-item{border:1px solid #ffffff22;background:#ffffff11;color:white;border-radius:14px;text-align:left;padding:12px;cursor:pointer;line-height:1.5}
+#ps3-notice{position:absolute;top:80px;left:50%;transform:translateX(-50%);padding:9px 16px;border-radius:20px;background:#091528df;color:#fff;font-size:12px;max-width:80%;text-align:center;display:none}
+#ps3-mobile{position:absolute;bottom:95px;left:18px;display:none;gap:8px;grid-template-columns:repeat(3,40px)}#ps3-mobile button{background:#152d48b8;border:1px solid #aaceff77;color:white;border-radius:12px;height:38px;font-size:18px;touch-action:none}
+#ps3-root input[type=checkbox]{accent-color:#a2f5c4}
+@media(max-width:680px){#ps3-mobile{display:grid}#ps3-help{display:none}#ps3-top{left:9px;right:9px;top:9px}.ps3-pill{padding:7px 9px;font-size:11px}#ps3-actions{bottom:13px}#ps3-panel{top:62px;bottom:94px;right:9px;width:min(350px,calc(100vw - 18px))}.ps3-btn{padding:10px 12px;font-size:12px}}
+`;
+const st=document.createElement('style');st.textContent=css;document.head.append(st);
+const root=document.createElement('section');root.id='ps3-root';root.hidden=true;root.innerHTML=`<div id="ps3-stage"></div><div id="ps3-ui"><div id="ps3-top"><div class="ps3-pill"><b>☁️ 뽀송별</b><div class="ps3-tiny" id="ps3-location">광활한 우주</div></div><div class="ps3-pill"><span id="ps3-count">🌱 0회</span> · <span id="ps3-carbon">약 0kg CO₂</span><button id="ps3-hide" title="기존 화면으로"> ✕ </button></div></div><div id="ps3-notice"></div><aside class="ps3-panel" id="ps3-panel"><div style="display:flex;justify-content:space-between;align-items:center"><strong id="ps3-panel-title">별 이야기</strong><button class="ps3-btn alt" id="ps3-panel-close">닫기</button></div><div id="ps3-list"></div></aside><div id="ps3-help">마우스로 우주를 돌려보고 휠로 확대해요.<br>행성 클릭 → 착륙 → WASD / 방향키로 산책</div><div id="ps3-mobile"><span></span><button data-move="up">↑</button><span></span><button data-move="left">←</button><button data-move="down">↓</button><button data-move="right">→</button></div><div id="ps3-actions"></div></div>`;document.body.append(root);
+const E=id=>document.getElementById(id), stage=E('ps3-stage'), acts=E('ps3-actions'), loc=E('ps3-location'), panel=E('ps3-panel'), list=E('ps3-list');
+const PLANETS=[
+{id:'forest',name:'초록숨별',color:0x6bd594,ground:0x82c991,sky:0xc1f5ee,desc:'숲과 작은 오솔길'},
+{id:'ocean',name:'물결퐁별',color:0x60d3d9,ground:0x8ddbd6,sky:0xa4e7fa,desc:'잔잔한 바닷가'},
+{id:'wind',name:'바람솜별',color:0xe9e8ab,ground:0xc6daa6,sky:0xe0f0ff,desc:'구름이 지나는 언덕'},
+{id:'home',name:'반짝집별',color:0xf9c7bd,ground:0xd7c5a7,sky:0xffe5df,desc:'다정한 작은 마을'},
+{id:'food',name:'소풍식탁별',color:0xf5cc80,ground:0xd7d4a1,sky:0xffecd2,desc:'느긋한 소풍길'},
+{id:'sharing',name:'나눔마을별',color:0xc5b7ed,ground:0xc7cbb2,sky:0xe1d8fa,desc:'서로 반가운 광장'},
+{id:'quiet',name:'별빛산책별',color:0xaabcef,ground:0x86b2b5,sky:0x9fb9d9,desc:'고요한 별빛 산책'}
+];
+const MISSIONS=Array.isArray(window.__ps3MissionData)?window.__ps3MissionData:[];
+const planetForMission=(m)=>{let i=Number(String(m.id).replace(/\D/g,''))||1;return ['forest','home','food','home','sharing','food','ocean','wind','forest','home','forest','food','food','home','food','home','food','ocean','forest','home','sharing','wind','sharing','sharing','sharing','sharing','forest','wind','sharing','food','quiet','forest','home','food','food','ocean','sharing','quiet','quiet','sharing'][(i-1)%40]};
+let THREE,scene,camera,renderer,clock,avatar,room=null,mode='space',selected=0,zoom=43,rotation=0,dragging=false,lastX=0,planetMeshes=[],landObjects=[],otherActors=new Map(),moving={},desired=null,interact=null,anim=null,raf=0,active=false,fromLaunch=false;
+let currentUser=null, presence=null, presenceDb=null, unsub=null, pulse=null, visible=false,shareProgress=false,ready=false;
+const moon=()=>new THREE.Mesh(new THREE.SphereGeometry(1,20,14),new THREE.MeshStandardMaterial({color:0xf7f3e1,roughness:.85}));
+const mat=(c)=>new THREE.MeshStandardMaterial({color:c,roughness:.9});
+function roundMesh(parent,c,r,x,y,z){const a=new THREE.Mesh(new THREE.SphereGeometry(r,16,12),mat(c));a.position.set(x,y,z);parent.add(a);return a}
+function character(color=0xfff3e6){const g=new THREE.Group();roundMesh(g,color,.65,0,1.08,0);roundMesh(g,color,.49,0,.45,0);roundMesh(g,0xffcad7,.11,-.21,1.11,.55);roundMesh(g,0xffcad7,.11,.21,1.11,.55);roundMesh(g,0x292b34,.065,-.20,1.19,.59);roundMesh(g,0x292b34,.065,.20,1.19,.59);roundMesh(g,0xffc2c2,.10,0,1.02,.62);for(const x of [-.35,.35]){const ear=new THREE.Mesh(new THREE.CapsuleGeometry(.18,.57,4,8),mat(color));ear.position.set(x,1.87,0);ear.rotation.z=x<0?.18:-.18;g.add(ear);roundMesh(g,0xffc1d3,.14,x,1.94,.14)}for(const x of [-.3,.3])roundMesh(g,0xe5d6c1,.20,x,.16,.15);g.userData.walk=0;return g}
+function boulder(x,y,z,r,c){const o=new THREE.Mesh(new THREE.DodecahedronGeometry(r,0),mat(c));o.position.set(x,y,z);scene.add(o);landObjects.push(o);return o}
+function tree(x,z){const g=new THREE.Group();const tr=new THREE.Mesh(new THREE.CylinderGeometry(.16,.22,1.1,7),mat(0x947157));tr.position.y=.6;g.add(tr);for(let j=0;j<3;j++)roundMesh(g,[0x5ca87c,0x74bc8c,0x94d9a5][j],.7-j*.1,0,1.5+j*.35,0);g.position.set(x,0,z);scene.add(g);landObjects.push(g)}
+function station(x,z,i){const g=new THREE.Group();const base=new THREE.Mesh(new THREE.CylinderGeometry(.83,.9,.22,12),mat(0xf7e4c0));base.position.y=.12;g.add(base);const column=new THREE.Mesh(new THREE.CylinderGeometry(.09,.1,1.5,9),mat(0xe8bbaa));column.position.y=.89;g.add(column);const orb=roundMesh(g,[0xffd08e,0xaad9ff,0xf1a7cd][i%3],.32,0,1.73,0);orb.material.emissive=new THREE.Color(0x443322);g.position.set(x,0,z);g.userData.station=true;scene.add(g);landObjects.push(g);return g}
+function bench(x,z){const group=new THREE.Group();for(let h of [.42,.93]){const p=new THREE.Mesh(new THREE.BoxGeometry(2,.16,.48),mat(0xa77963));p.position.set(0,h,h===.42?0:-.27);group.add(p)}for(let x2 of [-.75,.75]){const leg=new THREE.Mesh(new THREE.BoxGeometry(.12,.5,.12),mat(0x645947));leg.position.set(x2,.25,0);group.add(leg)}group.position.set(x,0,z);scene.add(group);landObjects.push(group);group.userData.bench=true;return group}
+function cleanScene(){if(scene)scene.traverse(o=>{if(o.geometry)o.geometry.dispose?.();if(o.material){const a=Array.isArray(o.material)?o.material:[o.material];a.forEach(m=>m.dispose?.());}});scene=new THREE.Scene();planetMeshes=[];landObjects=[];otherActors.clear();}
+function baseScene(col){cleanScene();scene.background=new THREE.Color(col);scene.add(new THREE.HemisphereLight(0xffffff,0x7e7896,2.4));const light=new THREE.DirectionalLight(0xffffff,2.3);light.position.set(-12,25,16);scene.add(light)}
+function space(){mode='space';stopPresence();room=null;baseScene(0x060d24);scene.fog=null;camera.position.set(0,15,zoom);camera.lookAt(0,0,0);E('ps3-mobile').style.visibility='hidden';loc.textContent='끝없이 펼쳐진 별들';for(let i=0;i<620;i++){const t=new THREE.Mesh(new THREE.SphereGeometry(.025+Math.random()*.085,6,5),new THREE.MeshBasicMaterial({color:i%7?0xb4c9ff:0xffe3be}));t.position.set((Math.random()-.5)*200,(Math.random()-.5)*140,(Math.random()-.5)*130);scene.add(t)}PLANETS.forEach((p,i)=>{const a=i*Math.PI*2/7;const mesh=new THREE.Mesh(new THREE.SphereGeometry(2.3,36,24),new THREE.MeshStandardMaterial({color:p.color,roughness:.8}));mesh.position.set(Math.cos(a)*13,Math.sin(a*.8)*3.5,Math.sin(a)*11);mesh.userData.planet=i;scene.add(mesh);planetMeshes.push(mesh);const halo=new THREE.Mesh(new THREE.TorusGeometry(2.8,.07,6,64),new THREE.MeshBasicMaterial({color:p.color,transparent:true,opacity:.45}));halo.position.copy(mesh.position);halo.rotation.x=1.1;scene.add(halo)});drawActions();notify('행성을 클릭하면 가까이 다가갈 수 있어요');}
+function approach(i){mode='approach';selected=i;let p=planetMeshes[i];camera.position.set(p.position.x+1.5,p.position.y+2.1,p.position.z+9);camera.lookAt(p.position);loc.textContent=PLANETS[i].name+' · '+PLANETS[i].desc;drawActions();}
+function land(){const p=PLANETS[selected];mode='land';room=p.id;baseScene(p.sky);scene.fog=new THREE.Fog(p.sky,22,77);const ground=new THREE.Mesh(new THREE.CylinderGeometry(32,32,1.4,80),mat(p.ground));ground.position.y=-.73;scene.add(ground);const edge=new THREE.Mesh(new THREE.CylinderGeometry(32.1,32.1,.3,80),mat(p.color));edge.position.y=-1.6;scene.add(edge);for(let i=0;i<75;i++){const a=Math.random()*Math.PI*2,r=6+Math.random()*24;const x=Math.sin(a)*r,z=Math.cos(a)*r;Math.random()<.67?tree(x,z):boulder(x,.13,z,.22+Math.random()*.28,p.color)}const stations=MISSIONS.filter(m=>planetForMission(m)===p.id);stations.forEach((m,i)=>{let a=i*2.399,r=8+Math.sqrt(i+1)*2.5;station(Math.sin(a)*r,Math.cos(a)*r,i)});bench(3,3);avatar=character();avatar.position.set(0,0,0);scene.add(avatar);camera.position.set(0,9,12);camera.lookAt(0,1,0);E('ps3-mobile').style.visibility='visible';loc.textContent=p.name+' · 산책 중';drawActions();startPresence();notify('걷거나 앉아서 쉬어도 좋아요');}
+function drawActions(){acts.replaceChildren();const add=(label,fn,alt=false)=>{const b=document.createElement('button');b.type='button';b.className='ps3-btn'+(alt?' alt':'');b.textContent=label;b.onclick=fn;acts.append(b)};if(mode==='space'){add('일곱 별 둘러보기',()=>showPlanetPanel(),true);add('친구 만나기 안내',showFriends,true)}else if(mode==='approach'){add('🚀 착륙하기',land);add('우주로',space,true)}else {add('🌱 이 별의 미션',showMissions);add('🪑 앉기 / 일어나기',()=>{avatar.userData.sit=!avatar.userData.sit;notify(avatar.userData.sit?'잠시 쉬어가요':'다시 산책해요')},true);add('👋 친구',showFriends,true);add('🚀 우주로',space,true)}}
+function showPanel(title,entries){E('ps3-panel-title').textContent=title;list.replaceChildren();entries.forEach(e=>{const b=document.createElement('button');b.className='ps3-item';b.textContent=e.label;b.onclick=()=>{panel.classList.remove('open');e.action?.()};list.append(b)});panel.classList.add('open')}
+function showPlanetPanel(){showPanel('어느 별로 갈까요?',PLANETS.map((p,i)=>({label:p.name+' · '+p.desc,action:()=>approach(i)})))}
+function showMissions(){const m=MISSIONS.filter(x=>planetForMission(x)===room);showPanel('작은 실천 · '+m.length+'개',m.map((mission,i)=>({label:(mission.emoji||'🌱')+' '+mission.name,action:()=>{if(avatar){const a=i*2.399,r=8+Math.sqrt(i+1)*2.5;desired={x:Math.sin(a)*r,z:Math.cos(a)*r,mission};notify('미션 장소로 걸어가는 중…')}else askMission(mission)}})))}
+function askMission(m){showPanel('오늘의 작은 실천',[{label:m.name+' — 기존 AI 사진 인증 열기',action:()=>{if(!window.ME?.uid){notify('사진 인증은 로그인한 회원만 가능해요');return}const ch=(typeof CHALLENGES!=='undefined'?CHALLENGES:[]).find(c=>c.missionId===m.id);try{const saved=(typeof MISSIONS!=='undefined'?MISSIONS:[]).find(x=>x.id===m.id);if(typeof window.openAI==='function'&&saved){hideGame();window.openAI(saved,window.ME.uid,ch?.id||null)}else notify('기존 AI 인증 기능을 찾지 못했어요')}catch(err){console.error(err);notify('인증창을 열지 못했어요')}}},{label:'그냥 산책할래요',action:()=>{}}])}
+function notify(msg){const n=E('ps3-notice');n.textContent=msg;n.style.display='block';clearTimeout(n._timer);n._timer=setTimeout(()=>n.style.display='none',3300)}
+function showFriends(){const found=[...otherActors.values()];const items=[{label:'다른 여행자에게 내 캐릭터 보이기: '+(visible?'켜짐':'꺼짐'),action:()=>toggleVisible(!visible)},{label:'내 실천 횟수를 친구에게 공개: '+(shareProgress?'켜짐':'꺼짐'),action:()=>{shareProgress=!shareProgress;if(visible)sendPresence();showFriends()}}];if(!visible)items.push({label:'내가 보이기를 켜야 다른 여행자의 모습도 볼 수 있어요'});else if(!found.length)items.push({label:'아직 이 별에 다른 여행자가 없어요'});else found.forEach(o=>items.push({label:'👋 '+o.data.name+(o.data.shareProgress?' · 실천 '+(o.data.count||0)+'회':' · 기록 비공개'),action:()=>notify(o.data.name+'님께 손을 흔들었어요 👋')}));showPanel('이 별의 친구',items)}
+E('ps3-panel-close').onclick=()=>panel.classList.remove('open');E('ps3-hide').onclick=hideGame;
+async function toggleVisible(on){visible=on;if(!on){await stopPresence();otherActors.forEach(x=>scene.remove(x.mesh));otherActors.clear()}else startPresence();showFriends()}
+async function setupPresence(){if(presenceDb)return true;if(!window.FB?.db||!window.ME?.uid)return false;try{const f=await import('https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js');presence={doc:f.doc,setDoc:f.setDoc,deleteDoc:f.deleteDoc,collection:f.collection,onSnapshot:f.onSnapshot,serverTimestamp:f.serverTimestamp};presenceDb=window.FB.db;return true}catch(err){console.warn('[뽀송별] 실시간 연결 불가',err);return false}}
+function profileName(){return String(window.UDATA?.nickname||window.ME?.displayName||'여행자').slice(0,20)}
+async function sendPresence(){if(!visible||!room||!window.ME?.uid||!presenceDb||!avatar)return;try{const path=presence.doc(presenceDb,'planetPresence',room,'players',window.ME.uid);await presence.setDoc(path,{name:profileName(),x:Math.max(-28,Math.min(28,avatar.position.x)),z:Math.max(-28,Math.min(28,avatar.position.z)),updatedAt:presence.serverTimestamp(),shareProgress, count:shareProgress?Math.max(0,Math.min(100000,Number(window.UDATA?.missionCount)||0)):0,avatar:'bunny'})}catch(err){console.warn('공개 위치 쓰기 실패',err.code||err);visible=false;notify('친구 표시 권한을 확인해 주세요. 혼자 산책은 가능해요')}}
+async function stopPresence(){clearInterval(pulse);pulse=null;unsub?.();unsub=null;const wasRoom=room;if(presence&&presenceDb&&wasRoom&&window.ME?.uid){try{await presence.deleteDoc(presence.doc(presenceDb,'planetPresence',wasRoom,'players',window.ME.uid))}catch(err){console.info('접속 정보는 만료 후 숨겨져요')}}otherActors.forEach(v=>scene?.remove(v.mesh));otherActors.clear()}
+async function startPresence(){if(!visible||!room)return;if(!await setupPresence()){notify('실시간 친구 기능은 Firebase 설정이 필요해요');return}const f=presence;const q=f.collection(presenceDb,'planetPresence',room,'players');try{unsub=f.onSnapshot(q,snap=>{const ids=new Set;const now=Date.now();snap.forEach(d=>{if(d.id===window.ME?.uid)return;const data=d.data();let ts=data.updatedAt?.toMillis?.()||0;if(!ts||now-ts>45000)return;if(!Number.isFinite(data.x)||!Number.isFinite(data.z))return;ids.add(d.id);let other=otherActors.get(d.id);if(!other){let mesh=character(0xffd9ac);scene.add(mesh);other={mesh,data};otherActors.set(d.id,other)}other.data=data;other.mesh.position.set(Math.max(-28,Math.min(28,data.x)),0,Math.max(-28,Math.min(28,data.z)))});for(const [id,o] of otherActors)if(!ids.has(id)){scene.remove(o.mesh);otherActors.delete(id)}},err=>{console.warn('다른 친구 조회 실패',err);notify('실시간 접속 규칙을 확인해 주세요')});await sendPresence();pulse=setInterval(()=>{if(visible)sendPresence()},12000)}catch(err){notify('친구 연결을 시작하지 못했어요')}}
+function update(dt){if(mode==='space'){rotation+=dt*.045;planetMeshes.forEach((m,i)=>{m.rotation.y+=dt*.12;m.position.y+=Math.sin(rotation+i)*dt*.13});return}if(mode!=='land'||!avatar)return;const speed=5.6;let x=(moving.right?1:0)-(moving.left?1:0),z=(moving.down?1:0)-(moving.up?1:0);if(desired){const dx=desired.x-avatar.position.x,dz=desired.z-avatar.position.z,dist=Math.hypot(dx,dz);if(dist<1.0){const m=desired.mission;desired=null;askMission(m)}else{x=dx/dist;z=dz/dist}}const len=Math.hypot(x,z);if(len>0&&!avatar.userData.sit){x/=len;z/=len;avatar.position.x=Math.max(-29,Math.min(29,avatar.position.x+x*dt*speed));avatar.position.z=Math.max(-29,Math.min(29,avatar.position.z+z*dt*speed));avatar.rotation.y=Math.atan2(x,z);avatar.userData.walk+=dt*11;avatar.position.y=Math.abs(Math.sin(avatar.userData.walk))*.06}else avatar.position.y=avatar.userData.sit?-.34:0;const target=new THREE.Vector3(avatar.position.x+2,avatar.position.y+7,avatar.position.z+9);camera.position.lerp(target,Math.min(1,dt*3));camera.lookAt(avatar.position.x,1,avatar.position.z);}
+function bindInputs(){document.addEventListener('keydown',e=>{const k={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',w:'up',s:'down',a:'left',d:'right'}[e.key];if(k&&active){moving[k]=true;e.preventDefault()}if(e.key==='Escape'&&active)hideGame()});document.addEventListener('keyup',e=>{let k={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',w:'up',s:'down',a:'left',d:'right'}[e.key];if(k)moving[k]=false});document.querySelectorAll('#ps3-mobile button').forEach(b=>{const m=b.dataset.move;b.addEventListener('pointerdown',e=>{moving[m]=true;b.setPointerCapture(e.pointerId)});for(const ev of ['pointerup','pointercancel','lostpointercapture'])b.addEventListener(ev,()=>moving[m]=false)});const raycaster=()=>new THREE.Raycaster();const ray=raycaster();stage.addEventListener('pointerdown',e=>{if(mode==='space'){dragging=true;lastX=e.clientX}});stage.addEventListener('pointermove',e=>{if(dragging){const d=e.clientX-lastX;lastX=e.clientX;camera.position.x-=d*.03;camera.lookAt(0,0,0)}});stage.addEventListener('pointerup',e=>{if(mode!=='space')return;const rect=renderer.domElement.getBoundingClientRect();const v=new THREE.Vector2((e.clientX-rect.left)/rect.width*2-1,-(e.clientY-rect.top)/rect.height*2+1);ray.setFromCamera(v,camera);const hit=ray.intersectObjects(planetMeshes);if(hit.length)approach(hit[0].object.userData.planet);dragging=false});stage.addEventListener('wheel',e=>{if(mode!=='space')return;e.preventDefault();zoom=Math.max(11,Math.min(90,zoom+Math.sign(e.deltaY)*3));camera.position.z=zoom;camera.lookAt(0,0,0)},{passive:false});let dist=0;stage.addEventListener('touchmove',e=>{if(mode!=='space'||e.touches.length!==2)return;const a=e.touches[0],b=e.touches[1],d=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);if(dist){zoom=Math.max(11,Math.min(90,zoom+(dist-d)*.03));camera.position.z=zoom}dist=d},{passive:true});stage.addEventListener('touchend',()=>dist=0);}
+function resize(){if(!renderer||!camera)return;const w=stage.clientWidth||window.innerWidth,h=stage.clientHeight||window.innerHeight;renderer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix()}
+function tick(){if(!active)return;raf=requestAnimationFrame(tick);const dt=Math.min(clock.getDelta(),.05);update(dt);renderer.render(scene,camera)}
+async function loadThree(){try{return await import('https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js')}catch(e){notify('3D 엔진을 불러오지 못했습니다. 네트워크를 확인해 주세요');throw e}}
+async function openGame(){if(active)return;root.hidden=false;active=true;if(!ready){try{THREE=await loadThree();renderer=new THREE.WebGLRenderer({antialias:true,alpha:false});renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));renderer.outputColorSpace=THREE.SRGBColorSpace;stage.append(renderer.domElement);camera=new THREE.PerspectiveCamera(60,1,.1,600);clock=new THREE.Clock();bindInputs();window.addEventListener('resize',resize);ready=true;resize()}catch(e){root.hidden=true;active=false;alert('3D 실행을 위해 WebGL과 인터넷 연결을 확인해 주세요');return}}clock.start();space();tick();refreshStats()}
+function hideGame(){if(!active)return;active=false;cancelAnimationFrame(raf);root.hidden=true;stopPresence();panel.classList.remove('open');Object.keys(moving).forEach(k=>moving[k]=false)}
+function refreshStats(){const d=window.UDATA||{};E('ps3-count').textContent='🌱 '+(Math.max(0,Number(d.missionCount)||0))+'회';E('ps3-carbon').textContent='약 '+(Math.max(0,Number(d.co2)||0)).toFixed(2)+'kg CO₂'}
+const openBtn=document.createElement('button');openBtn.id='ps3-launch';openBtn.type='button';openBtn.className='ps3-btn';openBtn.textContent='🪐 뽀송별 3D 여행';Object.assign(openBtn.style,{position:'fixed',bottom:'88px',right:'14px',zIndex:'1200',boxShadow:'0 4px 18px #14324566'});openBtn.onclick=openGame;document.body.append(openBtn);
+window.PPOSONG3D={open:openGame,close:hideGame};
+if(location.search.includes('pposongDemo=1'))openGame();
+window.addEventListener('pagehide',()=>{if(visible&&room&&window.ME?.uid)stopPresence()});
+setInterval(()=>{if(active&&!window.ME?.uid&&visible)toggleVisible(false);if(active)refreshStats()},3000);
+})();
+
+</script>
+<script id="pposong-live-auto-start">
+(function(){
+  'use strict';
+  // Version marker lets you check whether Vercel delivered the new HTML (and not a cached old page).
+  window.PPOSONG_VERSION = 'v6-20261110-main-autostart';
+  document.documentElement.dataset.pposongVersion = window.PPOSONG_VERSION;
+  const params = new URLSearchParams(location.search);
+  let started = false;
+  const guest = document.createElement('button');
+  guest.id = 'pposong-guest'; guest.type = 'button';
+  guest.textContent = '☁️ 먼저 우주 산책하기';
+  guest.addEventListener('click',()=>window.PPOSONG3D?.open());
+  const google = document.getElementById('btnLogin');
+  if (google) google.insertAdjacentElement('afterend', guest);
+  function tryAutoStart(){
+    if(started || params.get('classic')==='1')return;
+    const app=document.getElementById('app');
+    const isInApp=!!window.ME?.uid && !!app && getComputedStyle(app).display!=='none';
+    if(isInApp && window.PPOSONG3D?.open){
+      started=true;
+      // Don't steal keyboard focus or overwrite sign-in / first profile setup.
+      window.PPOSONG3D.open();
+    }
+  }
+  if(params.get('space')==='1' && window.PPOSONG3D?.open){started=true;window.PPOSONG3D.open();}
+  tryAutoStart();
+  const observer=new MutationObserver(tryAutoStart);
+  observer.observe(document.body,{attributes:true,subtree:true,attributeFilter:['style','class']});
+  const poll=setInterval(()=>{tryAutoStart();if(started)clearInterval(poll)},900);
+  // Some browsers only resolve auth after a user event; keep the launcher available.
+  window.addEventListener('pagehide',()=>{clearInterval(poll);observer.disconnect()});
+  // Legacy home is always available with ?classic=1, and the 3D close button.
+})();
+</script>
 </body>
 </html>

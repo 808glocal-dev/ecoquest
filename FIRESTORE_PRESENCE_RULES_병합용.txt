@@ -1,0 +1,17 @@
+// 주의: 이 내용만 firestore.rules에 덮어쓰면 기존 회원·포인트·AI 기능이 차단될 수 있습니다.
+// 기존 rules_version = '2'; service cloud.firestore { match /databases/{database}/documents {
+// 안쪽에 병합할 **조각**입니다. 최종 규칙은 기존 서비스 규칙과 함께 별도 검증 필요!
+match /pposongPresence/{uid} {
+  allow get: if request.auth != null && resource.data.visible == true;
+  allow list: if request.auth != null && request.query.limit <= 40 && resource.data.visible == true;
+  allow create, update: if request.auth != null && request.auth.uid == uid
+     && request.resource.data.keys().hasOnly(['visible','planet','displayName','avatar','x','z','missionCount','estimatedCo2','updatedAt'])
+     && request.resource.data.visible == true
+     && request.resource.data.planet in ['forest','ocean','wind','home','food','sharing','quiet']
+     && request.resource.data.displayName is string
+     && request.resource.data.displayName.size() <= 20
+     && request.resource.data.x is number && request.resource.data.z is number
+     && request.resource.data.x >= -100000 && request.resource.data.x <= 100000
+     && request.resource.data.z >= -100000 && request.resource.data.z <= 100000;
+  allow delete: if request.auth != null && request.auth.uid == uid;
+}

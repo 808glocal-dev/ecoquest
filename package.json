@@ -1,0 +1,6 @@
+{
+  "name":"pposongbyeol-game-rebuild","private":true,"type":"module","version":"0.2.0",
+  "engines":{"node":">=20"},
+  "dependencies":{"firebase-admin":"^13.0.0"},
+  "scripts":{"check":"node tests/smoke.mjs"}
+}

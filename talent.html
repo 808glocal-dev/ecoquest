@@ -55,6 +55,34 @@ section.tint{background:#E9EEE6}
 .contact .btn{background:#fff;color:#16201B}
 footer{background:#16201B;border-top:1px solid #2E3B34;color:#B9C4BD;font-size:14px;padding:20px 0}
 footer a{color:#D3DBD5}
+
+.badges{display:flex;flex-wrap:wrap;gap:10px;margin-top:4px}
+.badge{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid #DCE1D9;border-radius:999px;padding:8px 14px;font-size:14px;font-weight:500}
+.badge i{width:8px;height:8px;border-radius:50%;background:#1F5C44;display:inline-block}
+.proj{background:#fff;border:1px solid #DCE1D9;border-radius:14px;padding:26px;display:flex;flex-direction:column;gap:12px}
+.proj .tag{align-self:flex-start;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#1F5C44;background:#E4EEE8;border-radius:999px;padding:4px 10px}
+.proj ul{margin:0;padding-left:18px;color:#3D4842;font-size:15px}
+.proj li{margin-bottom:4px}
+.proj .out{border-top:1px solid #E4E8E1;padding-top:12px;font-size:14px;color:#16201B}
+.proj .out b{color:#1F5C44}
+.feature{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:28px;background:#16201B;color:#fff;border-radius:18px;padding:36px;margin-top:32px}
+.feature h3{font-size:24px;margin:0 0 10px}
+.feature p{color:#D3DBD5;margin:0 0 12px}
+.feature ul{margin:0;padding-left:18px;color:#D3DBD5}
+.feature li{margin-bottom:6px}
+.feature .kpis{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-content:start}
+.feature .kpi{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:16px}
+.feature .kpi b{display:block;font-size:17px;color:#fff}
+.feature .kpi span{font-size:13px;color:#B9C4BD}
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}
+.chip{background:#fff;border:1px solid #C9D0C6;border-radius:999px;padding:8px 14px;font-size:14px}
+.timeline{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-top:28px}
+.tl{background:#fff;border-radius:12px;padding:20px;border-left:4px solid #1F5C44}
+.tl small{font-weight:700;color:#1F5C44;letter-spacing:.04em}
+.tl p{margin:6px 0 0;color:#3D4842;font-size:15px}
+details{background:#fff;border:1px solid #DCE1D9;border-radius:12px;padding:18px 20px;margin-top:12px}
+summary{font-weight:600;cursor:pointer;font-size:17px}
+details p{margin:10px 0 0;color:#3D4842}
 @media (max-width:600px){.hero{padding:48px 20px}section.block,.contact{padding:56px 0}.panel .ko{font-size:44px}}
 </style>
 </head>
@@ -65,8 +93,10 @@ footer a{color:#D3DBD5}
 <a class="brand" href="/talent.html">EcoQuest Korea<span>Korean Talent Partner</span></a>
 <nav aria-label="Main">
 <a href="#talent">Talent</a>
+<a href="#projects">Projects</a>
 <a href="#how">How it works</a>
 <a href="#why">Why us</a>
+<a href="#faq">FAQ</a>
 <a href="#contact">Contact</a>
 </nav>
 </div>
@@ -81,6 +111,11 @@ footer a{color:#D3DBD5}
 <div class="ctas">
 <a class="btn btn-primary" href="mailto:info@eco-quest.kr?subject=Korean%20talent%20request">Request a free shortlist</a>
 <a class="btn btn-ghost" href="#talent">See talent we source</a>
+</div>
+<div class="badges">
+<span class="badge"><i></i>Seoul-designated pre-social enterprise</span>
+<span class="badge"><i></i>Patent filed: AI-based verification system</span>
+<span class="badge"><i></i>Registered on Korea's public procurement system</span>
 </div>
 </div>
 <div class="panel">
@@ -110,6 +145,101 @@ footer a{color:#D3DBD5}
 </div>
 </section>
 
+
+<section class="block" id="projects">
+<div class="wrap">
+<p class="eyebrow">Projects &amp; track record</p>
+<h2>Experience across our team and partner network</h2>
+<p class="lead">Our people come from AI product development, e-commerce customer experience, media, publishing, manufacturing and education. That hands-on background is how we know what good talent looks like for each kind of project.</p>
+
+<div class="feature">
+<div>
+<span style="display:inline-block;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;background:rgba(255,255,255,.1);color:#B9E3CC;border-radius:999px;padding:4px 10px;margin-bottom:10px">In-house AI project</span>
+<h3>EcoQuest: AI photo verification platform</h3>
+<p>We designed, built and operate EcoQuest, a platform where citizens complete environmental missions and an AI vision model verifies each photo submission.</p>
+<ul>
+<li>Vision-model image verification with confidence-based grading</li>
+<li>Prompt design, edge-case review and human QA of AI judgments</li>
+<li>Carbon-reduction data pipeline and monthly reporting for corporate clients</li>
+<li>Corporate employee-challenge pilot run with a Korean impact investment firm</li>
+</ul>
+</div>
+<div class="kpis">
+<div class="kpi"><b>AI evaluation</b><span>We review AI outputs every day, the same work our evaluators do for you.</span></div>
+<div class="kpi"><b>Patent filed</b><span>AI-confidence-based verification and emissions calculation method</span></div>
+<div class="kpi"><b>B2B reporting</b><span>Recurring data reports (DOCX/CSV) for a corporate partner</span></div>
+<div class="kpi"><b>Full stack</b><span>JavaScript, Firebase, Vercel and vision-model APIs</span></div>
+</div>
+</div>
+
+<div class="grid">
+<div class="proj">
+<span class="tag">Customer experience</span>
+<h3>E-commerce chat support &amp; CS quality</h3>
+<ul>
+<li>Live chat customer support for a major Korean e-commerce platform (messenger channel + ticketing system)</li>
+<li>Installation eligibility and technical support conversations</li>
+<li>Prototype of an AI assistant app to support chat agents</li>
+</ul>
+<div class="out"><b>What this means for you:</b> realistic Korean CS dialogue data, conversational AI evaluation and contact-center talent.</div>
+</div>
+<div class="proj">
+<span class="tag">Media &amp; editorial</span>
+<h3>News reporting, PR &amp; editorial review</h3>
+<ul>
+<li>Culture desk reporting at a Korean news media group, covering government and defense beats</li>
+<li>Corporate PR and press materials for a lighting technology company</li>
+<li>Editorial internship at a Korean book publisher</li>
+</ul>
+<div class="out"><b>What this means for you:</b> editor-level Korean QA, fact-checking and writing-quality evaluation.</div>
+</div>
+<div class="proj">
+<span class="tag">Publishing &amp; literature</span>
+<h3>Book publishing, translation &amp; screenwriting</h3>
+<ul>
+<li>Independent book publishing, from editing to bookstore distribution</li>
+<li>Student reporter for a national literature translation institute</li>
+<li>Feature screenplays and long-form creative writing; M.A. in Creative Writing</li>
+</ul>
+<div class="out"><b>What this means for you:</b> creative and long-form Korean writers, literary translators and style reviewers.</div>
+</div>
+<div class="proj">
+<span class="tag">Manufacturing &amp; engineering</span>
+<h3>Display panel production</h3>
+<ul>
+<li>TFT panel repair on a display manufacturing line at a global electronics group</li>
+<li>Hands-on knowledge of production processes, defect inspection and repair workflows</li>
+</ul>
+<div class="out"><b>What this means for you:</b> engineers and technicians for manufacturing, hardware and industrial AI data.</div>
+</div>
+<div class="proj">
+<span class="tag">Education</span>
+<h3>Writing instruction &amp; environmental education</h3>
+<ul>
+<li>Essay and critical writing instruction</li>
+<li>Elementary school teacher serving as environmental education advisor</li>
+<li>Classroom board game and curriculum development</li>
+</ul>
+<div class="out"><b>What this means for you:</b> teachers and education experts for tutoring AI, curriculum data and age-appropriate content review.</div>
+</div>
+<div class="proj">
+<span class="tag">Content &amp; broadcasting</span>
+<h3>Content planning &amp; business development</h3>
+<ul>
+<li>Content planning and BD by a former broadcast writer</li>
+<li>Social media and video channel operation</li>
+</ul>
+<div class="out"><b>What this means for you:</b> scriptwriters, content creators and multimedia reviewers.</div>
+</div>
+</div>
+
+<p class="eyebrow" style="margin-top:44px">Industries we cover</p>
+<div class="chips">
+<span class="chip">AI &amp; software</span><span class="chip">E-commerce &amp; retail</span><span class="chip">Customer service</span><span class="chip">Media &amp; publishing</span><span class="chip">Games</span><span class="chip">Manufacturing &amp; electronics</span><span class="chip">Education</span><span class="chip">Finance</span><span class="chip">Legal</span><span class="chip">Healthcare</span><span class="chip">Climate &amp; ESG</span><span class="chip">Design &amp; creative</span>
+</div>
+</div>
+</section>
+
 <section class="block tint" id="how">
 <div class="wrap">
 <p class="eyebrow">How it works</p>
@@ -124,6 +254,14 @@ footer a{color:#D3DBD5}
 <div class="card"><h3>Referral</h3><p>We introduce pre-screened candidates; you contract them directly.</p></div>
 <div class="card"><h3>Managed team</h3><p>We contract and coordinate the team and invoice you in USD.</p></div>
 <div class="card"><h3>Pilot first</h3><p>Start with a few candidates or a small batch before scaling.</p></div>
+</div>
+
+<p class="eyebrow" style="margin-top:48px">What a pilot looks like</p>
+<div class="timeline">
+<div class="tl"><small>DAY 1–3</small><p>Kick-off call, NDA and your guidelines. We design a first-round test for your role.</p></div>
+<div class="tl"><small>WEEK 1–2</small><p>We source and pre-screen. You receive a free shortlist with test results.</p></div>
+<div class="tl"><small>WEEK 2–3</small><p>Candidates take your qualification test. Our bilingual PM handles questions in Korean.</p></div>
+<div class="tl"><small>WEEK 3+</small><p>Work starts. We track quality, replace drop-outs and scale the team.</p></div>
 </div>
 </div>
 </section>
@@ -140,6 +278,19 @@ footer a{color:#D3DBD5}
 <div class="card"><h3>Volume discounts</h3><p>Better rates as your Korean team grows.</p></div>
 <div class="card"><h3>Ready to onboard</h3><p>Registered Korean company: NDAs, supplier registration and USD invoicing. A first shortlist typically within one to two weeks.</p></div>
 </div>
+</div>
+</section>
+
+<section class="block white" id="faq">
+<div class="wrap">
+<p class="eyebrow">FAQ</p>
+<h2>Common questions</h2>
+<details><summary>How do you price your services?</summary><p>Pricing is flexible and negotiable: per hour, per task, per word or per placement. We adjust to your budget and offer volume discounts as your Korean team grows.</p></details>
+<details><summary>Do candidates need to speak English?</summary><p>Not necessarily. Our bilingual project managers translate guidelines, answer questions and handle daily communication, so you can work with top Korean experts who aren't fluent in English. For roles that need English, we screen for it.</p></details>
+<details><summary>How does your first-round test work?</summary><p>We build a short test around your requirements: skills, domain knowledge, Korean writing quality and guideline accuracy. Only candidates who pass are introduced to you.</p></details>
+<details><summary>Can you sign our NDA and work with our vendor portal?</summary><p>Yes. We are a registered Korean company and can sign NDAs, complete supplier registration and invoice in USD.</p></details>
+<details><summary>What if a candidate drops out?</summary><p>If someone leaves within the first 30 days, we replace them at no extra cost.</p></details>
+<details><summary>What time zone do you work in?</summary><p>Seoul (KST, UTC+9). We cover Asia-Pacific business hours and overlap with Europe and US evenings for calls.</p></details>
 </div>
 </section>
 </main>
